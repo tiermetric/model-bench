@@ -1,0 +1,8 @@
+# The measuring instrument, pinned per edition. Deliberately updated; never
+# read from a live working tree. An edition's stamp must not drift with
+# unrelated commits to the tier repo.
+tier_version: v0.1.0
+tier_public_repo: github.com/tiermetric/tier
+prices_yaml_version: 8
+prices_yaml_sha256: 9ab9cba3fca5fef0b8e9eb7f62fe0496c7498a74a94e81e441a52ee66fd53eb0
+pinned_utc: 2026-07-22T22:20:56Z

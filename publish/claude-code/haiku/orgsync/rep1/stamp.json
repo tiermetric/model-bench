@@ -1,0 +1,18 @@
+{
+  "date_utc": "2026-07-23T00:54:01Z",
+  "tier_version": "v0.1.0",
+  "prices_yaml_sha256": "9ab9cba3fca5fef0b8e9eb7f62fe0496c7498a74a94e81e441a52ee66fd53eb0",
+  "prompt": "orgsync",
+  "prompt_file_sha256": "94950b00fd82cc86a8c98a0793149b5f9c13e205dedd1ea533470387110ba408",
+  "judge": "acceptance_orgsync.py",
+  "judge_sha256": "b948f904bfd72ffcd8fedd30230182df3133d27a9972c6fc2c6af35ca5196a74",
+  "python_version": "3.14.6",
+  "tool": "claude-code",
+  "tool_version": "2.1.218 (Claude Code)",
+  "model_flag": "claude-haiku-4-5",
+  "rep": 1,
+  "agent_exit": 0,
+  "timed_out": false,
+  "capture": "OK",
+  "machine": "Darwin 25.5.0 arm64 / Apple M5 Max"
+}

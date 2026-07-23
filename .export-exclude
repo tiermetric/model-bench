@@ -1,0 +1,20 @@
+# Artifacts that must NEVER reach the public export while their task is sealed.
+# PROTOCOL.md §5.4: the judge is the answer key; a still-sealed task publishes
+# its SHA-256 in TASKS.md and nothing else. Content reveals at graduation.
+#
+# The export tooling reads this file and refuses to run if any listed path
+# would be included. Removing a line is how a reveal happens — deliberately,
+# with the reveal recorded in TASKS.md.
+#
+# 2026-07-23 — orgsync GRADUATED (SATURATED, 6/7 perfect). Its prompt, judge
+# and design artifacts are revealed; all five re-verified against the hashes
+# published before the task ever ran. Event recorded in TASKS.md.
+
+# Unreleased frontier candidates. Both carry "Status: SEALED" in their own
+# headers and are not yet registered in TASKS.md — so not even their hashes are
+# public. Publishing either would burn a future frontier task before it has
+# ever been served. They are the pipeline that replaces orgsync (§5.1).
+prompts/cutover.md
+design/cutover/
+prompts/foreman.md
+design/foreman/

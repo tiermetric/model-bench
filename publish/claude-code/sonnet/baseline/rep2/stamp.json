@@ -1,0 +1,18 @@
+{
+  "date_utc": "2026-07-22T22:34:01Z",
+  "tier_version": "v0.1.0",
+  "prices_yaml_sha256": "9ab9cba3fca5fef0b8e9eb7f62fe0496c7498a74a94e81e441a52ee66fd53eb0",
+  "prompt": "baseline",
+  "prompt_file_sha256": "6927e499c8ee25996cc6669f432bec98ab3f3d747d41bb6b0142101e058649ec",
+  "judge": "acceptance_test.py",
+  "judge_sha256": "f07718acdcc279b349e7393144a79cbf7f1e62a88f089c10288cfe05e84e5b53",
+  "python_version": "3.14.6",
+  "tool": "claude-code",
+  "tool_version": "2.1.218 (Claude Code)",
+  "model_flag": "claude-sonnet-5",
+  "rep": 2,
+  "agent_exit": 0,
+  "timed_out": false,
+  "capture": "OK",
+  "machine": "Darwin 25.5.0 arm64 / Apple M5 Max"
+}

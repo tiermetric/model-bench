@@ -1,0 +1,44 @@
+{
+  "acceptance": "PASS",
+  "agent_exit": 0,
+  "cache_read_mult_used": 0.1,
+  "cache_read_pct": 86.76,
+  "capture": "OK",
+  "cost_list_usd": 1.165634,
+  "edge_failures": "0f+0e",
+  "label": "opus",
+  "log": "session.jsonl",
+  "model_ids_seen": [
+    "claude-opus-4-8"
+  ],
+  "model_key": "claude-opus-4-8",
+  "outcome": "PASS",
+  "own_tests": "PASS",
+  "priced": true,
+  "prices_snapshot": "prices.snapshot.yaml",
+  "prices_yaml": "prices.yaml",
+  "prices_yaml_version": 8,
+  "rep": 1,
+  "session_log": "session.jsonl",
+  "task": "cronspec",
+  "timed_out": false,
+  "tokens": {
+    "api_calls": 7,
+    "cache_read": 284077,
+    "cache_w1h": 43340,
+    "cache_w5m": 0,
+    "cache_write": 43340,
+    "input_total": 327431,
+    "input_uncached": 14,
+    "model_ids": [
+      "claude-opus-4-8"
+    ],
+    "output": 23605,
+    "reasoning": null
+  },
+  "tool": "claude-code",
+  "wall_seconds": 259,
+  "web_tool_count": 0,
+  "web_tool_names": [],
+  "web_tools_mode": "void"
+}
