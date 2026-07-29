@@ -263,8 +263,42 @@ time to relabel identical data would buy nothing but a different filename.
 > **Applied 2026-07-23 (Steve's ruling), first use:** the `orgsync` panel.
 > Roster of 7 fixed in `batch.sh` before the first run; N=3 declared per cell;
 > all 21 runs verified to share prompt `94950b00`, judge `b948f904` and rate
-> table `9ab9cba3`; both hashes published in `TASKS.md` under commit-reveal
-> before any model saw the task. Conformant. Publishes as scored.
+> table `9ab9cba3`. Conformant. Publishes as scored.
+>
+> **CORRECTED 2026-07-29 — condition 4 was not met for one run, and this ruling
+> previously overstated it.** The sentence here read "both hashes published in
+> `TASKS.md` under commit-reveal before any model saw the task." That is true of
+> the prompt hash and **false of the judge hash**. Measured from this repository's
+> own git log and run stamps:
+>
+> | event | time (UTC) |
+> |---|---|
+> | prompt `94950b00` committed to `TASKS.md` (`5f03656`) | 2026-07-23T00:33:36Z |
+> | **`haiku/orgsync/rep1` verdict — a FAIL** | **2026-07-23T00:54:01Z** |
+> | **judge `b948f904` committed to `TASKS.md` (`d85daa2`)** | **2026-07-23T00:58:35Z** |
+> | `haiku/orgsync/rep2` verdict | 2026-07-23T01:24:18Z |
+> | `haiku/orgsync/rep3` verdict | 2026-07-23T01:54:11Z |
+>
+> The judge's hash reached the public ledger **4m34s after rep1's verdict was
+> known.** rep2 and rep3 ran after publication and are clean; rep1 is the whole
+> of the defect.
+>
+> **This is not evidence of tuning, and the distinction is the point of the
+> correction.** rep1's own `stamp.json` records `judge_sha256 = b948f904` — the
+> final judge was already on disk when rep1 ran — and `acceptance_orgsync.py`
+> still hashes to `b948f904` today, which `verify.py` checks every run. The judge
+> did not change. What failed is the *ordering* that makes that fact checkable by
+> a stranger: condition 4 exists so a reader need not trust our stamps, and for
+> rep1 a reader must. For the other 20 runs they need not.
+>
+> Anyone can settle rep1 independently rather than taking this on trust: the judge
+> is revealed, the submission is archived, and re-running the one against the
+> other reproduces the verdict.
+>
+> The remedy is disclosure, not a quiet reword — the timeline is recoverable from
+> our own git log, so hiding it would be both dishonest and futile. Going forward
+> the harness should refuse to run a task whose judge hash is not already
+> committed, which makes condition 4 structural instead of procedural.
 
 ---
 
@@ -765,5 +799,6 @@ change is listed here, dated, and attributed to the edition it took effect in.
 
 | version | date | edition it took effect | change |
 |---|---|---|---|
+| 1.2 | 2026-07-29 | Edition 1 (retroactive to publication) | Corrects §3.4.1's first-use ruling, which asserted that both the prompt and judge SHAs were committed to `TASKS.md` before any model saw `orgsync`. True of the prompt hash; **false of the judge hash**, which reached the ledger 4m34s AFTER `haiku/orgsync/rep1`'s verdict. Condition 4 of §3.4 was therefore not met for that one run. The judge itself did not change — rep1's stamp records the final `judge_sha256` and the file still hashes to it — so the failure is of the ORDERING that lets a stranger check that without trusting our stamps, not of the panel's integrity. rep2 and rep3 are clean. Disclosed rather than reworded, because the timeline is recoverable from this repository's own git log. Ratified by Steven Job after an internal audit measured the gap. |
 | 1.1 | 2026-07-23 | Edition 1 (retroactive to publication) | Adds §7a: every published report table must carry the TIER score, not only its reciprocal `E[$/accepted]`, with column directions marked. Locks the benchmark difficulty->weight mapping (easy 1.0/s, medium 3.0/m, integration 5.0/l) as a **declaration** that must be printed in every report publishing a score, because the locked weight scale is defined over merged PRs and a benchmark task is not one. Ratified by Steven Job after a published launch artifact was found to contain no TIER score. |
 | 1.0 | 2026-07-22 | Edition 1 | Initial publication. Codifies practice from Edition 0 plus: the weakest-first calibration ladder (§3.4); reported cost dispersion (§2, §4.1); replication spent on cheap models, N=1 for top-tier confirmation (§4.1); redaction of published session logs to the cost-bearing fields (§8); N=3 with no optional stopping; expected cost per accepted outcome as the headline metric; model-unit saturation and over-hard triggers against a pre-declared roster; the like-for-like panel rule for longitudinal claims; the saturate-into-anchor cascade with the Anchor Set; the public task archive with judges sealed until graduation; bundle versioning with append-only status; escrow of the next edition's task hash; re-verification (not re-execution) as the reproducibility claim; and the full outcome enum with published counts. |

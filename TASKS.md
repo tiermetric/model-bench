@@ -30,7 +30,7 @@ accepted work across models and across time.
 
 | version | rung | status | prompt sha256 | judge sha256 | editions |
 |---|---|---|---|---|---|
-| `duration/v1` | floor | anchor | `6927e499c8ee…` | `f07718acdcc2…` | 0 (pilot, N=1) · 1 |
+| `duration/v1` | floor | active | `6927e499c8ee…` | `f07718acdcc2…` | 0 (pilot, N=1) · 1 |
 
 ### `cronspec` — MEDIUM
 
@@ -175,3 +175,42 @@ Prompt sha256 `d149fc2c4f336eaa…` is **superseded** by `94950b00fd82cc86…`.
 Permitted without a version bump because the task has **never had a scored
 run** (`PROTOCOL.md` §5.5 freezes a version at its first scored run). Recorded
 here rather than silently re-hashed — the superseded hash stays on the record.
+
+
+**2026-07-29 · `duration/v1` status CORRECTED — `anchor` → `active`. It does not
+graduate.**
+
+This row read **`anchor`**, and the 2026-07-23 graduation event above states that
+`orgsync` "joins the Anchor Set alongside `duration/v1` (2 of a maximum 3)". Both
+were wrong, and they contradicted `PROTOCOL.md` §3.3 in public:
+
+> **The EASY tier is exempt from the band.** It exists as a designed cost floor —
+> everyone is *supposed* to pass it — so it is never declared saturated and never
+> graduates on that basis.
+
+`duration/v1` is the EASY floor. It ran 21/21 PASS in Edition 1, which meets the
+SATURATED arithmetic — but the EASY tier is explicitly exempt from that
+arithmetic, so the trigger never applied to it. The error was applying a rule to
+the one tier the protocol carves out of it.
+
+**The earlier event is NOT edited.** It stays on the record as written, and this
+entry supersedes its Anchor-Set count. That is the ledger's rule: a correction is
+a new dated entry, never a rewrite.
+
+**Why the exemption is right, and not a technicality.** An anchor and an EASY
+floor are different instruments doing a superficially similar job. An anchor is a
+frozen graduate: it runs **N=1 on rotation** (§5.1) and is prunable when its
+spread collapses. The EASY floor runs at **full N every edition** and is never
+rotated. Graduating `duration` would therefore make it *worse* at its own stated
+job — §4.1 notes that at N=1 cost dispersion cannot be computed at all, and a
+cost figure is `duration`'s entire output. It would also leave the EASY tier with
+no task, and fill the 3-slot Anchor Set after a single edition.
+
+**Anchor Set after this correction: {`orgsync/v1`} — 1 of a maximum 3.**
+
+`cronspec/v2`'s graduation is a separate open question: the unpublished Edition 1
+draft declares it graduated, but no graduation event was ever recorded here and
+its judge reveal (§5.4) is therefore still owed. It is NOT counted in the Anchor
+Set above until that is resolved.
+
+Ruled by Steve, 2026-07-29.
