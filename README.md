@@ -45,3 +45,12 @@ fails on an unredacted tree, so it is a real check rather than a rubber stamp.
 Results are a measurement of a moment, not a property of the models. No overall
 winner is ever crowned and no composite score is ever published (`PROTOCOL.md`
 §1). Scores are per task.
+
+## License
+
+Code (`*.py`, `*.sh`, and the `prompts/` and `design/` text the harness
+consumes) is licensed under [Apache-2.0](LICENSE). Results and evidence data
+(`results.jsonl`, `results.csv`, `MASTER-RESULTS.md`, `evidence/`, and
+`publish/`, excluding executable code) are licensed under
+[CC-BY-4.0](LICENSE-DATA), with credit to **TIER Model Report (Intenteon)**.
+`PROTOCOL.md` and `TASKS.md` are documentation licensed under CC-BY-4.0.
