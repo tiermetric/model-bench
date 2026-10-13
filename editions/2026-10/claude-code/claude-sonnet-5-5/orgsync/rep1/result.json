@@ -1,0 +1,100 @@
+{
+  "acceptance": "PASS",
+  "agent_exit": 0,
+  "billing_route": "claude-code-subscription",
+  "cache_read_mult_used": 0.1,
+  "cache_read_pct": 80.76,
+  "capture": "OK",
+  "capture_scope": "fresh-project-slug+requested-UUID; top-level transcript; subagents refused",
+  "clean_config": true,
+  "cost_list_usd": 0.136742,
+  "edge_failures": "0f+0e",
+  "edition": "2026-10",
+  "effort": "medium",
+  "effort_evidence_fields": [
+    "assistant.effort"
+  ],
+  "effort_source": "cli-default",
+  "effort_source_checked": "session JSONL metadata/request output_config.effort",
+  "label": "claude-sonnet-5-5",
+  "log": "session.jsonl",
+  "model_flag": "claude-sonnet-5-5",
+  "model_ids_seen": [
+    "claude-sonnet-5-5"
+  ],
+  "model_key": "claude-sonnet-5-5",
+  "opencode_provider": "zai-coding-plan",
+  "outcome": "PASS",
+  "own_tests": "PASS",
+  "priced": true,
+  "prices_snapshot": "prices.snapshot.yaml",
+  "prices_yaml": "prices.yaml",
+  "prices_yaml_version": 11,
+  "rep": 1,
+  "run_id": "da32a7bc-8e53-4f37-b2c6-2fbaee2760f3",
+  "session_id": "da32a7bc-8e53-4f37-b2c6-2fbaee2760f3",
+  "session_log": "session.jsonl",
+  "task": "orgsync",
+  "timed_out": false,
+  "tokens": {
+    "api_calls": 4,
+    "cache_read": 71410,
+    "cache_w1h": 17006,
+    "cache_w5m": 0,
+    "cache_write": 17006,
+    "calls": [
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6657,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6657,
+        "cache_read_input_tokens": 9375,
+        "input_tokens": 2,
+        "output_tokens": 144
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5182,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5182,
+        "cache_read_input_tokens": 16032,
+        "input_tokens": 2,
+        "output_tokens": 3167
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3575,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3575,
+        "cache_read_input_tokens": 21214,
+        "input_tokens": 2,
+        "output_tokens": 1442
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 1592,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 1592,
+        "cache_read_input_tokens": 24789,
+        "input_tokens": 2,
+        "output_tokens": 689
+      }
+    ],
+    "input_total": 88424,
+    "input_uncached": 8,
+    "model_ids": [
+      "claude-sonnet-5-5"
+    ],
+    "output": 5442,
+    "reasoning": null
+  },
+  "tool": "claude-code",
+  "wall_seconds": 42,
+  "web_tool_count": 0,
+  "web_tool_names": [],
+  "web_tools_mode": "void"
+}

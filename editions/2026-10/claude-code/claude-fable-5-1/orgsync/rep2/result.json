@@ -1,0 +1,150 @@
+{
+  "acceptance": "PASS",
+  "agent_exit": 0,
+  "billing_route": "claude-code-subscription",
+  "cache_read_mult_used": 0.025,
+  "cache_read_pct": 85.89,
+  "capture": "OK",
+  "capture_scope": "fresh-project-slug+requested-UUID; top-level transcript; subagents refused",
+  "clean_config": false,
+  "cost_list_usd": 2.496857,
+  "edge_failures": "0f+0e",
+  "edition": "2026-10",
+  "effort": "high",
+  "effort_evidence_fields": [
+    "assistant.effort"
+  ],
+  "effort_source": "observed-unsourced",
+  "effort_source_checked": "session JSONL metadata/request output_config.effort",
+  "label": "claude-fable-5-1",
+  "log": "session.jsonl",
+  "model_flag": "claude-fable-5-1",
+  "model_ids_seen": [
+    "claude-fable-5-1"
+  ],
+  "model_key": "claude-fable-5-1",
+  "opencode_provider": "zai-coding-plan",
+  "outcome": "PASS",
+  "own_tests": "PASS",
+  "priced": true,
+  "prices_snapshot": "prices.snapshot.yaml",
+  "prices_yaml": "prices.yaml",
+  "prices_yaml_version": 11,
+  "rep": 2,
+  "run_id": "06146034-2d62-443e-b224-83a444cb2c70",
+  "session_id": "06146034-2d62-443e-b224-83a444cb2c70",
+  "session_log": "session.jsonl",
+  "task": "orgsync",
+  "timed_out": false,
+  "tokens": {
+    "api_calls": 9,
+    "cache_read": 321906,
+    "cache_w1h": 52605,
+    "cache_w5m": 0,
+    "cache_write": 52605,
+    "calls": [
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8636,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8636,
+        "cache_read_input_tokens": 9259,
+        "input_tokens": 2,
+        "output_tokens": 276
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 858,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 858,
+        "cache_read_input_tokens": 17895,
+        "input_tokens": 32,
+        "output_tokens": 786
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 13411,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 13411,
+        "cache_read_input_tokens": 18753,
+        "input_tokens": 32,
+        "output_tokens": 708
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 1887,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 1887,
+        "cache_read_input_tokens": 32164,
+        "input_tokens": 32,
+        "output_tokens": 7004
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7486,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7486,
+        "cache_read_input_tokens": 34051,
+        "input_tokens": 32,
+        "output_tokens": 4355
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6244,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6244,
+        "cache_read_input_tokens": 41537,
+        "input_tokens": 32,
+        "output_tokens": 11371
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 11833,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 11833,
+        "cache_read_input_tokens": 47781,
+        "input_tokens": 32,
+        "output_tokens": 975
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 1238,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 1238,
+        "cache_read_input_tokens": 59614,
+        "input_tokens": 32,
+        "output_tokens": 859
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 1012,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 1012,
+        "cache_read_input_tokens": 60852,
+        "input_tokens": 32,
+        "output_tokens": 900
+      }
+    ],
+    "input_total": 374769,
+    "input_uncached": 258,
+    "model_ids": [
+      "claude-fable-5-1"
+    ],
+    "output": 27234,
+    "reasoning": null
+  },
+  "tool": "claude-code",
+  "wall_seconds": 328,
+  "web_tool_count": 0,
+  "web_tool_names": [],
+  "web_tools_mode": "void"
+}

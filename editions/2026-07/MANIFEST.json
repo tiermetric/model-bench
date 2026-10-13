@@ -1,0 +1,52 @@
+{
+  "edition": "2026-07",
+  "status": "scored: 63 runs (7 models x 3 tasks x rep1..3), 60 PASS / 3 FAIL; report editions/2026-07/REPORT.md",
+  "operator_rulings": [
+    "2026-07-26: anchors-only Edition 2; one rate table per panel; roster fixed before scored runs (prospective Edition 2 ruling, not a backdated Edition 1 declaration)",
+    "R-2026-10-13-3 (2026-10-13, panel consensus B): publish Edition 1 after mechanical re-judgment and public-submission export fixes, disclosing unfixable limitations",
+    "2026-10-13: orgsync re-judge reconstructs the original target layout from the same bundle's submission/, orgsync/, config.json and tests/existing/; missing required archived paths SKIP loudly, never supplied from elsewhere"
+  ],
+  "roster": {
+    "claude-code": [
+      "claude-fable-5",
+      "claude-haiku-4-5",
+      "claude-opus-4-8",
+      "claude-sonnet-5"
+    ],
+    "codex": [
+      "gpt-5.6-luna",
+      "gpt-5.6-sol",
+      "gpt-5.6-terra"
+    ]
+  },
+  "scored_models": 7,
+  "tasks": {
+    "baseline": {
+      "identity": "duration/v1",
+      "class": "floor",
+      "status": "active",
+      "reps": 3,
+      "prompt_sha256": "6927e499c8ee25996cc6669f432bec98ab3f3d747d41bb6b0142101e058649ec",
+      "judge_sha256": "f07718acdcc279b349e7393144a79cbf7f1e62a88f089c10288cfe05e84e5b53"
+    },
+    "cronspec": {
+      "identity": "cronspec/v2",
+      "class": "anchor",
+      "status": "graduated",
+      "reps": 3,
+      "prompt_sha256": "d6b188dca51a2842e99f35b373c414372dc2d3f75fea60d20e1863a4b4a32274",
+      "judge_sha256": "a847b421cf8234cd953aaefe264ed72745ef123f4c43abaa24decca746e2e5a7"
+    },
+    "orgsync": {
+      "identity": "orgsync/v1",
+      "class": "anchor",
+      "status": "graduated",
+      "reps": 3,
+      "prompt_sha256": "94950b00fd82cc86a8c98a0793149b5f9c13e205dedd1ea533470387110ba408",
+      "judge_sha256": "b948f904bfd72ffcd8fedd30230182df3133d27a9972c6fc2c6af35ca5196a74"
+    }
+  },
+  "prices_yaml_version": 8,
+  "prices_yaml_sha256": "9ab9cba3fca5fef0b8e9eb7f62fe0496c7498a74a94e81e441a52ee66fd53eb0",
+  "publication_status": "Publication-ready under R-2026-10-13-3: mechanical re-judgment and public-submission export fixes validated, all 63 recorded verdicts reproduced. Known limitations: section 5.6 escrow not met and cannot be retroactively satisfied after Edition 2 ran; no unforgeable timestamp anchor for any task (commit history only); orgsync rep1 judge hash published 4m34s after first verdict (#4); duration judge public while active; cronspec judge already public without a recorded reveal event. See REPORT.md and TASKS.md."
+}

@@ -1,0 +1,150 @@
+{
+  "acceptance": "PASS",
+  "agent_exit": 0,
+  "billing_route": "claude-code-subscription",
+  "cache_read_mult_used": 0.05,
+  "cache_read_pct": 88.58,
+  "capture": "OK",
+  "capture_scope": "fresh-project-slug+requested-UUID; top-level transcript; subagents refused",
+  "clean_config": false,
+  "cost_list_usd": 0.697352,
+  "edge_failures": "0f+0e",
+  "edition": "2026-10",
+  "effort": "medium",
+  "effort_evidence_fields": [
+    "assistant.effort"
+  ],
+  "effort_source": "observed-unsourced",
+  "effort_source_checked": "session JSONL metadata/request output_config.effort",
+  "label": "claude-opus-5-5",
+  "log": "session.jsonl",
+  "model_flag": "claude-opus-5-5",
+  "model_ids_seen": [
+    "claude-opus-5-5"
+  ],
+  "model_key": "claude-opus-5-5",
+  "opencode_provider": "zai-coding-plan",
+  "outcome": "PASS",
+  "own_tests": "PASS",
+  "priced": true,
+  "prices_snapshot": "prices.snapshot.yaml",
+  "prices_yaml": "prices.yaml",
+  "prices_yaml_version": 11,
+  "rep": 3,
+  "run_id": "58fc9e94-a3d7-4313-be77-be2d21f83756",
+  "session_id": "58fc9e94-a3d7-4313-be77-be2d21f83756",
+  "session_log": "session.jsonl",
+  "task": "orgsync",
+  "timed_out": false,
+  "tokens": {
+    "api_calls": 9,
+    "cache_read": 279898,
+    "cache_w1h": 36085,
+    "cache_w5m": 0,
+    "cache_write": 36085,
+    "calls": [
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3079,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3079,
+        "cache_read_input_tokens": 12998,
+        "input_tokens": 2,
+        "output_tokens": 343
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10667,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10667,
+        "cache_read_input_tokens": 16077,
+        "input_tokens": 2,
+        "output_tokens": 343
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 0,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 28443,
+        "input_tokens": 2,
+        "output_tokens": 454
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 2673,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 2673,
+        "cache_read_input_tokens": 26744,
+        "input_tokens": 2,
+        "output_tokens": 7838
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7958,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7958,
+        "cache_read_input_tokens": 29417,
+        "input_tokens": 2,
+        "output_tokens": 528
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 2078,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 2078,
+        "cache_read_input_tokens": 37375,
+        "input_tokens": 2,
+        "output_tokens": 245
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 1585,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 1585,
+        "cache_read_input_tokens": 39453,
+        "input_tokens": 2,
+        "output_tokens": 6394
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7315,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7315,
+        "cache_read_input_tokens": 41038,
+        "input_tokens": 2,
+        "output_tokens": 439
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 730,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 730,
+        "cache_read_input_tokens": 48353,
+        "input_tokens": 2,
+        "output_tokens": 1047
+      }
+    ],
+    "input_total": 316001,
+    "input_uncached": 18,
+    "model_ids": [
+      "claude-opus-5-5"
+    ],
+    "output": 17631,
+    "reasoning": null
+  },
+  "tool": "claude-code",
+  "wall_seconds": 185,
+  "web_tool_count": 0,
+  "web_tool_names": [],
+  "web_tools_mode": "void"
+}

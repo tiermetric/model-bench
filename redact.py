@@ -26,9 +26,11 @@ control arm, and it must FAIL on an unredacted log.
 """
 import argparse
 import glob
+import getpass
 import hashlib
 import json
 import os
+from pathlib import Path
 import re
 import sys
 
@@ -41,11 +43,11 @@ CODEX_USAGE = ("input_tokens", "cached_input_tokens", "cache_write_input_tokens"
                "output_tokens", "reasoning_output_tokens", "total_tokens")
 
 # Markers a redacted log must never contain. Home paths identify the operator;
-# base_instructions is a vendor's proprietary prompt; the message/content keys
+# The vendor instruction field is proprietary; the message/content keys
 # carry the transcript itself.
 BANNED = (
-    (re.compile(r"/Users/[^/\"\\ ]+"), "home-directory path"),
-    (re.compile(r"base_instructions"), "vendor system prompt"),
+    (re.compile(r"(?<![\w/])/(?:Users|home)/[^/\"\\ ]+|[A-Za-z]:\\{1,2}Users\\{1,2}[^\\\" ]+"), "home-directory path"),
+    (re.compile("base_" + "instructions"), "vendor system prompt"),
     (re.compile(r'"(text|content|arguments|patch)"\s*:'), "transcript content"),
 )
 
@@ -104,12 +106,13 @@ def redact_codex(line, obj):
 
 
 def redact_file(src, dst):
-    fmt = "codex" if _is_codex(src) else "claude"
-    fn = redact_codex if fmt == "codex" else redact_claude
+    fmt = log_format(src)
+    fn = {"claude": redact_claude, "codex": redact_codex,
+          "opencode": redact_opencode, "muse": redact_muse}[fmt]
     kept = 0
     os.makedirs(os.path.dirname(dst), exist_ok=True)
-    with open(dst, "w") as out:
-        for line in open(src, encoding="utf-8", errors="replace"):
+    with open(dst, "w") as out, open(src, encoding="utf-8", errors="replace") as source:
+        for line in source:
             line = line.strip()
             if not line:
                 continue
@@ -124,21 +127,65 @@ def redact_file(src, dst):
     return fmt, kept
 
 
-def _is_codex(path):
-    with open(path, encoding="utf-8", errors="replace") as fh:
+def log_format(path):
+    with open(path, encoding="utf-8") as fh:
         for line in fh:
-            if '"token_count"' in line or '"session_meta"' in line:
-                return True
-            if '"message"' in line:
-                return False
-    return False
+            try: obj = json.loads(line)
+            except json.JSONDecodeError: continue
+            if str(obj.get('type', '')).startswith('opencode_'): return 'opencode'
+            if obj.get('stream', {}).get('kind') == 'session': return 'muse'
+            if obj.get('type') in ('session_meta', 'event_msg'): return 'codex'
+            if obj.get('message'): return 'claude'
+    return 'claude'
+
+
+def redact_opencode(line, obj):
+    kind = obj.get('type'); d = obj.get('data', {})
+    if kind == 'opencode_session':
+        return {k: obj[k] for k in ('type', 'session_id', 'title', 'scope') if k in obj}
+    if kind == 'opencode_message':
+        return {'type': kind, 'id': obj.get('id'), 'session_id': obj.get('session_id'),
+                'data': {k: d[k] for k in ('role', 'modelID', 'providerID', 'time', 'tokens') if k in d}}
+    if kind == 'opencode_part' and d.get('type') == 'tool':
+        return {'type': kind, 'id': obj.get('id'), 'session_id': obj.get('session_id'),
+                'data': {'type': 'tool', 'tool': d.get('tool')}}
+    return None
+
+
+def redact_muse(line, obj):
+    p = obj.get('payload', {}); e = p.get('event', {})
+    allowed = ('model_completed', 'automated_review_completed',
+               'memory_reminder_child_session_linked')
+    if p.get('kind') not in ('run', 'approval'): return None
+    # Preserve tool identifiers for the offline web audit, never arguments.
+    if e.get('kind') not in allowed and not any(k in e for k in ('tool', 'tool_name', 'name')):
+        return None
+    keys = ('kind', 'model', 'usage', 'completed_at_ms', 'parent_run_id',
+            'child_session_id', 'tool', 'tool_name', 'name')
+    return {'id': obj.get('id'), 'recorded_at': obj.get('recorded_at'),
+            'stream': {k: obj.get('stream', {})[k] for k in ('kind', 'id') if k in obj.get('stream', {})}, 'payload': {'kind': p.get('kind'),
+            'run_id': p.get('run_id'), 'event': {k: (muse_usage(e[k]) if k == 'usage' else
+                          ({'model_id': e[k].get('model_id')} if k == 'model' and isinstance(e[k], dict) else e[k]))
+                      for k in keys if k in e and (k not in ('tool', 'tool_name', 'name') or isinstance(e[k], str))}}}
+
+
+def muse_usage(u):
+    keys = ('input_tokens', 'output_tokens', 'cached_tokens', 'cache_read_tokens',
+            'cache_write_tokens', 'reasoning_tokens', 'cached_input_tokens',
+            'non_cached_input_tokens', 'total_tokens')
+    return {k: u[k] for k in keys if k in u}
 
 
 def scan_banned(path):
     """Return every banned marker found. This is the control arm."""
     hits = []
-    text = open(path, encoding="utf-8", errors="replace").read()
-    for pattern, label in BANNED:
+    with open(path, encoding="utf-8", errors="replace") as fh:
+        text = fh.read()
+    patterns = BANNED + (
+        (re.compile(re.escape(getpass.getuser())), "operator username"),
+        (re.compile(r"/var/" + "folders/"), "per-user temporary path"),
+    )
+    for pattern, label in patterns:
         n = len(pattern.findall(text))
         if n:
             hits.append((label, n))
@@ -155,9 +202,9 @@ def main():
 
     if args.check:
         target = args.out or os.path.join(args.root, "publish")
-        logs = sorted(glob.glob(os.path.join(target, "**", "session.jsonl"), recursive=True))
+        logs = sorted(p for p in Path(target).rglob("*") if p.is_file())
         if not logs:
-            print(f"no redacted logs under {target}", file=sys.stderr)
+            print(f"no files under {target}", file=sys.stderr)
             return 2
         bad = 0
         for p in logs:
@@ -166,7 +213,7 @@ def main():
                 bad += 1
                 print(f"  LEAK {os.path.relpath(p, target)}: "
                       + ", ".join(f"{n}x {label}" for label, n in hits))
-        print(f"\nchecked {len(logs)} redacted logs — {bad} with leaks")
+        print(f"\nchecked {len(logs)} files — {bad} with leaks")
         if bad:
             print("REDACTION FAILED — these must not be published.")
             return 1

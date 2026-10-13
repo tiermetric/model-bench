@@ -1,0 +1,240 @@
+{
+  "acceptance": "PASS",
+  "agent_exit": 0,
+  "billing_route": "claude-code-subscription",
+  "cache_read_mult_used": 0.025,
+  "cache_read_pct": 92.61,
+  "capture": "OK",
+  "capture_scope": "fresh-project-slug+requested-UUID; top-level transcript; subagents refused",
+  "clean_config": false,
+  "cost_list_usd": 3.50655,
+  "edge_failures": "0f+0e",
+  "edition": "2026-10",
+  "effort": "high",
+  "effort_evidence_fields": [
+    "assistant.effort"
+  ],
+  "effort_source": "observed-unsourced",
+  "effort_source_checked": "session JSONL metadata/request output_config.effort",
+  "label": "claude-fable-5-1",
+  "log": "session.jsonl",
+  "model_flag": "claude-fable-5-1",
+  "model_ids_seen": [
+    "claude-fable-5-1"
+  ],
+  "model_key": "claude-fable-5-1",
+  "opencode_provider": "zai-coding-plan",
+  "outcome": "PASS",
+  "own_tests": "PASS",
+  "priced": true,
+  "prices_snapshot": "prices.snapshot.yaml",
+  "prices_yaml": "prices.yaml",
+  "prices_yaml_version": 11,
+  "rep": 3,
+  "run_id": "12874370-0a67-4115-b800-9d7efd8149c5",
+  "session_id": "12874370-0a67-4115-b800-9d7efd8149c5",
+  "session_log": "session.jsonl",
+  "task": "orgsync",
+  "timed_out": false,
+  "tokens": {
+    "api_calls": 18,
+    "cache_read": 786319,
+    "cache_w1h": 62233,
+    "cache_w5m": 0,
+    "cache_write": 62233,
+    "calls": [
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3038,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3038,
+        "cache_read_input_tokens": 14857,
+        "input_tokens": 2,
+        "output_tokens": 261
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 879,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 879,
+        "cache_read_input_tokens": 17895,
+        "input_tokens": 32,
+        "output_tokens": 164
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4965,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4965,
+        "cache_read_input_tokens": 18774,
+        "input_tokens": 32,
+        "output_tokens": 162
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5067,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5067,
+        "cache_read_input_tokens": 23739,
+        "input_tokens": 32,
+        "output_tokens": 297
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 542,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 542,
+        "cache_read_input_tokens": 28806,
+        "input_tokens": 32,
+        "output_tokens": 970
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 1949,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 1949,
+        "cache_read_input_tokens": 29348,
+        "input_tokens": 32,
+        "output_tokens": 658
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 1323,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 1323,
+        "cache_read_input_tokens": 31297,
+        "input_tokens": 32,
+        "output_tokens": 9811
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9855,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9855,
+        "cache_read_input_tokens": 32620,
+        "input_tokens": 32,
+        "output_tokens": 480
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 517,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 517,
+        "cache_read_input_tokens": 42475,
+        "input_tokens": 32,
+        "output_tokens": 4259
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 4750,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 4750,
+        "cache_read_input_tokens": 42992,
+        "input_tokens": 32,
+        "output_tokens": 592
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 1999,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 1999,
+        "cache_read_input_tokens": 47742,
+        "input_tokens": 32,
+        "output_tokens": 1129
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 1191,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 1191,
+        "cache_read_input_tokens": 49741,
+        "input_tokens": 32,
+        "output_tokens": 15528
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 16456,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 16456,
+        "cache_read_input_tokens": 50932,
+        "input_tokens": 32,
+        "output_tokens": 800
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 1027,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 1027,
+        "cache_read_input_tokens": 67388,
+        "input_tokens": 32,
+        "output_tokens": 1704
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 1795,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 1795,
+        "cache_read_input_tokens": 68415,
+        "input_tokens": 32,
+        "output_tokens": 1794
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 2658,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 2658,
+        "cache_read_input_tokens": 70210,
+        "input_tokens": 32,
+        "output_tokens": 1095
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3352,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3352,
+        "cache_read_input_tokens": 72868,
+        "input_tokens": 32,
+        "output_tokens": 702
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 870,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 870,
+        "cache_read_input_tokens": 76220,
+        "input_tokens": 32,
+        "output_tokens": 791
+      }
+    ],
+    "input_total": 849098,
+    "input_uncached": 546,
+    "model_ids": [
+      "claude-fable-5-1"
+    ],
+    "output": 41197,
+    "reasoning": null
+  },
+  "tool": "claude-code",
+  "wall_seconds": 508,
+  "web_tool_count": 0,
+  "web_tool_names": [],
+  "web_tools_mode": "void"
+}

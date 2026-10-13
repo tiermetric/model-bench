@@ -1,0 +1,64 @@
+edition,task,tool,model,rep,outcome,bundle,wall_seconds,model_calls,model_calls_source,input_uncached,cache_read,cache_write,output,reasoning,total_tokens,cost_list_usd
+2026-07,baseline,claude-code,claude-fable-5,1,PASS,claude-code/fable/baseline/rep1,46,4,tokens.api_calls,8,108729,18725,4249,,131711,0.695759
+2026-07,baseline,claude-code,claude-fable-5,2,PASS,claude-code/fable/baseline/rep2,54,4,tokens.api_calls,8,109599,19429,4901,,133937,0.743309
+2026-07,baseline,claude-code,claude-fable-5,3,PASS,claude-code/fable/baseline/rep3,54,4,tokens.api_calls,8,109142,19388,4799,,133337,0.736932
+2026-07,cronspec,claude-code,claude-fable-5,1,PASS,claude-code/fable/cronspec/rep1,217,6,tokens.api_calls,12,241752,38129,20153,,300046,2.012102
+2026-07,cronspec,claude-code,claude-fable-5,2,PASS,claude-code/fable/cronspec/rep2,199,4,tokens.api_calls,8,143071,37593,19600,,200272,1.875011
+2026-07,cronspec,claude-code,claude-fable-5,3,PASS,claude-code/fable/cronspec/rep3,248,4,tokens.api_calls,8,149000,40456,22353,,211817,2.075850
+2026-07,orgsync,claude-code,claude-fable-5,1,PASS,claude-code/fable/orgsync/rep1,369,12,tokens.api_calls,23,598732,54596,30452,,683803,3.213482
+2026-07,orgsync,claude-code,claude-fable-5,2,PASS,claude-code/fable/orgsync/rep2,501,16,tokens.api_calls,248,903639,65514,38113,,1007514,4.122049
+2026-07,orgsync,claude-code,claude-fable-5,3,PASS,claude-code/fable/orgsync/rep3,309,14,tokens.api_calls,26,657535,50577,24868,,733006,2.912735
+2026-07,baseline,claude-code,claude-haiku-4-5,1,PASS,claude-code/haiku/baseline/rep1,173,10,tokens.api_calls,61,323561,30383,20245,,374250,0.194408
+2026-07,baseline,claude-code,claude-haiku-4-5,2,PASS,claude-code/haiku/baseline/rep2,195,10,tokens.api_calls,60,332294,31770,21242,,385366,0.203039
+2026-07,baseline,claude-code,claude-haiku-4-5,3,PASS,claude-code/haiku/baseline/rep3,188,11,tokens.api_calls,65,373842,32573,21416,,427896,0.209675
+2026-07,cronspec,claude-code,claude-haiku-4-5,1,PASS,claude-code/haiku/cronspec/rep1,283,17,tokens.api_calls,95,759459,48385,30504,,838443,0.325331
+2026-07,cronspec,claude-code,claude-haiku-4-5,2,PASS,claude-code/haiku/cronspec/rep2,364,24,tokens.api_calls,132,1178338,56969,37542,,1272981,0.419614
+2026-07,cronspec,claude-code,claude-haiku-4-5,3,PASS,claude-code/haiku/cronspec/rep3,552,21,tokens.api_calls,116,1137632,69541,62210,,1269499,0.564011
+2026-07,orgsync,claude-code,claude-haiku-4-5,1,FAIL,claude-code/haiku/orgsync/rep1,244,59,tokens.api_calls,336,3061543,61059,19708,,3142646,0.527148
+2026-07,orgsync,claude-code,claude-haiku-4-5,2,FAIL,claude-code/haiku/orgsync/rep2,261,50,tokens.api_calls,289,3040287,70946,23440,,3134962,0.563410
+2026-07,orgsync,claude-code,claude-haiku-4-5,3,FAIL,claude-code/haiku/orgsync/rep3,253,51,tokens.api_calls,296,2480879,59542,19531,,2560248,0.465123
+2026-07,baseline,claude-code,claude-opus-4-8,1,PASS,claude-code/opus/baseline/rep1,65,4,tokens.api_calls,8,108632,19357,5850,,133847,0.394176
+2026-07,baseline,claude-code,claude-opus-4-8,2,PASS,claude-code/opus/baseline/rep2,63,3,tokens.api_calls,6,78509,19356,5949,,103820,0.381570
+2026-07,baseline,claude-code,claude-opus-4-8,3,PASS,claude-code/opus/baseline/rep3,57,3,tokens.api_calls,6,78448,19294,5715,,103463,0.375069
+2026-07,cronspec,claude-code,claude-opus-4-8,1,PASS,claude-code/opus/cronspec/rep1,259,7,tokens.api_calls,14,284077,43340,23605,,351036,1.165633
+2026-07,cronspec,claude-code,claude-opus-4-8,2,PASS,claude-code/opus/cronspec/rep2,234,10,tokens.api_calls,19,453722,42260,22445,,518446,1.210681
+2026-07,cronspec,claude-code,claude-opus-4-8,3,PASS,claude-code/opus/cronspec/rep3,279,13,tokens.api_calls,25,640158,45415,26651,,712249,1.440629
+2026-07,orgsync,claude-code,claude-opus-4-8,1,PASS,claude-code/opus/orgsync/rep1,691,45,tokens.api_calls,85,3449340,106184,59363,,3614972,4.271010
+2026-07,orgsync,claude-code,claude-opus-4-8,2,PASS,claude-code/opus/orgsync/rep2,594,29,tokens.api_calls,55,1963459,86817,52420,,2102751,3.160675
+2026-07,orgsync,claude-code,claude-opus-4-8,3,PASS,claude-code/opus/orgsync/rep3,796,45,tokens.api_calls,85,3523061,102018,65949,,3691113,4.430861
+2026-07,baseline,claude-code,claude-sonnet-5,1,PASS,claude-code/sonnet/baseline/rep1,56,4,tokens.api_calls,8,154005,24019,5931,,183963,0.279305
+2026-07,baseline,claude-code,claude-sonnet-5,2,PASS,claude-code/sonnet/baseline/rep2,53,5,tokens.api_calls,10,196327,24370,5694,,226401,0.290558
+2026-07,baseline,claude-code,claude-sonnet-5,3,PASS,claude-code/sonnet/baseline/rep3,50,4,tokens.api_calls,8,154004,24325,5813,,184150,0.279370
+2026-07,cronspec,claude-code,claude-sonnet-5,1,PASS,claude-code/sonnet/cronspec/rep1,327,10,tokens.api_calls,20,690560,61940,35451,,787971,1.110633
+2026-07,cronspec,claude-code,claude-sonnet-5,2,PASS,claude-code/sonnet/cronspec/rep2,311,10,tokens.api_calls,20,660145,59185,32280,,751630,1.037413
+2026-07,cronspec,claude-code,claude-sonnet-5,3,PASS,claude-code/sonnet/cronspec/rep3,282,10,tokens.api_calls,20,651527,55753,31092,,738392,0.996416
+2026-07,orgsync,claude-code,claude-sonnet-5,1,PASS,claude-code/sonnet/orgsync/rep1,479,26,tokens.api_calls,52,1924328,79056,40565,,2044001,1.660265
+2026-07,orgsync,claude-code,claude-sonnet-5,2,PASS,claude-code/sonnet/orgsync/rep2,463,26,tokens.api_calls,52,2126633,91968,44622,,2263275,1.859284
+2026-07,orgsync,claude-code,claude-sonnet-5,3,PASS,claude-code/sonnet/orgsync/rep3,521,30,tokens.api_calls,60,2760145,98663,51389,,2910257,2.191037
+2026-07,baseline,codex,gpt-5.6-luna,1,PASS,codex/gpt-5.6-luna/baseline/rep1,54,5,session.token_count records,8573,63232,0,2378,420,74183,0.029164
+2026-07,baseline,codex,gpt-5.6-luna,2,PASS,codex/gpt-5.6-luna/baseline/rep2,54,5,session.token_count records,7925,64256,0,2636,574,74817,0.030167
+2026-07,baseline,codex,gpt-5.6-luna,3,PASS,codex/gpt-5.6-luna/baseline/rep3,55,5,session.token_count records,9020,63232,0,2642,623,74894,0.031195
+2026-07,cronspec,codex,gpt-5.6-luna,1,PASS,codex/gpt-5.6-luna/cronspec/rep1,147,17,session.token_count records,25236,318208,0,6910,1700,350354,0.098517
+2026-07,cronspec,codex,gpt-5.6-luna,2,PASS,codex/gpt-5.6-luna/cronspec/rep2,138,12,session.token_count records,23893,249856,0,6884,1776,280633,0.090183
+2026-07,cronspec,codex,gpt-5.6-luna,3,PASS,codex/gpt-5.6-luna/cronspec/rep3,130,8,session.token_count records,27858,133120,0,6662,1618,167640,0.081142
+2026-07,orgsync,codex,gpt-5.6-luna,1,PASS,codex/gpt-5.6-luna/orgsync/rep1,195,11,session.token_count records,29244,257280,0,8496,2642,295020,0.105948
+2026-07,orgsync,codex,gpt-5.6-luna,2,PASS,codex/gpt-5.6-luna/orgsync/rep2,191,12,session.token_count records,47133,260096,0,8339,2650,315568,0.123177
+2026-07,orgsync,codex,gpt-5.6-luna,3,PASS,codex/gpt-5.6-luna/orgsync/rep3,179,11,session.token_count records,26335,251136,0,7914,2443,285385,0.098933
+2026-07,baseline,codex,gpt-5.6-sol,1,PASS,codex/gpt-5.6-sol/baseline/rep1,63,5,session.token_count records,8885,72448,0,2980,417,84313,0.170049
+2026-07,baseline,codex,gpt-5.6-sol,2,PASS,codex/gpt-5.6-sol/baseline/rep2,64,5,session.token_count records,8740,71424,0,2758,265,82922,0.162152
+2026-07,baseline,codex,gpt-5.6-sol,3,PASS,codex/gpt-5.6-sol/baseline/rep3,52,5,session.token_count records,7921,70400,0,2376,335,80697,0.146085
+2026-07,cronspec,codex,gpt-5.6-sol,1,PASS,codex/gpt-5.6-sol/cronspec/rep1,85,5,session.token_count records,13541,84736,0,4050,427,102327,0.231573
+2026-07,cronspec,codex,gpt-5.6-sol,2,PASS,codex/gpt-5.6-sol/cronspec/rep2,87,6,session.token_count records,14122,104960,0,3986,289,123068,0.242670
+2026-07,cronspec,codex,gpt-5.6-sol,3,PASS,codex/gpt-5.6-sol/cronspec/rep3,92,5,session.token_count records,13926,83712,0,4418,434,102056,0.244026
+2026-07,orgsync,codex,gpt-5.6-sol,1,PASS,codex/gpt-5.6-sol/orgsync/rep1,172,13,session.token_count records,34706,322304,0,7661,1372,364671,0.564512
+2026-07,orgsync,codex,gpt-5.6-sol,2,PASS,codex/gpt-5.6-sol/orgsync/rep2,189,12,session.token_count records,33815,313344,0,8851,1090,356010,0.591277
+2026-07,orgsync,codex,gpt-5.6-sol,3,PASS,codex/gpt-5.6-sol/orgsync/rep3,167,13,session.token_count records,30405,344832,0,7936,715,383173,0.562521
+2026-07,baseline,codex,gpt-5.6-terra,1,PASS,codex/gpt-5.6-terra/baseline/rep1,54,5,session.token_count records,12170,66304,0,2220,325,80694,0.080301
+2026-07,baseline,codex,gpt-5.6-terra,2,PASS,codex/gpt-5.6-terra/baseline/rep2,47,4,session.token_count records,6722,55296,0,2211,360,64229,0.063794
+2026-07,baseline,codex,gpt-5.6-terra,3,PASS,codex/gpt-5.6-terra/baseline/rep3,52,5,session.token_count records,7522,71424,0,2403,329,81349,0.072706
+2026-07,cronspec,codex,gpt-5.6-terra,1,PASS,codex/gpt-5.6-terra/cronspec/rep1,103,6,session.token_count records,12516,107520,0,4350,634,124386,0.123420
+2026-07,cronspec,codex,gpt-5.6-terra,2,PASS,codex/gpt-5.6-terra/cronspec/rep2,105,6,session.token_count records,13124,108032,0,4946,1067,126102,0.134008
+2026-07,cronspec,codex,gpt-5.6-terra,3,PASS,codex/gpt-5.6-terra/cronspec/rep3,100,8,session.token_count records,14659,153600,0,4893,774,173152,0.148443
+2026-07,orgsync,codex,gpt-5.6-terra,1,PASS,codex/gpt-5.6-terra/orgsync/rep1,135,9,session.token_count records,40130,180480,0,6839,1520,227449,0.248030
+2026-07,orgsync,codex,gpt-5.6-terra,2,PASS,codex/gpt-5.6-terra/orgsync/rep2,187,11,session.token_count records,25284,260864,0,9166,1756,295314,0.265916
+2026-07,orgsync,codex,gpt-5.6-terra,3,PASS,codex/gpt-5.6-terra/orgsync/rep3,190,20,session.token_count records,29666,508928,0,8720,2255,547314,0.332197

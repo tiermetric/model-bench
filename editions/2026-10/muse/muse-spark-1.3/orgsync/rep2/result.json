@@ -1,0 +1,70 @@
+{
+  "acceptance": "PASS",
+  "agent_exit": 0,
+  "billing_route": "muse-logged-in-account",
+  "cache_read_mult_used": 0.12,
+  "cache_read_pct": 95.0,
+  "capture": "OK",
+  "capture_scope": "requested-UUID+exact-workspace+explicit-child-links",
+  "clean_config": false,
+  "cost_list_usd": 0.437507,
+  "edge_failures": "0f+0e",
+  "edition": "2026-10",
+  "effort": "not observable",
+  "effort_evidence_fields": [],
+  "effort_source": "not observable",
+  "effort_source_checked": "native session metadata/model request reasoning_effort",
+  "label": "muse-spark-1.3",
+  "log": "session.jsonl",
+  "model_flag": "muse-spark-1.3",
+  "model_ids_seen": [
+    "muse-spark-1.3"
+  ],
+  "model_key": "muse-spark-1.3",
+  "opencode_provider": "zai-coding-plan",
+  "outcome": "PASS",
+  "own_tests": "PASS",
+  "priced": true,
+  "prices_snapshot": "prices.snapshot.yaml",
+  "prices_yaml": "prices.yaml",
+  "prices_yaml_version": 11,
+  "rep": 2,
+  "run_id": "73a7e395-a8d1-4684-89a8-9dee4fbea595",
+  "session_id": "73a7e395-a8d1-4684-89a8-9dee4fbea595",
+  "session_log": "session.jsonl",
+  "task": "orgsync",
+  "timed_out": false,
+  "tokens": {
+    "api_calls": 25,
+    "by_model": {
+      "muse-spark-1.3": {
+        "api_calls": 0,
+        "cache_read": 1437080,
+        "cache_w1h": 0,
+        "cache_w5m": 0,
+        "cache_write": 0,
+        "input_total": 1512680,
+        "input_uncached": 75600,
+        "model_ids": [],
+        "output": 29987,
+        "reasoning": 17751
+      }
+    },
+    "cache_read": 1437080,
+    "cache_w1h": 0,
+    "cache_w5m": 0,
+    "cache_write": 0,
+    "input_total": 1512680,
+    "input_uncached": 75600,
+    "model_ids": [
+      "muse-spark-1.3"
+    ],
+    "output": 29987,
+    "reasoning": 17751
+  },
+  "tool": "muse",
+  "wall_seconds": 271,
+  "web_tool_count": 0,
+  "web_tool_names": [],
+  "web_tools_mode": "void"
+}
