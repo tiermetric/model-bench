@@ -1,0 +1,18 @@
+{
+  "date_utc": "2026-07-22T23:27:22Z",
+  "tier_version": "v0.1.0",
+  "prices_yaml_sha256": "9ab9cba3fca5fef0b8e9eb7f62fe0496c7498a74a94e81e441a52ee66fd53eb0",
+  "prompt": "cronspec",
+  "prompt_file_sha256": "d6b188dca51a2842e99f35b373c414372dc2d3f75fea60d20e1863a4b4a32274",
+  "judge": "acceptance_cronspec.py",
+  "judge_sha256": "a847b421cf8234cd953aaefe264ed72745ef123f4c43abaa24decca746e2e5a7",
+  "python_version": "3.14.6",
+  "tool": "claude-code",
+  "tool_version": "2.1.218 (Claude Code)",
+  "model_flag": "claude-sonnet-5",
+  "rep": 2,
+  "agent_exit": 0,
+  "timed_out": false,
+  "capture": "OK",
+  "machine": "Darwin 25.5.0 arm64 / Apple M5 Max"
+}

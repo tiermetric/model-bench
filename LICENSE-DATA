@@ -1,14 +1,14 @@
 TIER Model Report — results and report data
 
-The results and evidence data in results.jsonl, results.csv,
-MASTER-RESULTS.md, evidence/, and publish/, and the documentation in
-PROTOCOL.md and TASKS.md, are licensed under Creative Commons Attribution
-4.0 International (CC-BY-4.0).
-Executable code (*.py and *.sh), including evidence/judges/*.py, and the
-prompts/ and design/ text the harness consumes are covered by the Apache
-License 2.0 in LICENSE instead.
+The following paths are licensed under Creative Commons Attribution 4.0
+International (CC-BY-4.0): results.csv, results.jsonl, results.md,
+MASTER-RESULTS.md, publish/ (redacted run evidence), evidence/ (archived
+measurement data), editions/, ARTICLES.md, and article prose under articles/.
+This scope also applies when those paths are included in a public export.
+Executable code, including evidence/judges/*.py and articles/*.py, is covered
+by the Apache License 2.0 in LICENSE instead.
 
-Attribution: TIER Model Report (Intenteon)
+Attribution: TIER Model Report / Intenteon
 Source: https://github.com/tiermetric/model-bench
 License: https://creativecommons.org/licenses/by/4.0/
 Please retain attribution, link to the license, and indicate changes as

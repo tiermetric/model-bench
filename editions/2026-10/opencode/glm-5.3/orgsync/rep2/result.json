@@ -1,0 +1,76 @@
+{
+  "acceptance": "PASS",
+  "agent_exit": 0,
+  "billing_route": "zai-coding-plan subscription",
+  "cache_read_mult_used": 0.18571428571428572,
+  "cache_read_pct": 94.28,
+  "capture": "OK",
+  "capture_scope": "exact-cwd+unique-title->session_id",
+  "clean_config": true,
+  "cost_list_usd": 0.434633,
+  "edge_failures": "0f+0e",
+  "edition": "2026-10",
+  "effort": "not observable",
+  "effort_evidence_fields": [],
+  "effort_source": "not observable",
+  "effort_source_checked": "native message metadata/request reasoningEffort/variant",
+  "label": "glm-5.3",
+  "log": "session.jsonl",
+  "model_flag": "zai-coding-plan/glm-5.3",
+  "model_ids_seen": [
+    "glm-5.3"
+  ],
+  "model_key": "glm-5.3",
+  "opencode_provider": "zai-coding-plan",
+  "outcome": "PASS",
+  "own_tests": "PASS",
+  "priced": true,
+  "prices_snapshot": "prices.snapshot.yaml",
+  "prices_yaml": "prices.yaml",
+  "prices_yaml_version": 11,
+  "provider_ids_seen": [
+    "zai-coding-plan"
+  ],
+  "rep": 2,
+  "run_id": "a09c35c9-6662-4c99-96a7-531d14ca8313",
+  "session_id": "ses_ece8286e1ffeOwduU0Q3Y8Up74",
+  "session_log": "session.jsonl",
+  "task": "orgsync",
+  "timed_out": false,
+  "tokens": {
+    "api_calls": 26,
+    "by_model": {
+      "glm-5.3": {
+        "api_calls": 0,
+        "cache_read": 824512,
+        "cache_w1h": 0,
+        "cache_w5m": 0,
+        "cache_write": 0,
+        "input_total": 874540,
+        "input_uncached": 50028,
+        "model_ids": [],
+        "output": 34141,
+        "reasoning": 15303
+      }
+    },
+    "cache_read": 824512,
+    "cache_w1h": 0,
+    "cache_w5m": 0,
+    "cache_write": 0,
+    "input_total": 874540,
+    "input_uncached": 50028,
+    "model_ids": [
+      "glm-5.3"
+    ],
+    "output": 34141,
+    "provider_ids": [
+      "zai-coding-plan"
+    ],
+    "reasoning": 15303
+  },
+  "tool": "opencode",
+  "wall_seconds": 483,
+  "web_tool_count": 0,
+  "web_tool_names": [],
+  "web_tools_mode": "void"
+}

@@ -1,0 +1,56 @@
+[
+  {
+    "bundle": "codex/gpt-6-astra/orgsync/rep1",
+    "token_count_records": 9,
+    "nonempty_response_groups": 9,
+    "trailing_response_group": false
+  },
+  {
+    "bundle": "codex/gpt-6-astra/orgsync/rep2",
+    "token_count_records": 8,
+    "nonempty_response_groups": 8,
+    "trailing_response_group": false
+  },
+  {
+    "bundle": "codex/gpt-6-astra/orgsync/rep3",
+    "token_count_records": 7,
+    "nonempty_response_groups": 7,
+    "trailing_response_group": false
+  },
+  {
+    "bundle": "codex/gpt-6-luna/orgsync/rep1",
+    "token_count_records": 9,
+    "nonempty_response_groups": 9,
+    "trailing_response_group": false
+  },
+  {
+    "bundle": "codex/gpt-6-luna/orgsync/rep2",
+    "token_count_records": 10,
+    "nonempty_response_groups": 10,
+    "trailing_response_group": false
+  },
+  {
+    "bundle": "codex/gpt-6-luna/orgsync/rep3",
+    "token_count_records": 10,
+    "nonempty_response_groups": 10,
+    "trailing_response_group": false
+  },
+  {
+    "bundle": "codex/gpt-6.1-sol/orgsync/rep1",
+    "token_count_records": 9,
+    "nonempty_response_groups": 9,
+    "trailing_response_group": false
+  },
+  {
+    "bundle": "codex/gpt-6.1-sol/orgsync/rep2",
+    "token_count_records": 9,
+    "nonempty_response_groups": 9,
+    "trailing_response_group": false
+  },
+  {
+    "bundle": "codex/gpt-6.1-sol/orgsync/rep3",
+    "token_count_records": 6,
+    "nonempty_response_groups": 6,
+    "trailing_response_group": false
+  }
+]

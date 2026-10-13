@@ -1,0 +1,44 @@
+{
+  "acceptance": "PASS",
+  "agent_exit": 0,
+  "cache_read_mult_used": 0.1,
+  "cache_read_pct": 91.77,
+  "capture": "OK",
+  "cost_list_usd": 1.110633,
+  "edge_failures": "0f+0e",
+  "label": "sonnet",
+  "log": "session.jsonl",
+  "model_ids_seen": [
+    "claude-sonnet-5"
+  ],
+  "model_key": "claude-sonnet-5",
+  "outcome": "PASS",
+  "own_tests": "PASS",
+  "priced": true,
+  "prices_snapshot": "prices.snapshot.yaml",
+  "prices_yaml": "prices.yaml",
+  "prices_yaml_version": 8,
+  "rep": 1,
+  "session_log": "session.jsonl",
+  "task": "cronspec",
+  "timed_out": false,
+  "tokens": {
+    "api_calls": 10,
+    "cache_read": 690560,
+    "cache_w1h": 61940,
+    "cache_w5m": 0,
+    "cache_write": 61940,
+    "input_total": 752520,
+    "input_uncached": 20,
+    "model_ids": [
+      "claude-sonnet-5"
+    ],
+    "output": 35451,
+    "reasoning": null
+  },
+  "tool": "claude-code",
+  "wall_seconds": 327,
+  "web_tool_count": 0,
+  "web_tool_names": [],
+  "web_tools_mode": "void"
+}

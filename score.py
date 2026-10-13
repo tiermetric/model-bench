@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Per-run diagnostics scorer for the cross-model TIER demo (model-bench).
 
-Reads a session log (Claude Code project JSONL, or Codex rollout JSONL),
+Reads archived Claude/Codex JSONL or run-scoped native OpenCode/Muse evidence,
 sums token usage, prices it at LIST rates from TIER's prices.yaml, and emits
 one diagnostics row (markdown + JSON).
 
@@ -16,6 +16,10 @@ Spend-capture method (documented decision):
     from the rollout JSONL. Verified containments (2026-07-22 sol log):
     total == input + output; reasoning ⊆ output (do NOT add on top);
     cached_input ⊆ input (subtract for the uncached share).
+
+  * OpenCode/Muse: token_evidence.py reads the TIER collector formats. OpenCode
+    reasoning is added BESIDE output; Muse reasoning stays INSIDE output. Native
+    records are priced per actual call model, never by a neighbouring rate.
 
 Pricing:
   * claude:  $ = input*in + cache_read*in*read_mult
@@ -40,6 +44,7 @@ import json
 import os
 import re
 import sys
+from token_evidence import sum_native_jsonl
 
 DEFAULT_PRICES = os.environ.get(
     "TIER_PRICES", os.path.join(os.path.dirname(os.path.abspath(__file__)), "prices.yaml"))
@@ -48,7 +53,15 @@ DEFAULT_PRICES = os.environ.get(
 # `tool_use` (or server-side `server_tool_use`) content block named WebSearch /
 # WebFetch; Codex logs a web search as a tool call named `web_search`. These are
 # the only network-reaching tools a scored (offline) task may never use.
-_WEB_TOOL_NAMES = {"websearch", "webfetch", "web_search", "web_fetch"}
+_WEB_TOOL_NAMES = {"websearch", "webfetch", "web_search", "web_fetch", "web.run", "browser", "browse", "computer", "computer_use", "cua"}
+
+
+def forbidden_tool(name):
+    if not isinstance(name, str): return False
+    n = name.lower()
+    return (n in _WEB_TOOL_NAMES or n.startswith(('mcp__', 'browser', 'computer', 'cua', 'playwright', 'puppeteer'))
+            or 'web_search' in n)
+
 
 PROVIDER_DEFAULT_READ_MULT = {
     "anthropic": 0.10,
@@ -88,6 +101,7 @@ def load_prices(path):
                 "input_per_m": float(fields["input_per_m"]),
                 "output_per_m": float(fields.get("output_per_m", fields["input_per_m"])),
                 "cache_read_mult": float(fields["cache_read_mult"]) if "cache_read_mult" in fields else None,
+                **{k: float(fields[k]) for k in ("context_threshold", "input_per_m_over", "output_per_m_over") if k in fields},
                 "provider": fields.get("provider", "").strip(),
             }
     if not prices:
@@ -131,6 +145,11 @@ def sum_claude_jsonl(path):
         else:
             tot["cache_w5m"] += u.get("cache_creation_input_tokens", 0)
     return {
+        "calls": [{**{k: u[k] for k in ('input_tokens', 'output_tokens', 'cache_read_input_tokens',
+                    'cache_creation_input_tokens') if k in u},
+                    **({'cache_creation': {k: u['cache_creation'][k] for k in
+                        ('ephemeral_5m_input_tokens', 'ephemeral_1h_input_tokens') if k in u['cache_creation']}}
+                       if isinstance(u.get('cache_creation'), dict) else {})} for u in by_id.values()],
         "api_calls": len(by_id),
         "model_ids": sorted(models),
         "input_uncached": tot["input"],
@@ -235,17 +254,31 @@ def scan_web_tools(path, fmt):
                         continue
                     bt = b.get("type")
                     if bt in ("tool_use", "server_tool_use"):
-                        if str(b.get("name", "")).lower() in _WEB_TOOL_NAMES:
+                        if forbidden_tool(b.get("name")):
                             hits.append(b.get("name"))
                     elif bt == "web_search_tool_result":
                         hits.append("web_search_tool_result")
+            elif fmt == "opencode":
+                if obj.get("type") == "opencode_part":
+                    p = obj.get("data", {})
+                    name = str(p.get("tool", "")).lower()
+                    if p.get("type") == "tool" and forbidden_tool(name):
+                        hits.append(name)
+            elif fmt == "muse":
+                e = obj.get("payload", {}).get("event", {})
+                # Muse versions use tool/name/tool_name; inspect event fields,
+                # never text inside prompts or a retained frame.
+                for key in ("tool", "name", "tool_name"):
+                    name = e.get(key)
+                    if isinstance(name, str) and forbidden_tool(name):
+                        hits.append(name)
             else:  # codex
                 p = obj.get("payload")
                 if not isinstance(p, dict):
                     continue
                 ptype = str(p.get("type", "")).lower()
                 name = str(p.get("name") or p.get("tool_name") or "").lower()
-                if name in _WEB_TOOL_NAMES or "web_search" in ptype or "web_search" in name:
+                if forbidden_tool(name) or forbidden_tool(ptype):
                     hits.append(p.get("name") or p.get("type"))
     return len(hits), sorted({str(h) for h in hits})
 
@@ -256,6 +289,20 @@ def price(tokens, row, fmt):
     read_mult = row["cache_read_mult"]
     if read_mult is None:
         read_mult = PROVIDER_DEFAULT_READ_MULT.get(row["provider"], 1.0)
+    if fmt == 'claude' and row.get('context_threshold'):
+        # Long-context price selection is per request, never on the run's sum.
+        cost = 0.0
+        for u in tokens['calls']:
+            cc = u.get('cache_creation') or {}
+            w5 = cc.get('ephemeral_5m_input_tokens', u.get('cache_creation_input_tokens', 0))
+            w1 = cc.get('ephemeral_1h_input_tokens', 0)
+            inp, read = u.get('input_tokens', 0), u.get('cache_read_input_tokens', 0)
+            over = inp + read + w5 + w1 > row['context_threshold']
+            ir = row['input_per_m_over'] / 1e6 if over else in_rate
+            outr = row['output_per_m_over'] / 1e6 if over else out_rate
+            cost += (inp + read * read_mult + w5 * ANTHROPIC_W5M + w1 * ANTHROPIC_W1H) * ir
+            cost += u.get('output_tokens', 0) * outr
+        return cost, read_mult
     cost = tokens["input_uncached"] * in_rate
     cost += tokens["cache_read"] * in_rate * read_mult
     if fmt == "claude":
@@ -267,9 +314,22 @@ def price(tokens, row, fmt):
     return cost, read_mult
 
 
+def price_native(tokens, prices, fmt):
+    """All native calls, including Muse approval reviews/linked children, at
+    their OWN model's rate from the same panel snapshot. Never price a review
+    model or contributor variant as the requested roster model."""
+    total = 0.0
+    for model, counts in tokens['by_model'].items():
+        if model not in prices:
+            raise ValueError(f"no pinned price row for native call model {model!r}")
+        total += price(counts, prices[model], fmt)[0]
+    return total
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--format", required=True, choices=["claude", "codex"])
+    ap.add_argument("--edition", required=True, choices=["2026-07", "2026-10"])
+    ap.add_argument("--format", required=True, choices=["claude", "codex", "opencode", "muse"])
     ap.add_argument("--log", required=True, help="session JSONL / rollout JSONL path")
     ap.add_argument("--model-key", required=True, help="prices.yaml model key")
     ap.add_argument("--label", required=True, help="row label (model name)")
@@ -289,8 +349,15 @@ def main():
                          "the future web-dig task. 'off': skip the scan.")
     args = ap.parse_args()
 
-    tool = args.tool or ("claude-code" if args.format == "claude" else "codex")
-    tokens = sum_claude_jsonl(args.log) if args.format == "claude" else sum_codex_jsonl(args.log)
+    tool = args.tool or ("claude-code" if args.format == "claude" else args.format)
+    if args.format in ("opencode", "muse"):
+        tokens = sum_native_jsonl(args.log, args.format)
+        if args.model_key not in tokens['model_ids']:
+            raise SystemExit('FATAL: requested model absent from native usage evidence')
+        if args.format == 'opencode' and tokens['model_ids'] != [args.model_key]:
+            raise SystemExit('FATAL: OpenCode session used a different roster model')
+    else:
+        tokens = sum_claude_jsonl(args.log) if args.format == "claude" else sum_codex_jsonl(args.log)
 
     # Control arm: a completed run must have real spend.
     if tokens["input_total"] + tokens["output"] <= 0:
@@ -310,11 +377,17 @@ def main():
             print(f"WEB-TOOLS: recorded {web_tool_count} invocation(s) {web_tool_names} "
                   f"(record mode — not voided)", file=sys.stderr)
 
+    from run_audit import sandbox_denials
+    if sandbox_denials(args.log):
+        raise SystemExit('FATAL: run VOIDED — sandbox denial recorded in session log')
+
     prices, prices_version = load_prices(args.prices)
     row = prices.get(args.model_key)
     cost = read_mult = None
     if row:
         cost, read_mult = price(tokens, row, args.format)
+        if args.format in ("opencode", "muse"):
+            cost = price_native(tokens, prices, args.format)
     elif not args.allow_unpriced:
         raise SystemExit(
             f"FATAL: no price row for '{args.model_key}' in {args.prices} "
@@ -333,7 +406,7 @@ def main():
           f"| {tokens['output']:,} | {reasoning} | {cache_pct:.1f}% | {cost_s} | {wall} |")
 
     result = {
-        "tool": tool, "label": args.label, "model_key": args.model_key,
+        "edition": args.edition, "tool": tool, "label": args.label, "model_key": args.model_key,
         "model_ids_seen": tokens["model_ids"], "log": os.path.abspath(args.log),
         "own_tests": args.own_tests, "acceptance": args.acceptance,
         "edge_failures": args.edge_failures,
@@ -348,6 +421,7 @@ def main():
         "prices_yaml": os.path.abspath(args.prices),
         "prices_yaml_version": prices_version,
     }
+    if args.edition == "2026-10": print("effort scales differ by vendor; each model ran at its CLI's shipped default (stamped)")
     print(md)
     print(json.dumps(result, indent=2), file=sys.stderr)
     if args.out:
@@ -361,4 +435,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (ValueError, KeyError) as exc:
+        raise SystemExit(f"FATAL: unverifiable usage or pricing: {exc}") from exc

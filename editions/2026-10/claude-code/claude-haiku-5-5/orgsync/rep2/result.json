@@ -1,0 +1,210 @@
+{
+  "acceptance": "PASS",
+  "agent_exit": 0,
+  "billing_route": "claude-code-subscription",
+  "cache_read_mult_used": 0.1,
+  "cache_read_pct": 91.39,
+  "capture": "OK",
+  "capture_scope": "fresh-project-slug+requested-UUID; top-level transcript; subagents refused",
+  "clean_config": false,
+  "cost_list_usd": 0.04909,
+  "edge_failures": "0f+0e",
+  "edition": "2026-10",
+  "effort": "medium",
+  "effort_evidence_fields": [
+    "assistant.effort"
+  ],
+  "effort_source": "observed-unsourced",
+  "effort_source_checked": "session JSONL metadata/request output_config.effort",
+  "label": "claude-haiku-5-5",
+  "log": "session.jsonl",
+  "model_flag": "claude-haiku-5-5",
+  "model_ids_seen": [
+    "claude-haiku-5-5"
+  ],
+  "model_key": "claude-haiku-5-5",
+  "opencode_provider": "zai-coding-plan",
+  "outcome": "PASS",
+  "own_tests": "PASS",
+  "priced": true,
+  "prices_snapshot": "prices.snapshot.yaml",
+  "prices_yaml": "prices.yaml",
+  "prices_yaml_version": 11,
+  "rep": 2,
+  "run_id": "e3811c26-1874-4566-bff9-13f113773503",
+  "session_id": "e3811c26-1874-4566-bff9-13f113773503",
+  "session_log": "session.jsonl",
+  "task": "orgsync",
+  "timed_out": false,
+  "tokens": {
+    "api_calls": 15,
+    "cache_read": 783486,
+    "cache_w1h": 73777,
+    "cache_w5m": 0,
+    "cache_write": 73777,
+    "calls": [
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 7433,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 7433,
+        "cache_read_input_tokens": 9375,
+        "input_tokens": 2,
+        "output_tokens": 241
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 1190,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 1190,
+        "cache_read_input_tokens": 16808,
+        "input_tokens": 2,
+        "output_tokens": 370
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 10271,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 10271,
+        "cache_read_input_tokens": 17998,
+        "input_tokens": 2,
+        "output_tokens": 9082
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 9403,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 9403,
+        "cache_read_input_tokens": 28269,
+        "input_tokens": 2,
+        "output_tokens": 14871
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 14989,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 14989,
+        "cache_read_input_tokens": 37672,
+        "input_tokens": 2,
+        "output_tokens": 2365
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 2482,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 2482,
+        "cache_read_input_tokens": 52661,
+        "input_tokens": 2,
+        "output_tokens": 762
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 882,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 882,
+        "cache_read_input_tokens": 55143,
+        "input_tokens": 2,
+        "output_tokens": 163
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 283,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 283,
+        "cache_read_input_tokens": 56025,
+        "input_tokens": 2,
+        "output_tokens": 3522
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3643,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3643,
+        "cache_read_input_tokens": 56308,
+        "input_tokens": 2,
+        "output_tokens": 14230
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 14347,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 14347,
+        "cache_read_input_tokens": 59951,
+        "input_tokens": 2,
+        "output_tokens": 2945
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 3555,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 3555,
+        "cache_read_input_tokens": 74298,
+        "input_tokens": 2,
+        "output_tokens": 295
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 1001,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 1001,
+        "cache_read_input_tokens": 77853,
+        "input_tokens": 2,
+        "output_tokens": 898
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 1160,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 1160,
+        "cache_read_input_tokens": 78854,
+        "input_tokens": 2,
+        "output_tokens": 1529
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 2243,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 2243,
+        "cache_read_input_tokens": 80014,
+        "input_tokens": 2,
+        "output_tokens": 770
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 895,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 895,
+        "cache_read_input_tokens": 82257,
+        "input_tokens": 2,
+        "output_tokens": 951
+      }
+    ],
+    "input_total": 857293,
+    "input_uncached": 30,
+    "model_ids": [
+      "claude-haiku-5-5"
+    ],
+    "output": 52994,
+    "reasoning": null
+  },
+  "tool": "claude-code",
+  "wall_seconds": 240,
+  "web_tool_count": 0,
+  "web_tool_names": [],
+  "web_tools_mode": "void"
+}

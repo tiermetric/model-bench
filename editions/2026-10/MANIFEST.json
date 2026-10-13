@@ -1,0 +1,80 @@
+{
+  "edition": "2026-10",
+  "status": "30 complete runs (10 models x orgsync/v1 x rep1..3), 30 PASS; report table prices.yaml v13",
+  "operator_rulings": [
+    "2026-07-26: anchors-only; one rate table per panel; roster fixed before scored runs",
+    "2026-10-12: add OpenCode/GLM 5.3 and Muse; current model IDs",
+    "2026-10-12 decision panels: R-EFFORT D; R-CAP A (v1.3 cap 9 Edition 2 only); R-LADDER B; R-PRICE A",
+    "2026-10-13 R-2026-10-13-1: admit OpenCode/GLM 5.3 Flash as the 10th scored model, 3 reps on orgsync/v1 in PR #14; retain the 27 v11 run pins; report table v13; GLM 5.3 Highspeed is not added",
+    "2026-10-13 standing direction: report every run\u2019s wall time, model calls/responses, input/cache/output/reasoning tokens and list cost, with comparison charts"
+  ],
+  "roster": {
+    "claude-code": [
+      "claude-fable-5-1",
+      "claude-opus-5-5",
+      "claude-sonnet-5-5",
+      "claude-haiku-5-5"
+    ],
+    "codex": [
+      "gpt-6.1-sol",
+      "gpt-6-astra",
+      "gpt-6-luna"
+    ],
+    "opencode": [
+      "glm-5.3",
+      "glm-5.3-flash"
+    ],
+    "muse": [
+      "muse-spark-1.3"
+    ]
+  },
+  "scored_models": 10,
+  "panel_cap_exception": "PROTOCOL \u00a73.3/\u00a79: cap 10 for Edition 2 only (R-2026-10-13-1).",
+  "tasks": {
+    "orgsync": {
+      "identity": "orgsync/v1",
+      "class": "anchor",
+      "reps": 1,
+      "reps_run": 3,
+      "reps_run_ruling": "R-2026-10-12-24 (supersedes R-2026-10-12-21): reps 2-3 for the original nine models; R-2026-10-13-1 adds three Flash reps; `reps` stays the batch planning value",
+      "failure_reps": 3,
+      "prompt_sha256": "94950b00fd82cc86a8c98a0793149b5f9c13e205dedd1ea533470387110ba408",
+      "judge_sha256": "b948f904bfd72ffcd8fedd30230182df3133d27a9972c6fc2c6af35ca5196a74"
+    }
+  },
+  "prices_yaml_version": 11,
+  "prices_yaml_sha256": "b3aa945f75af6573c29a3f47610f6f3460afa0665188b679dd2ea261265c9a15",
+  "tier_rates_source_version": 12,
+  "opencode_provider_default": "zai-coding-plan",
+  "publication_status": "Complete 30-run report and redacted evidence prepared for operator review in PR #14, using report table v13; not published. Existing escrow limitations remain disclosed in TASKS.md.",
+  "effort_policy": "shipped CLI default under clean config; observed effort/source per run",
+  "floor_models": [
+    "claude-haiku-5-5",
+    "gpt-6-luna"
+  ],
+  "anchor_gate": "logged ALLOW_EXPENSIVE=1",
+  "saturation_trigger": ">=9 of 10 pass every run",
+  "over_hard_trigger": "<=4 of 10 produce any passing run",
+  "report_rate_table": {
+    "path": "prices.yaml",
+    "version": 13,
+    "sha256": "41000ebf0545b934a0f6ac3541b909e49b4265ff9d0dee12ffd5dd557d4472c6",
+    "ruling_id": "R-2026-10-13-1",
+    "scope_extension_ruling_id": "R-2026-10-12-26",
+    "evidence_policy": "Each run bundle retains its own pinned snapshot and recorded costs as unchanged evidence: v11 for the existing 27, v13 for the three late-admission Flash runs; report dollars are re-derived from tokens using this v13 table."
+  },
+  "planned_runs": 30,
+  "late_admissions": [
+    {
+      "tool": "opencode",
+      "model": "glm-5.3-flash",
+      "prices_yaml_version": 13,
+      "prices_yaml_sha256": "41000ebf0545b934a0f6ac3541b909e49b4265ff9d0dee12ffd5dd557d4472c6",
+      "ruling_id": "R-2026-10-13-1",
+      "reps": 3
+    }
+  ],
+  "completed_runs": 30,
+  "accepted_runs": 30,
+  "metrics_file": "metrics.csv"
+}

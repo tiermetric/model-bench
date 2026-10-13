@@ -214,3 +214,126 @@ its judge reveal (§5.4) is therefore still owed. It is NOT counted in the Ancho
 Set above until that is resolved.
 
 Ruled by Steve, 2026-07-29.
+
+
+**2026-07-29 · Edition 2 escrow — PARTIAL registration. §5.6 is NOT yet satisfied,
+and this entry exists so that is on the record rather than assumed.**
+
+Edition 1 **consumed its own escrow.** §5.6 requires each edition to publish the
+hash of the *next* edition's frontier task and judge before the current edition's
+results exist. The hash Edition 1 would have pointed at is `orgsync/v1` — which
+turned out to be **Edition 1's own task**, and is now graduated and revealed. A
+revealed task can never serve as a future frontier task: its answer key is public.
+
+**Pre-committed now**, so these artifacts are fixed in the ledger from this date
+and cannot be silently rewritten later. Content stays sealed (`.export-exclude`);
+only hashes are published, per §5.4:
+
+| task | artifact | sha256 |
+|---|---|---|
+| `cutover` | `prompts/cutover.md` (prompt) | `0f9952c539243512…` |
+| `cutover` | `design/cutover/JUDGE_SPEC.md` (judge spec) | `a64d8770fa214ad6…` |
+| `cutover` | `design/cutover/FIXTURES.md` (fixtures) | `6821027e9423d1bb…` |
+| `cutover` | `design/cutover/CONTROLS.md` (controls) | `acbdd7a085246315…` |
+| `foreman` | `prompts/foreman.md` (prompt) | `4d1ac3727328bb55…` |
+| `foreman` | `design/foreman/FIXTURES.md` (fixtures) | `dec4cf53c0a06863…` |
+| `foreman` | `design/foreman/CONTROLS.md` (controls) | `86b82f48ea1361b7…` |
+
+**What this does NOT do, stated plainly:**
+
+1. **It does not name Edition 2's frontier task.** `PROTOCOL.md` §3.1 line 104
+   names **`walstore`** as Edition 2's HARD task. **`walstore` does not exist** —
+   zero files anywhere in this repository. So §3.1 currently names a task that has
+   never been authored, and the two artifacts above are candidates, not a decision.
+   Choosing between them (or authoring `walstore`) is an open ruling. Note §5.6's
+   own replacement clause: if `walstore` is dropped, it must be "revealed in full,
+   with the reason" — which is unsatisfiable for a task with no content, so §3.1's
+   naming is itself the defect to correct.
+2. **It does not register a judge.** §5.6 requires the task **and judge** hash.
+   Neither candidate has one: there is no `acceptance_cutover.py` and no
+   `acceptance_foreman.py`. `cutover` has a `JUDGE_SPEC.md` (hashed above) but a
+   spec is not a judge. Until a judge exists and is hashed, the escrow is
+   incomplete by the rule's own terms.
+3. **It is not anchored to an unforgeable timestamp.** §5.6 requires the witness to
+   be "something we alone control" — it must not be, and the hash must be "anchored
+   to a timestamp proof we cannot forge". No such anchor exists in this repository
+   for any task, including `orgsync`. So the strongest claim available today is
+   "trust our commit history", which §5.6 explicitly calls the weakest available
+   claim. That mechanism appears never to have been implemented.
+
+**Consequence for publication.** Until (1)-(3) are resolved, no edition may claim
+the §5.6 pre-commitment property. Edition 1's authored report states this in its
+own "What happens next" section rather than asserting a guarantee it does not have,
+and it is deliberately unpublished for that reason. Tracked as model-bench#5.
+
+
+**2026-10-13 · `cronspec/v2` → GRADUATED to the Anchor Set (recorded now).**
+
+Edition 1's archived results show **21/21 PASS**: all seven roster models passed
+all three replicates. **SATURATED** under PROTOCOL §3.3 and §5.2. This entry
+records graduation now, not a backdated reveal or graduation in July; it
+supersedes the open graduation question in the 2026-07-29 correction above.
+
+The judge, `acceptance_cronspec.py`, was **already public on
+tiermetric/model-bench without a recorded reveal event**. We cannot restore
+its former secrecy or claim a timely §5.4 reveal. Its SHA-256 is
+`a847b421cf8234cd953aaefe264ed72745ef123f4c43abaa24decca746e2e5a7`, matching
+all 21 Edition 1 stamps and the revealed file. The prompt SHA-256 is
+`d6b188dca51a2842e99f35b373c414372dc2d3f75fea60d20e1863a4b4a32274`.
+The version's contents remain frozen (§5.5); graduation changes its status.
+
+**Anchor Set after this event: {`orgsync/v1`, `cronspec/v2`} — 2 of a maximum 3.**
+`duration/v1` remains the active EASY floor, outside the Anchor Set. Graduated
+tasks run on the anchor rotation with escalation on failure (§5.1).
+
+**2026-10-13 · `duration/v1` public-judge disclosure.**
+
+`acceptance_test.py` is public on tiermetric/model-bench while `duration/v1`
+remains an **active EASY-floor task**. This is a §5.4 disclosure, not a
+retirement or graduation: the EASY exemption still applies. Judge SHA-256
+`f07718acdcc279b349e7393144a79cbf7f1e62a88f089c10288cfe05e84e5b53` matches
+all 21 Edition 1 stamps and the public file. The answer key's publication
+cannot be undone; the cost-floor results carry that contamination limitation.
+
+**2026-10-13 · Edition 1 publication gate reversed — R-2026-10-13-3,
+panel consensus B.**
+
+The operator authorizes publication of Edition 1 (2026-07, 63 runs, seven
+models, three tasks) after the mechanical re-judgment and public-submission
+export fixes, with the unfixable limitations disclosed in its report. This
+supersedes the earlier **"deliberately unpublished"** gate; it does not assert
+§5.6 compliance. Edition 1 consumed its own escrow, and Edition 2 has since
+run, so the missing pre-result escrow cannot be satisfied retroactively.
+No unforgeable timestamp anchor exists for any task; only commit history does.
+The `orgsync` rep1 judge-hash publication gap (#4) and duration's public active
+judge remain disclosed. No recorded verdict, cost, or other result is changed.
+
+Implementation limitation recorded now: the 21 `orgsync` bundles archive only
+`test_orgsync.py` inside `submission/`; the runnable package and brownfield
+files are adjacent in each bundle. Re-judgment of those targets awaits an
+operator ruling on assembling a temporary copy from those adjacent archives.
+The publication authorization above does not turn that pending check into a PASS.
+
+
+**2026-10-13 · Edition 1 orgsync target ruling and mechanical fixes completed.**
+
+The operator rules that re-judgment reconstructs **exactly the original target
+layout**, using `submission/` plus `orgsync/`, `config.json` and
+`tests/existing/` from the **same archived bundle**. This supersedes the pending
+ruling noted above. No file may be supplied from the live skeleton or another
+bundle; a required archived path that is missing SKIPs loudly, naming the path.
+
+The historical harness (`da2561f:run.sh`, lines 176–205, 321 and 390–391)
+laid down the package and existing tests, wrote the config, judged the run
+directory, then archived only its root Python files in `submission/`.
+`da2561f:score.py`, line 337, recorded the verdict; it did not assemble a target.
+The replay follows that layout on a temporary copy, never in the archive.
+
+Actual validation across all 63 bundles: RE-JUDGE 63 bundles · PASS 63 · FAIL 0 · SKIP 0.
+The revealed judges reproduce the recorded 60 accepted / 3 not accepted,
+including all three `claude-haiku-4-5`/`orgsync` failures. The public kit carries
+all 63 submission directories and the adjacent orgsync archives, with sealed
+paths excluded. The report's verification stamp is derived from this executed
+verifier output. These mechanical fixes satisfy the publication condition in
+R-2026-10-13-3; the escrow, timestamp-anchor, rep1 ordering and public-active-
+judge limitations remain disclosed, and no result figure changes.

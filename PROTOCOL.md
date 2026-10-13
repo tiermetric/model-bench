@@ -1,6 +1,6 @@
 # The TIER Model Report — Measurement Protocol
 
-**Version 1.1 · published 2026-07-22, amended 2026-07-23 · applies from Edition 1 onward.**
+**Version 1.5 · published 2026-07-22, amended 2026-10-13 · Edition 2 rulings apply prospectively; Edition 1 remains frozen.**
 
 This document is the *standard*. It is published **before** the results it
 governs, and it is versioned independently of them. If a later edition changes
@@ -143,8 +143,8 @@ panel pass-rate of roughly **40–85%**. That range is published as a statement 
 instrument for an irreversible decision.
 
 **The panel is defined before it is measured.** The panel is the edition's
-declared model roster, fixed in the edition manifest **before any scored run**,
-and capped at **8 scored models**. Roster selection follows a published rule:
+declared model roster, fixed in the edition manifest **before any scored run** except for the R-2026-10-13-1 late-admission ruling,
+and capped at **8 scored models** for Edition 1. **Edition 2 alone has a cap of 10** (R-2026-10-13-1, 2026-10-13; §9). Roster selection follows a published rule:
 each vendor's current flagship, each vendor's current value tier, and anything
 released since the last edition. This matters because an undefined panel makes
 the trigger depend on who we invited — dropping a weak model would "move the
@@ -166,6 +166,10 @@ apart two panels that both read 18/21: six models perfect plus one total failure
 > the event is logged and headlined exactly as a saturation event is.
 >
 > **IN-BAND** — anything else. The task keeps running unchanged.
+
+For Edition 2's ten-model panel (R-2026-10-13-1): **SATURATED = ≥9 of 10 models pass every
+run; OVER-HARD = ≤4 of 10 produce any passing run.** Edition 2 anchors have **N=3 for every cell** under R-2026-10-12-24 and R-2026-10-13-1; the trigger counts models, using all
+of each cell's declared runs.
 
 Both triggers are arithmetic on the published per-run results: a reader can
 recompute the verdict and check that we applied our own rule.
@@ -306,6 +310,16 @@ time to relabel identical data would buy nothing but a different filename.
 
 ### 4.1 Sample size
 
+**Edition 2 ruling (R-2026-10-12-21, 2026-10-12): “If you did not run the
+multiple runs yet. Then yes, let's just do one run each.”** This supersedes
+R-2026-10-12-18 (“Yes, 3 runs each”) before any multiple paid runs were launched
+by the fix pass. Edition 2 keeps the anchor rule: one run per model, expanding
+a non-PASS or missing rep1 result to N=3. Its report publishes without run-to-run
+range/dispersion and explicitly discloses that limitation; N=1 cells provide
+point estimates. Existing valid rep1 bundles count; `batch.sh` skips any rep
+with a `result.json` and never overwrites it. The sole declaration remains
+`editions/2026-10/MANIFEST.json`; the temporary root amendment is removed.
+
 **N=3 runs per cell** for any active scored task, across the **full declared
 roster**, and **all runs are reported** — including failures, including a cell
 where runs disagree.
@@ -398,26 +412,121 @@ your own review cost; the figure below it is a floor, not a total.
 
 Edition 0's N=1 is the reason it is not protocol-conformant.
 
+A cell with **any unknown (`cost_list_usd: null`) run cost publishes NO SCORE**,
+even if another replicate passed. No cost-per-accepted or TIER figure is derived
+from partial spend; the offline verifier fails the cell explicitly.
+
 ### 4.2 Isolation
 
 Each run gets a fresh directory and a fresh `git init`. The harness **refuses**
 to reuse an existing run directory — there is no staging, no retry-in-place, and
 no partial-credit rerun.
 
-Runs are executed **headless** and non-interactively:
+Runs are executed **headless** and non-interactively. Exact commands and
+network/sandbox postures for all four legs are in `README.md`; `DRY_RUN=1`
+prints their actual argv and clean-config environment without invoking a CLI.
+Codex retains `workspace-write` and session logging (never `--ephemeral`).
 
-- Claude Code: `claude -p --model <id> --dangerously-skip-permissions "<task>"`
-- Codex: `codex exec -m <model> -C <dir> -s workspace-write --skip-git-repo-check`
+**Effort (R-EFFORT D, v1.3): each model runs at its CLI's shipped default under
+guarded configuration.** Codex and OpenCode receive fresh home/XDG config trees;
+only auth credentials may be copied. Codex copies `auth.json` from the operator's
+`CODEX_HOME` to clean `CODEX_HOME`; OpenCode copies only the selected provider's
+`auth.json` entry to clean XDG data. Credentials are never printed.
+Claude and Muse use the operator's **real HOME and default config/auth locations**
+with real USER/LOGNAME resolved from the OS account: their logins are bound to the
+macOS keychain, and copying an auth metadata file cannot carry the secret.
+Neither leg receives XDG overrides, `MUSE_AUTH_PATH`, `CLAUDE_CONFIG_DIR` or API
+keys. The rest of their `env -i` allow-list is PATH, LANG/LC_ALL, TERM/NO_COLOR
+and TMPDIR. Claude bills its logged-in subscription; Muse its logged-in account.
+Per the operator's 2026-10-12 ruling, Claude uses **`--safe-mode`, not
+`--bare`**, because `--bare` disables OAuth/keychain login. Customisation remains
+disabled by `--safe-mode --setting-sources '' --strict-mcp-config`, an empty MCP
+config, and Task/Agent denial. `auth_policy` and `config_policy` in each stamp
+record this distinction. Claude passes `--session-id <run-UUID>` and captures
+exactly `~/.claude/projects/<cwd-with-/.-replaced-by-->/<run-UUID>.jsonl`.
+Codex uses `--ignore-user-config --ignore-rules`. OpenCode's injected
+policy is the only user config: clean XDG prevents merging operator settings;
+project config, external skills and Claude skills are disabled; `--pure` skips
+external plugins. Muse retains `--no-foreign-personal-context`, reminders/web
+disabling, native sandbox and approval/contributor controls. Capture reads
+`~/.local/share/muse/sessions/YYYY/MM/DD/<run-UUID>/session.jsonl`, requiring that
+UUID plus exact workspace metadata and explicit child links. The stamps record
+both keychain-bound auth policies. `clean_config` is true only for Codex/OpenCode,
+false for Claude/Muse. Muse explicitly selects `--provider meta`; only paid Muse
+legs (including its preflight probe) audit JSON settings key names outside
+`{schema_version, model, provider}`, including effort/MCP/instruction keys.
+Auth, trust, lock/dot-lock and non-`.json` files are excluded. Malformed or
+unreadable real JSON settings still refuse; values are never reported. Muse
+settings do not block the other tools' legs. Effort
+observed without a source is `observed-unsourced`. Existing four valid Claude
+rep1 PASS bundles retain their original stamps; the report must disclose their
+legacy hard-coded `clean_config: true` as operator-home runs.
+Codex enables `sandbox_workspace_write.network_access=true`; Muse uses
+`--sandbox-network enabled`. Both permit full network including loopback with
+filesystem sandboxes retained. OpenCode/Claude permit shell network; web tools
+remain forbidden. Each new stamp records `network_policy` and `trust_policy`.
+Muse has no documented inverse to `--trust-workspace`: inherited trust is a
+recorded residual, with no trust flag passed; trust state is excluded from the settings audit.
+Copied Codex/OpenCode credentials are deleted on exit after capture for all runs.
+Inherited effort/reasoning/variant environment overrides and managed configs
+that could override isolation cause a pre-spend refusal. No effort flag is set.
 
-Codex runs sandboxed (`workspace-write`), never `--ephemeral` — the ephemeral
-flag suppresses the rollout log that spend is read from. Any interactively-run
-leg is **flagged in the results table** and its wall-clock is marked
-non-comparable.
+**Observed effort is recorded per run**, read only from structured session
+metadata or request fields. The stamp/result records `effort`, `effort_source`
+(the recorded source, or `observed-unsourced` when absent), and the evidence field/source checked.
+If absent, it records **not observable** plus the source checked. A documented
+default is never substituted for an observation. Runs made under an inherited
+operator setting are **VOID**. The **2026-10-12 first paid Edition 2 attempt
+was VOID**, a harness auth failure: all Claude legs reported “Not logged in ·
+Please run /login” with zero tokens; Codex/OpenCode/Muse never ran. It is **not
+part of Edition 2's record**. The operator moved the void bundles out of the
+tree. Four later valid Claude rep1 orgsync bundles (Fable 5.1, Opus 5.5, Sonnet 5.5 and Haiku 5.5) are PASS and retained unchanged; they count as the N=1 anchor runs.
 
-No custom system prompts, no project instruction files, no MCP servers, no
-tuned settings. The harness asserts that no agent-context file is reachable from
-the run directory, and the assertion is recorded in the stamp — "we didn't
-configure anything" is checkable rather than promised.
+Every Edition 2 results table carries: **“effort scales differ by vendor; each
+model ran at its CLI's shipped default (stamped)”**. Edition 1 effort was
+**unrecorded**; cross-edition comparisons hold only where defaults are unchanged,
+with each vendor's dated release notes cited: [Claude Code changelog](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md),
+[Codex releases](https://github.com/openai/codex/releases),
+[OpenCode releases](https://github.com/anomalyco/opencode/releases), and [Muse Code changelog](https://dev.meta.ai/docs/muse-code/changelog)
+(release entries must be obtained and dated before a longitudinal claim).
+The dated CLI versions in stamps are the join keys; these links are not proof
+that defaults stayed unchanged. No cross-edition effort equivalence is claimed
+by this build. A **default-vs-high sensitivity study** is pre-declared as a
+**separate later study**, scoped by a cost pilot first, outside this edition.
+
+Any `mcp__*`, browser/computer-use, or web-tool invocation **voids** an offline
+run. A Claude `subagents/` directory fails capture loudly because its spend
+would otherwise be dropped. A sandbox denial recorded in the session log voids
+the run with a reason. Capture failure is verified as capture failure even when
+a partial native log was archived/redacted.
+
+The operator's 2026-10-12 real preflight passed Codex (13,925 tokens) and
+OpenCode (5,974 tokens), but Claude and Muse failed auth because redirected
+config/auth locations prevented resolving keychain-bound login secrets. The
+correction above preserves their real home/config and identity. Those probes
+are separate from Edition 2's record; all four require a fresh operator preflight.
+
+**Auth/capture preflight is mandatory before a paid batch.** `./preflight.sh`
+calls each current tool once to fetch a local HTTP endpoint using a shell command, choosing the
+cheap Claude/Codex floors and the sole OpenCode/Muse roster models. It runs in
+throwaway directories through `run.sh`'s `PREFLIGHT=1` mode: the same environment,
+argv shape and collectors as scored legs, without task fixtures/judges or scored
+bundles. Each leg must exit 0, contain no login/auth prompt in its output
+(`Not logged in`, `/login`, `authenticate`, `API key`), and capture an attributable
+session whose summed tokens exceed zero. Token counts are printed; preflight's
+small spend is separate from the edition record. A disposable server bound to
+127.0.0.1 must observe each tool's request, and its random response body must
+appear in that CLI's output. A tool unable to reach loopback fails preflight.
+
+Only four passing probes write timestamped per-tool receipts to gitignored
+`.preflight/pass.json`. A failed new attempt invalidates previous passes.
+Non-`DRY_RUN` `batch.sh` refuses before launching a leg unless **all four tools
+passed within the last 60 minutes**. Changed runner/auth-source context also
+invalidates passes. The fingerprint hashes runner/preflight code, token_evidence.py,
+score.py, run_audit.py, edition.sh and the edition manifest; receipt tool/model and
+loopback success are required. Dry runs neither call models nor grant preflight passes.
+The smoke roster is the current Edition 2 roster even before a historical batch;
+this auth/capture check does not change frozen task bundles (§5.5).
 
 Two departures from stock configuration are stated rather than hidden, because
 both are visible in the commands above:
@@ -433,6 +542,9 @@ both are visible in the commands above:
   including whether traffic may be retained or trained on — can differ between
   them, and because it determines whether our list-rate pricing matches the
   billing path actually exercised.
+
+GLM's `billing_route` is stamped as **zai-coding-plan subscription**. It is
+**priced at the list per-token rate; the actual route is a subscription**.
 
 ### 4.3 Spend capture
 
@@ -451,14 +563,32 @@ the uncached share.
 
 **Pricing** is TIER's own audited `internal/store/prices.yaml` at **public list
 rates, standard tier** — the same table the tool ships to its users. Cache reads
-are priced at their real multiplier (0.1× for Anthropic), *not* at full input
+are priced at their real multiplier from the rate table, *not* at full input
 rate: inflating cache reads to full price would manufacture a larger and false
-number. Anthropic cache writes are priced 1.25× (5m) / 2× (1h); OpenAI has no
-cache-write SKU, so any nonzero write is billed at input rate and warned about.
+number. Anthropic cache writes are priced 1.25× (5m) / 2× (1h). OpenAI's pricing page
+now lists a cache-write price (1.25× input, fetched 2026-10-12); until a rate
+audit adopts it, any nonzero OpenAI write is billed at input rate and warned
+about. Edition 2's three Codex runs recorded no cache writes.
 
 A model with no pricing row is **not** substituted with a neighbouring model's
 rate. It is either priced by adding an audited row (with a `prices.yaml` version
 bump) or reported explicitly unpriced.
+
+**Edition 2 pricing (R-PRICE A):** gpt-6.1-sol remains at OpenAI's announced
+standard $2/$10 per million, cached input 0.05× ([OpenAI model page](https://developers.openai.com/api/docs/models/gpt-6.1-sol),
+as of 2026-10-12). The promotional-price claim is a **third-party, unverified
+claim**; if true, cost is **understated**. Haiku 5.5 is confirmed by
+[Anthropic's 2026-10-07 announcement](https://www.anthropic.com/claude-haiku-5-5):
+$0.10/$0.50 for prompts ≤100K, reads 0.1×; above 100K it is $0.50/$2.50.
+Every original roster row carries its source URL and as-of 2026-10-12;
+GLM 5.3 Flash carries as-of 2026-10-13 under R-2026-10-13-1. OpenAI cache-write
+multipliers are removed so this table and the existing no-write-SKU arithmetic
+agree (operator ruling/Y3). The current OpenAI page lists a write price; adopting
+that would require a separate protocol/rate audit, not a silent change here.
+**Re-check on 2026-11-21**: if a list price changes, publish a **dated price-change
+note**, re-deriving dollars from unchanged token evidence. **The edition's table
+is not altered.** The pre-run benchmark snapshot is version 11, derived from
+TIER v12 with these declared changes; Edition 1's v8 bytes remain frozen.
 
 **List price is a common yardstick, not a claim about anyone's bill.** Discounts,
 subscriptions, batch tiers, and enterprise agreements all move real cost. The
@@ -799,6 +929,35 @@ change is listed here, dated, and attributed to the edition it took effect in.
 
 | version | date | edition it took effect | change |
 |---|---|---|---|
+| 1.5 | 2026-10-13 | Edition 2 only; GLM 5.3 Flash late admission | **R-2026-10-13-1** admits GLM 5.3 Flash after the original 27 runs, with three reps on orgsync/v1 at v13, preserving the original v11 run pins. Edition 2's cap becomes 10; SATURATED requires ≥9/10 models to pass every run and OVER-HARD requires ≤4/10 to produce any passing run. This is the declared exception to fixing the roster before any scored run; every cell is N=3 together with R-2026-10-12-24. |
+| 1.4 | 2026-10-12 | Edition 2 at N=3; Sonnet 5.5 report-table correction | First-hand operator rulings: **R-2026-10-12-24** (“let's run it three times really quickly.. run them in parallel if you can”) supersedes R-2026-10-12-21 — reps 2–3 ran for all nine models in four parallel per-tool lanes (each lane sequential, so no two runs of one CLI share capture paths), and the report prints run-to-run range and dispersion. **R-2026-10-12-25** re-prices `claude-sonnet-5-5` cache reads to 0.05× (Anthropic pricing page read 2026-10-12, footnote 2) as an operator-ruled exception to §4.3's frozen table, made after the last run and before publication: `prices.yaml` v12 is the edition's report table (MANIFEST `report_rate_table`; TIER_PIN retains the v11 run pin); every bundle keeps its v11 snapshot as evidence and `verify.py` checks both. **R-2026-10-12-26** places this work in PR #14. |
+| 1.3 | 2026-10-12 | Edition 2 only; superseding N=1 ruling retains valid rep1 | First-hand operator ruling after decision panels: **R-CAP A** raises the cap to 9 only for Edition 2 (SATURATED ≥8/9 perfect; OVER-HARD ≤4/9 with any pass); **R-LADDER B** keeps only Haiku 5.5 / gpt-6-luna as floors, admits non-floors to new tasks only after a floor fails, and runs Edition 2 anchors under the logged ALLOW_EXPENSIVE override; **R-EFFORT D** uses each CLI's shipped default under clean Codex/OpenCode configs and guarded operator-home Claude/Muse configs, stamps observed effort/source or not observable, voids inherited settings, declares Edition 1 effort unrecorded and defaults-unchanged release-note limits on comparisons, and pre-declares a separate default-vs-high study after a cost pilot; **R-PRICE A** retains announced Sol $2/$10 and 0.05× reads, labels promotional claims third-party/unverified (if true, understated cost), confirms Haiku via Anthropic, removes OpenAI write multipliers under Y3, adds every roster row's URL/as-of, and pre-declares the 2026-11-21 price re-check and dated re-derivation note without altering the edition table. **R-2026-10-12-18**, “Yes, 3 runs each”, proposed N=3 for range/dispersion comparable with Edition 1, but is **superseded by R-2026-10-12-21**, first-hand quote “If you did not run the multiple runs yet. Then yes, let's just do one run each.” Edition 2 retains **N=1 anchors; non-PASS or missing rep1 expands to N=3**. No multiple paid runs were launched by the fix pass. The report publishes without run-to-run range/dispersion and explicitly says so; existing valid rep1 counts and any existing result is skipped. Anchors-only orgsync/v1 at N=1 with failure expansion, frozen task hashes, native capture and four-leg isolation are declared in the manifest/README. Ratified by Steven Job, 2026-10-12. |
 | 1.2 | 2026-07-29 | Edition 1 (retroactive to publication) | Corrects §3.4.1's first-use ruling, which asserted that both the prompt and judge SHAs were committed to `TASKS.md` before any model saw `orgsync`. True of the prompt hash; **false of the judge hash**, which reached the ledger 4m34s AFTER `haiku/orgsync/rep1`'s verdict. Condition 4 of §3.4 was therefore not met for that one run. The judge itself did not change — rep1's stamp records the final `judge_sha256` and the file still hashes to it — so the failure is of the ORDERING that lets a stranger check that without trusting our stamps, not of the panel's integrity. rep2 and rep3 are clean. Disclosed rather than reworded, because the timeline is recoverable from this repository's own git log. Ratified by Steven Job after an internal audit measured the gap. |
 | 1.1 | 2026-07-23 | Edition 1 (retroactive to publication) | Adds §7a: every published report table must carry the TIER score, not only its reciprocal `E[$/accepted]`, with column directions marked. Locks the benchmark difficulty->weight mapping (easy 1.0/s, medium 3.0/m, integration 5.0/l) as a **declaration** that must be printed in every report publishing a score, because the locked weight scale is defined over merged PRs and a benchmark task is not one. Ratified by Steven Job after a published launch artifact was found to contain no TIER score. |
 | 1.0 | 2026-07-22 | Edition 1 | Initial publication. Codifies practice from Edition 0 plus: the weakest-first calibration ladder (§3.4); reported cost dispersion (§2, §4.1); replication spent on cheap models, N=1 for top-tier confirmation (§4.1); redaction of published session logs to the cost-bearing fields (§8); N=3 with no optional stopping; expected cost per accepted outcome as the headline metric; model-unit saturation and over-hard triggers against a pre-declared roster; the like-for-like panel rule for longitudinal claims; the saturate-into-anchor cascade with the Anchor Set; the public task archive with judges sealed until graduation; bundle versioning with append-only status; escrow of the next edition's task hash; re-verification (not re-execution) as the reproducibility claim; and the full outcome enum with published counts. |
+
+### Edition 2 build declaration — see the dated v1.4 ruling above
+
+The 2026-07-26 ruling selects an **anchors-only** Edition 2, with one rate table
+per panel and the roster fixed before any scored run. The 2026-10-12 ruling adds
+GLM 5.3 through OpenCode and Muse through its own CLI and names current Claude
+and Codex IDs. `editions/2026-10/MANIFEST.json` declares the ten-model roster under R-2026-10-13-1,
+`orgsync/v1` at N=1 with non-PASS/missing rep1 expansion to N=3 (R-2026-10-12-21 supersedes R-2026-10-12-18) — superseded by R-2026-10-12-24: N=3 for all nine, its unchanged task hashes,
+and the rate-table hash. Only Haiku 5.5 / gpt-6-luna are floors; GLM and Muse
+are never floors. A new task opens to non-floor models only after a floor
+failed it; Edition 2 anchors run under **logged ALLOW_EXPENSIVE=1**.
+R-2026-10-13-1 adds GLM 5.3 Flash through `zai-coding-plan` for three reps on
+`orgsync/v1` in PR #14, making 30 planned runs across ten models. The existing
+27 runs retain their v11 pins; Flash has a per-model late-admission v13 pin.
+Reports price every run from the v13 report table. GLM 5.3 Highspeed is excluded.
+All ten requested models are retained: this is an
+Edition 2 exception to §3.3's eight-model cap, not a retroactive Edition 1 change.
+The active EASY floor and unresolved cronspec graduation are not counted as
+anchors. The sealed frontier escrow remains outside this fast panel; its
+limitations in `TASKS.md` are not resolved by this harness build.
+
+Every new run must supply an edition name. Edition 2 has a separate bundle root
+and rate pin. Native-store capture, token invariants, sandbox/permission posture,
+redaction, and remaining pricing questions are documented in `README.md`.
+This fix pass makes no new scored execution or capability/capture-parity claim;
+fixture tests establish parser behavior, not a real-model measurement.

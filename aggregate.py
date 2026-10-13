@@ -80,7 +80,7 @@ def cell_stats(runs):
     # explores, backtracks and retries, and that shows up in cost long before it
     # shows up in pass/fail.
     disp = None
-    if len(priced) > 1:
+    if len(priced) > 1 and not unpriced:
         mean = sum(priced) / len(priced)
         var = sum((c - mean) ** 2 for c in priced) / len(priced)
         disp = round(100.0 * (var ** 0.5) / mean, 1) if mean else None
@@ -91,9 +91,9 @@ def cell_stats(runs):
         "pass_rate": n_pass / n if n else None,
         "total_spend_usd": round(total_spend, 6),
         "expected_cost_per_accepted_usd":
-            round(total_spend / n_pass, 6) if n_pass else None,
+            round(total_spend / n_pass, 6) if n_pass and not unpriced else None,
         "mean_cost_when_passing_usd":
-            round(sum(pass_costs) / len(pass_costs), 6) if pass_costs else None,
+            round(sum(pass_costs) / len(pass_costs), 6) if pass_costs and not unpriced else None,
         "cost_dispersion_pct": disp,
         "cost_min_usd": round(min(priced), 6) if priced else None,
         "cost_max_usd": round(max(priced), 6) if priced else None,
@@ -106,7 +106,7 @@ def cell_stats(runs):
     }
 
 
-def saturation_verdict(cells, task):
+def saturation_verdict(cells, task, manifest=None):
     """PROTOCOL §3.3 triggers, stated in MODELS not runs.
 
     A raw run-percentage trigger fires on noise: with 7 models x N=3, 18/21 is
@@ -140,7 +140,18 @@ def saturation_verdict(cells, task):
     # ever produced a failure — from "no verdict" to SATURATED. An edition panel
     # is a declared roster run at uniform N; anything else is calibration.
     ns = sorted({s["n"] for s in tc.values()})
-    if len(ns) > 1:
+    declared_adaptive = False
+    if manifest and manifest.get('edition') == '2026-10':
+        expected = {(tool, model, task) for tool, models in manifest['roster'].items() for model in models}
+        policy = manifest.get('tasks', {}).get(task, {})
+        declared_adaptive = (set(tc) == expected and policy.get('reps') == 1 and
+                            policy.get('failure_reps') == 3 and
+                            all(s['n'] == (1 if s['n_pass'] == s['n'] else 3) for s in tc.values()))
+        if not declared_adaptive:
+            return {'task': task, 'verdict': 'CALIBRATION (no verdict)',
+                    'why': 'Edition 2 needs its full manifest roster and declared N=1/3 expansion',
+                    'models': n_models, 'perfect': perfect, 'any_pass': any_pass}
+    if len(ns) > 1 and not declared_adaptive:
         return {"task": task, "verdict": "CALIBRATION (no verdict)",
                 "why": (f"mixed replication across cells (N={ns}) — a verdict needs a "
                         f"declared roster at uniform N; this is a ladder, not an "
@@ -177,6 +188,8 @@ def main():
     if "--json" in sys.argv:
         out_json = sys.argv[sys.argv.index("--json") + 1]
 
+    manifest_p = os.path.join(root, 'MANIFEST.json')
+    manifest = json.loads(open(manifest_p).read()) if os.path.isfile(manifest_p) else None
     runs = load_runs(root)
     if not runs:
         print("no per-run results found (expected <tool>/<model>/<task>/rep*/result.json)",
@@ -193,6 +206,8 @@ def main():
 
     for task in tasks:
         print(f"\n=== task: {task}")
+        if any(r.get("edition") == "2026-10" for r in runs):
+            print("effort scales differ by vendor; each model ran at its CLI's shipped default (stamped)")
         print(f"{'tool':12} {'model':14} {'pass':>6} {'E[$/accepted]':>14} "
               f"{'$ when works':>13} {'total $':>9} {'range':>18} {'disp':>6}")
         print("-" * 100)
@@ -209,13 +224,13 @@ def main():
             flag += f" *{s['unpriced_runs']}-unpriced" if s["unpriced_runs"] else ""
             dp = s["cost_dispersion_pct"]
             print(f"{tool:12} {model:14} {s['n_pass']:>3}/{s['n']:<2} "
-                  f"{('$%.4f' % exp) if exp is not None else 'NO ACCEPTED':>14} "
+                  f"{('$%.4f' % exp) if exp is not None else 'NO SCORE':>14} "
                   f"{('$%.4f' % mw) if mw is not None else '-':>13} "
                   f"${s['total_spend_usd']:>8.4f} {rng:>18} "
                   f"{('%.1f%%' % dp) if dp is not None else '-':>6}{flag}")
             report["cells"][f"{tool}/{model}/{task}"] = s
 
-        v = saturation_verdict(cells, task)
+        v = saturation_verdict(cells, task, manifest)
         report["tasks"][task] = v
         print("-" * 100)
         print(f"VERDICT: {v['verdict']} -- {v['why']}")

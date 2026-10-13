@@ -1,0 +1,160 @@
+{
+  "acceptance": "PASS",
+  "agent_exit": 0,
+  "billing_route": "claude-code-subscription",
+  "cache_read_mult_used": 0.05,
+  "cache_read_pct": 88.63,
+  "capture": "OK",
+  "capture_scope": "fresh-project-slug+requested-UUID; top-level transcript; subagents refused",
+  "clean_config": true,
+  "cost_list_usd": 0.720649,
+  "edge_failures": "0f+0e",
+  "edition": "2026-10",
+  "effort": "medium",
+  "effort_evidence_fields": [
+    "assistant.effort"
+  ],
+  "effort_source": "cli-default",
+  "effort_source_checked": "session JSONL metadata/request output_config.effort",
+  "label": "claude-opus-5-5",
+  "log": "session.jsonl",
+  "model_flag": "claude-opus-5-5",
+  "model_ids_seen": [
+    "claude-opus-5-5"
+  ],
+  "model_key": "claude-opus-5-5",
+  "opencode_provider": "zai-coding-plan",
+  "outcome": "PASS",
+  "own_tests": "PASS",
+  "priced": true,
+  "prices_snapshot": "prices.snapshot.yaml",
+  "prices_yaml": "prices.yaml",
+  "prices_yaml_version": 11,
+  "rep": 1,
+  "run_id": "65cc2e96-17c5-4244-abe4-a2bcd8b59914",
+  "session_id": "65cc2e96-17c5-4244-abe4-a2bcd8b59914",
+  "session_log": "session.jsonl",
+  "task": "orgsync",
+  "timed_out": false,
+  "tokens": {
+    "api_calls": 10,
+    "cache_read": 301227,
+    "cache_w1h": 38623,
+    "cache_w5m": 0,
+    "cache_write": 38623,
+    "calls": [
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 6818,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 6818,
+        "cache_read_input_tokens": 9259,
+        "input_tokens": 2,
+        "output_tokens": 210
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5441,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5441,
+        "cache_read_input_tokens": 16077,
+        "input_tokens": 2,
+        "output_tokens": 175
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5973,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5973,
+        "cache_read_input_tokens": 21518,
+        "input_tokens": 2,
+        "output_tokens": 232
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 790,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 790,
+        "cache_read_input_tokens": 27491,
+        "input_tokens": 2,
+        "output_tokens": 1617
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 2376,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 2376,
+        "cache_read_input_tokens": 28281,
+        "input_tokens": 2,
+        "output_tokens": 6816
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 0,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 37593,
+        "input_tokens": 2,
+        "output_tokens": 1157
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 8287,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 8287,
+        "cache_read_input_tokens": 30657,
+        "input_tokens": 2,
+        "output_tokens": 5390
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 5607,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 5607,
+        "cache_read_input_tokens": 38944,
+        "input_tokens": 2,
+        "output_tokens": 433
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 2305,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 2305,
+        "cache_read_input_tokens": 44551,
+        "input_tokens": 2,
+        "output_tokens": 479
+      },
+      {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 1026,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 1026,
+        "cache_read_input_tokens": 46856,
+        "input_tokens": 2,
+        "output_tokens": 1058
+      }
+    ],
+    "input_total": 339870,
+    "input_uncached": 20,
+    "model_ids": [
+      "claude-opus-5-5"
+    ],
+    "output": 17567,
+    "reasoning": null
+  },
+  "tool": "claude-code",
+  "wall_seconds": 179,
+  "web_tool_count": 0,
+  "web_tool_names": [],
+  "web_tools_mode": "void"
+}
