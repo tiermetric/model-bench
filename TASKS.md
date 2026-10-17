@@ -213,7 +213,7 @@ draft declares it graduated, but no graduation event was ever recorded here and
 its judge reveal (§5.4) is therefore still owed. It is NOT counted in the Anchor
 Set above until that is resolved.
 
-Ruled by Steve, 2026-07-29.
+Ruled by the operator, 2026-07-29.
 
 
 **2026-07-29 · Edition 2 escrow — PARTIAL registration. §5.6 is NOT yet satisfied,

@@ -1,0 +1,36 @@
+{
+  "tool": "codex",
+  "label": "gpt-5.6-sol",
+  "model_key": "gpt-5.6-sol",
+  "model_ids_seen": [
+    "gpt-5.6-sol"
+  ],
+  "log": "[home]/.codex/sessions/2026/07/22/rollout-2026-07-22T17-32-21-019f8bbe-6eac-7933-ac4f-304ceca5a672.jsonl",
+  "own_tests": "PASS",
+  "acceptance": "PASS",
+  "edge_failures": "0f+0e",
+  "tokens": {
+    "api_calls": null,
+    "model_ids": [
+      "gpt-5.6-sol"
+    ],
+    "input_uncached": 13339,
+    "cache_read": 85760,
+    "cache_write": 0,
+    "cache_w5m": 0,
+    "cache_w1h": 0,
+    "output": 4674,
+    "reasoning": 700,
+    "input_total": 99099
+  },
+  "cache_read_pct": 86.54,
+  "cost_list_usd": 0.249795,
+  "cache_read_mult_used": 0.1,
+  "wall_seconds": 93,
+  "priced": true,
+  "web_tools_mode": "void",
+  "web_tool_count": 0,
+  "web_tool_names": [],
+  "prices_yaml": "[home]/gitrepos/tier/internal/store/prices.yaml",
+  "prices_yaml_version": 8
+}

@@ -1,0 +1,53 @@
+{
+  "edition": "2026-10",
+  "status": "build-only; no scored runs",
+  "operator_rulings": [
+    "2026-07-26: anchors-only; one rate table per panel; roster fixed before scored runs",
+    "2026-10-12: add OpenCode/GLM 5.3 and Muse; current model IDs",
+    "2026-10-12 decision panels: R-EFFORT D; R-CAP A (v1.3 cap 9 Edition 2 only); R-LADDER B; R-PRICE A"
+  ],
+  "roster": {
+    "claude-code": [
+      "claude-fable-5-1",
+      "claude-opus-5-5",
+      "claude-sonnet-5-5",
+      "claude-haiku-5-5"
+    ],
+    "codex": [
+      "gpt-6.1-sol",
+      "gpt-6-astra",
+      "gpt-6-luna"
+    ],
+    "opencode": [
+      "glm-5.3"
+    ],
+    "muse": [
+      "muse-spark-1.3"
+    ]
+  },
+  "scored_models": 9,
+  "panel_cap_exception": "PROTOCOL v1.3 \u00a79: cap 9 for Edition 2 only (operator R-CAP A, 2026-10-12).",
+  "tasks": {
+    "orgsync": {
+      "identity": "orgsync/v1",
+      "class": "anchor",
+      "reps": 1,
+      "failure_reps": 3,
+      "prompt_sha256": "94950b00fd82cc86a8c98a0793149b5f9c13e205dedd1ea533470387110ba408",
+      "judge_sha256": "b948f904bfd72ffcd8fedd30230182df3133d27a9972c6fc2c6af35ca5196a74"
+    }
+  },
+  "prices_yaml_version": 11,
+  "prices_yaml_sha256": "b3aa945f75af6573c29a3f47610f6f3460afa0665188b679dd2ea261265c9a15",
+  "tier_rates_source_version": 12,
+  "opencode_provider_default": "zai-coding-plan",
+  "publication_status": "No report yet. Existing escrow limitations remain disclosed in TASKS.md.",
+  "effort_policy": "shipped CLI default under clean config; observed effort/source per run",
+  "floor_models": [
+    "claude-haiku-5-5",
+    "gpt-6-luna"
+  ],
+  "anchor_gate": "logged ALLOW_EXPENSIVE=1",
+  "saturation_trigger": ">=8 of 9 pass every run",
+  "over_hard_trigger": "<=4 of 9 produce any passing run"
+}

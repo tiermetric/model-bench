@@ -1,0 +1,1129 @@
+#!/usr/bin/env python3
+"""Offline harness regression fixtures. No real vendor CLI is ever invoked.
+Run: python3 -m unittest discover -s control -p 'test_harness.py' -v
+"""
+import hashlib
+import json
+import os
+import re
+import signal
+from pathlib import Path
+import shutil
+import sqlite3
+import subprocess
+import sys
+import tempfile
+import time
+import unittest
+from unittest.mock import patch
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from token_evidence import capture_opencode, capture_muse, opencode_before, sum_native_jsonl
+from score import load_prices, price_native, scan_web_tools
+from redact import redact_file, scan_banned
+from verify import Report, verify_run, verify_cells
+from export import rows
+from aggregate import cell_stats, saturation_verdict
+from run_audit import codex_logs, claude_subagents, effort_receipt, sandbox_denials, check_environment
+from redact import redact_muse
+from preflight_check import assert_probe, policy_key, TOOLS, POLICY_FILES, probe_models
+
+
+def fixture_env():
+    # Each test supplies its own vendor controls, independent of the caller.
+    return {k: v for k, v in os.environ.items() if
+            not re.search(r'EFFORT|REASONING|VARIANT|MAX_THINKING_TOKENS', k, re.I)
+            and not k.startswith(('CLAUDE_', 'ANTHROPIC_', 'CODEX_', 'OPENCODE_', 'MUSE_', 'TBH_'))
+            and k != 'CLAUDECODE'}
+
+
+def assert_minimal_environment(test, directory, stamp, tool):
+    seen = set(json.loads((directory/'stub-env-names.json').read_text()))
+    test.assertEqual(stamp['model_environment'], 'env -i')
+    # macOS's framework Python synthesises this after env -i at startup; it is
+    # not a variable supplied by the harness or inherited from the caller.
+    test.assertEqual(seen - {'__CF_USER_TEXT_ENCODING'}, set(stamp['model_environment_allowlist']))
+    common = {'PATH', 'HOME', 'LANG', 'LC_ALL', 'TERM', 'NO_COLOR', 'TMPDIR'}
+    keychain = tool in ('claude-code', 'muse')
+    test.assertEqual(stamp['clean_config'], not keychain)
+    network = stamp['network_policy']
+    if tool == 'codex':test.assertIn('network_access=true',network)
+    elif tool == 'muse':
+        test.assertIn('network=enabled',network)
+        test.assertIn('inherited trust cannot be disabled',stamp['trust_policy'])
+    else:test.assertIn('shell network available',network)
+    if keychain:
+        test.assertEqual(seen - {'__CF_USER_TEXT_ENCODING'}, common | {'USER', 'LOGNAME'})
+        test.assertFalse({'XDG_CONFIG_HOME', 'XDG_DATA_HOME', 'XDG_CACHE_HOME',
+            'CODEX_HOME', 'CLAUDE_CONFIG_DIR', 'MUSE_AUTH_PATH'} & seen)
+    else:
+        test.assertTrue(common | {'XDG_CONFIG_HOME', 'XDG_DATA_HOME', 'XDG_CACHE_HOME',
+            'CODEX_HOME', 'CLAUDE_CONFIG_DIR', 'MUSE_AUTH_PATH'} <= seen)
+        test.assertFalse({'USER', 'LOGNAME'} & seen)
+    test.assertFalse({'CLAUDE_EFFORT', 'CLAUDE_CODE_MAX_OUTPUT_TOKENS', 'CLAUDECODE',
+        'CLAUDE_CODE_SESSION_ID', 'CLAUDE_CODE_ENTRYPOINT', 'CLAUDE_CODE_MESSAGING_PIPE',
+        'CLAUDE_PLUGIN_DATA', 'CODEX_SESSION_ID', 'SECRET_X'} & seen)
+    test.assertNotIn('ANTHROPIC_API_KEY', seen)
+    test.assertNotIn('META_API_KEY', seen)
+    test.assertEqual('OPENCODE_CONFIG_CONTENT' in seen, tool == 'opencode')
+    for secret in ('dummy-secret', 'dummy-anthropic-key', 'dummy-meta-key'):
+        test.assertNotIn(secret, (directory/'stamp.json').read_text())
+
+
+def write_preflight_record(root, env, age=0):
+    for name in POLICY_FILES:
+        target = root/name
+        if not target.exists():
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(ROOT/name, target)
+    models = probe_models(root)
+    with patch.dict(os.environ, env, clear=True):
+        key = policy_key(root)
+    p = root/'.preflight/pass.json'; p.parent.mkdir(exist_ok=True)
+    p.write_text(json.dumps(dict(policy_key=key, tools={tool: dict(
+        tool=tool, model=models[tool], loopback=True, passed_at=time.time()-age, tokens=110) for tool in TOOLS})))
+
+
+def polluted_session_env():
+    # CLAUDE_EFFORT is absent so the real refusal guard stays enabled in receipt
+    # runs. Deliberate CLAUDE_EFFORT refusal is tested separately, pre-spend.
+    return dict(CLAUDE_CODE_MAX_OUTPUT_TOKENS='17', CLAUDECODE='1',
+        CLAUDE_CODE_SESSION_ID='parent', CLAUDE_CODE_ENTRYPOINT='cli',
+        CLAUDE_CODE_MESSAGING_PIPE='parent', CLAUDE_PLUGIN_DATA='parent',
+        CODEX_SESSION_ID='parent', SECRET_X='dummy-secret',
+        ANTHROPIC_API_KEY='dummy-anthropic-key', META_API_KEY='dummy-meta-key')
+
+
+def write_log(path, objects):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(''.join(json.dumps(o)+'\n' for o in objects))
+
+
+def oc_message():
+    return dict(role='assistant', modelID='glm-5.3', providerID='zai-coding-plan',
+                path={'cwd': '/RUN'}, time={'completed': 1791800000000}, cost=0,
+                tokens=dict(total=172, input=100, output=10, reasoning=50,
+                            cache=dict(read=10, write=2)))
+
+
+def muse_event(rid='a', sid='parent', kind='run', event='model_completed', model='muse-spark-1.3', usage=None):
+    return dict(id=rid, stream=dict(kind='session', id=sid), recorded_at=1791800000000000,
+                payload=dict(kind=kind, run_id='run1', event=dict(kind=event, model=model,
+                usage=usage or dict(input_tokens=100, output_tokens=20, cached_tokens=30,
+                    cache_read_tokens=30, cache_write_tokens=5, reasoning_tokens=15))))
+
+
+class NativeEvidenceTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(); self.p = Path(self.tmp.name)
+        self.addCleanup(self.tmp.cleanup)
+
+    def oc_db(self):
+        db = self.p/'opencode.db'
+        with sqlite3.connect(db) as c:
+            c.executescript('CREATE TABLE session(id TEXT, directory TEXT, title TEXT, parent_id TEXT);'
+                'CREATE TABLE message(id TEXT, session_id TEXT, data TEXT);'
+                'CREATE TABLE part(id TEXT, session_id TEXT, data TEXT);')
+            c.executemany('INSERT INTO session VALUES(?,?,?,?)', [('target','/RUN','unique',None),('other','/OTHER','unique',None)])
+            c.executemany('INSERT INTO message VALUES(?,?,?)', [('m','target',json.dumps(oc_message())),('noise','other',json.dumps(oc_message()))])
+            c.execute('INSERT INTO part VALUES(?,?,?)', ('p','target',json.dumps(dict(type='tool',tool='webfetch',state={'input':{'url':'private'}}))))
+        return db
+
+    def native_log(self, objects, fmt):
+        path = self.p/'session.jsonl'; write_log(path, objects)
+        return path, sum_native_jsonl(path, fmt)
+
+    def test_opencode_exact_session_and_additive_reasoning(self):
+        db = self.oc_db()
+        opencode_before(db, '/FRESH')
+        with self.assertRaises(ValueError): opencode_before(db, '/RUN')
+        objects, sid = capture_opencode(db, '/RUN', 'unique')
+        self.assertEqual(sid, 'target')
+        path, t = self.native_log(objects, 'opencode')
+        self.assertEqual((t['input_uncached'],t['cache_read'],t['cache_write'],t['output'],t['reasoning']), (100,10,2,60,50))
+        self.assertEqual(t['api_calls'], 1)
+        self.assertEqual(t['provider_ids'], ['zai-coding-plan'])
+        self.assertEqual(scan_web_tools(path,'opencode'), (1,['webfetch']))
+        prices, _ = load_prices(ROOT/'prices.yaml')
+        self.assertAlmostEqual(price_native(t, prices, 'opencode'), (102*1.4+10*.26+60*4.4)/1e6)
+        with self.assertRaises(ValueError): capture_opencode(db,'/RUN','wrong-title')
+        with sqlite3.connect(db) as c: c.execute('INSERT INTO session VALUES(?,?,?,?)',('extra','/RUN','unique',None))
+        with self.assertRaises(ValueError): capture_opencode(db,'/RUN','unique')
+
+    def test_opencode_rejects_invalid_or_partial_usage(self):
+        for mutate in (lambda m: m['tokens'].update(total=171),
+                       lambda m: m['tokens'].pop('total'),
+                       lambda m: m['time'].pop('completed'),
+                       lambda m: m['tokens'].update(input=-1),
+                       lambda m: m['tokens'].update(input=1<<30)):
+            m = oc_message(); mutate(m)
+            write_log(self.p/'bad', [dict(type='opencode_message', id='m', session_id='s',data=m)])
+            with self.assertRaises(ValueError): sum_native_jsonl(self.p/'bad','opencode')
+
+    def test_opencode_excluded_provider_cannot_be_priced_as_zai(self):
+        m=oc_message();m['providerID']='ollama-cloud'
+        write_log(self.p/'bad',[dict(type='opencode_message',id='m',session_id='s',data=m)])
+        with self.assertRaisesRegex(ValueError, 'excluded'):
+            sum_native_jsonl(self.p/'bad','opencode')
+
+    def test_muse_containment_review_and_write_not_double_counted(self):
+        agent=muse_event()
+        review=muse_event('b',kind='approval', event='automated_review_completed',
+            model={'model_id':'muse-spark-1.3'},usage=dict(input_tokens=40, cached_input_tokens=10,
+            non_cached_input_tokens=30, output_tokens=8, reasoning_tokens=4,total_tokens=48))
+        path,t=self.native_log([{'payload':{'kind':'retained_frame','text':'ignore tokens'}},agent,review], 'muse')
+        self.assertEqual((t['input_uncached'], t['cache_read'], t['cache_write'],t['output'],t['reasoning']), (100,40,0,28,19))
+        self.assertEqual(t['input_total'],140)
+        prices,_=load_prices(ROOT/'prices.yaml')
+        self.assertAlmostEqual(price_native(t,prices,'muse'), (100*1.25+40*.15+28*4.25)/1e6)
+        redacted=self.p/'redacted/session.jsonl'; redact_file(path,redacted)
+        self.assertEqual(sum_native_jsonl(redacted,'muse'),t)
+        self.assertEqual(scan_banned(redacted),[])
+
+    def test_muse_invalid_usage_never_prices_partial_cost(self):
+        for patch in ({'cached_tokens':31},{'reasoning_tokens':21},{'cache_write_tokens':71},
+                      {'input_tokens':-1},{'input_tokens':1<<30}):
+            o=muse_event();o['payload']['event']['usage'].update(patch)
+            write_log(self.p/'bad',[o])
+            with self.assertRaises(ValueError):sum_native_jsonl(self.p/'bad','muse')
+        o=muse_event(); del o['payload']['event']['usage']['output_tokens']
+        write_log(self.p/'bad',[o])
+        with self.assertRaises(KeyError):sum_native_jsonl(self.p/'bad','muse')
+        write_log(self.p/'bad',[muse_event(),muse_event()])
+        with self.assertRaises(ValueError):sum_native_jsonl(self.p/'bad','muse')
+
+    def test_muse_uuid_workspace_and_linked_children(self):
+        root=self.p/'sessions'; path=root/'2026/10/12/parent/session.jsonl'
+        meta=dict(id='meta',stream=dict(kind='session',id='parent'),payload=dict(kind='metadata',record=dict(workspace_root='/RUN')))
+        link=muse_event('link',event='memory_reminder_child_session_linked')
+        link['payload']['event'].update(child_session_id='child', parent_run_id='run1')
+        write_log(path,[meta,muse_event(),link])
+        write_log(path.parent/'subagent/child/session.jsonl',[muse_event('child-a','child')])
+        write_log(root/'2026/10/12/unrelated/session.jsonl',[muse_event('noise','unrelated')])
+        objects,sid=capture_muse(root,'/RUN','parent')
+        _,t=self.native_log(objects,'muse')
+        self.assertEqual(t['api_calls'],2);self.assertEqual(sid,'parent')
+        with self.assertRaises(ValueError):capture_muse(root,'/OTHER','parent')
+        write_log(path,[meta,muse_event()])
+        with self.assertRaises(ValueError):capture_muse(root,'/RUN','parent')
+
+    def test_opencode_redaction_preserves_counts_and_audit(self):
+        objects,_=capture_opencode(self.oc_db(),'/RUN','unique')
+        path,t=self.native_log(objects,'opencode');dest=self.p/'redacted/session.jsonl'
+        redact_file(path,dest)
+        self.assertEqual(sum_native_jsonl(dest,'opencode'),t)
+        self.assertEqual(scan_web_tools(dest,'opencode'),scan_web_tools(path,'opencode'))
+        self.assertEqual(scan_banned(dest),[])
+
+    def test_native_verifier_and_export_round_trip(self):
+        for fmt,key in (('muse','muse-spark-1.3'),('opencode','glm-5.3')):
+            d=self.p/fmt/key/'baseline/rep1';d.mkdir(parents=True)
+            objects=[muse_event()] if fmt=='muse' else capture_opencode(self.oc_db(),'/RUN','unique')[0]
+            write_log(d/'session.jsonl',objects)
+            t=sum_native_jsonl(d/'session.jsonl',fmt); prices,_=load_prices(ROOT/'prices.yaml')
+            shutil.copy(ROOT/'prices.yaml', d/'prices.snapshot.yaml')
+            (d/'session.jsonl.sha256').write_text(hashlib.sha256((d/'session.jsonl').read_bytes()).hexdigest())
+            res=dict(edition='2026-10',tool=fmt,label=key,model_key=key,tokens=t,cost_list_usd=price_native(t,prices,fmt),capture='OK')
+            (d/'result.json').write_text(json.dumps(res))
+            stamp=dict(edition='2026-10',judge='acceptance_test.py',judge_sha256=hashlib.sha256((ROOT/'acceptance_test.py').read_bytes()).hexdigest())
+            (d/'stamp.json').write_text(json.dumps(stamp))
+            r=Report();verify_run(str(d),'rep1',r)
+            self.assertTrue(all(st=='PASS' for st,_,_ in r.rows),r.rows)
+        self.assertEqual(len(list(rows(self.p,'2026-10'))),2)
+        with self.assertRaises(ValueError):list(rows(self.p,'2026-07'))
+
+
+class VerifyReportTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(); self.p = Path(self.tmp.name)
+        self.addCleanup(self.tmp.cleanup)
+        self.edition = self.p/'editions/2026-10'
+        for rep in (1, 2):
+            d=self.edition/f'codex/fixture/baseline/rep{rep}';d.mkdir(parents=True)
+            write_log(d/'session.jsonl', [dict(type='event_msg', payload=dict(
+                type='token_count', info=dict(total_token_usage=dict(
+                    input_tokens=1000, output_tokens=0))))])
+            (d/'session.jsonl.sha256').write_text(hashlib.sha256((d/'session.jsonl').read_bytes()).hexdigest())
+            (d/'prices.snapshot.yaml').write_text('models:\n  fixture: { input_per_m: 1, output_per_m: 1, provider: openai }\n')
+            (d/'result.json').write_text(json.dumps(dict(tool='codex', label='fixture',
+                model_key='fixture', task='baseline', outcome='PASS', cost_list_usd=0.001)))
+            (d/'stamp.json').write_text(json.dumps(dict(judge='acceptance_test.py',
+                judge_sha256=hashlib.sha256((ROOT/'acceptance_test.py').read_bytes()).hexdigest())))
+        self.report = self.edition/'REPORT.md'
+        self.write_report('0.0020')
+
+    def write_report(self, total):
+        self.report.write_text(f'**2** runs · ${total} total · 2 accepted / 0 not accepted\n'
+            '| model | E[$/accepted] | TIER |\n|---|---|---|\n| fixture | $0.0010 | 1,000,000 |\n')
+
+    def invoke(self):
+        return subprocess.run([sys.executable, str(ROOT/'verify.py'), str(self.edition)],
+                              capture_output=True, text=True)
+
+    def test_report_in_passed_edition_is_checked(self):
+        p=self.invoke();self.assertEqual(p.returncode,0,p.stdout+p.stderr)
+        report_lines=[line for line in p.stdout.splitlines() if str(self.report) in line]
+        self.assertEqual(len(report_lines),5,p.stdout)
+        self.assertTrue(all('[PASS]' in line for line in report_lines),p.stdout)
+        self.assertNotIn('[SKIP]',p.stdout)
+
+    def test_report_total_off_by_0001_fails(self):
+        self.write_report('0.0021')
+        p=self.invoke();self.assertNotEqual(p.returncode,0,p.stdout+p.stderr)
+        total_lines=[line for line in p.stdout.splitlines() if 'total spend' in line]
+        self.assertEqual(len(total_lines),1,p.stdout)
+        self.assertIn('[FAIL]',total_lines[0]);self.assertIn(str(self.report),total_lines[0])
+        self.assertNotIn('[SKIP]',p.stdout)
+
+    def test_missing_edition_report_is_skipped(self):
+        self.report.unlink()
+        p=self.invoke();self.assertEqual(p.returncode,0,p.stdout+p.stderr)
+        self.assertIn(f'[SKIP] report {self.report}: no REPORT.md to check',p.stdout)
+
+
+class RunnerTests(unittest.TestCase):
+    def invoke(self, tool, model, **extra):
+        env=fixture_env();env.update(EDITION='2026-10',DRY_RUN='1',ALLOW_EXPENSIVE='1');env.update(extra)
+        return subprocess.run(['bash',str(ROOT/'run.sh'),tool,model,'orgsync'],env=env,capture_output=True,text=True)
+
+    def test_dry_runs_and_old_mapping(self):
+        for tool,model in [('opencode','glm-5.3'),('muse','muse-spark-1.3')]:
+            p=self.invoke(tool,model);self.assertEqual(p.returncode,0,p.stderr)
+            self.assertIn('command: '+tool,p.stdout)
+            self.assertNotIn('--no-session-log',p.stdout)
+            self.assertNotIn('--yolo',p.stdout)
+        p=self.invoke('claude-code','haiku',EDITION='2026-07')
+        self.assertEqual(p.returncode,0,p.stderr);self.assertIn('claude-haiku-4-5',p.stdout)
+        p=self.invoke('opencode','glm-5.3',OPENCODE_PROVIDER='ollama-cloud')
+        self.assertIn('ollama-cloud/glm-5.3',p.stdout)
+
+    def test_new_legs_with_offline_stub_clis_record_nonzero_exit(self):
+        # Run the complete harness against disposable local stores. Stubs are
+        # the only opencode/muse executables on this PATH; never a real model.
+        with tempfile.TemporaryDirectory(prefix='harness-fixture-', dir=ROOT) as tmp:
+            base=Path(tmp);bin_dir=base/'bin';bin_dir.mkdir()
+            for f in ('run.sh','edition.sh','score.py','run_audit.py','token_evidence.py','prices.yaml','TIER_PIN'):
+                shutil.copy(ROOT/f,base/f)
+            for d in ('prompts','editions/2026-10','evidence/prices'):
+                (base/d).mkdir(parents=True,exist_ok=True)
+            shutil.copy(ROOT/'prompts/baseline.md',base/'prompts/baseline.md')
+            shutil.copy(ROOT/'editions/2026-10/TIER_PIN',base/'editions/2026-10/TIER_PIN')
+            shutil.copy(ROOT/'editions/2026-10/MANIFEST.json',base/'editions/2026-10/MANIFEST.json')
+            shutil.copy(ROOT/'acceptance_test.py',base/'acceptance_test.py')
+            stub = """#!{python}
+import json, os, sqlite3, sys, time
+from pathlib import Path
+args=sys.argv[1:]
+if args==['--version']:
+ print('offline stub 1');sys.exit(0)
+Path('stub-env-names.json').write_text(json.dumps(sorted(os.environ)))
+assert os.environ['TERM']=='dumb' and os.environ['NO_COLOR']=='1'
+settings=json.loads((Path(sys.argv[0]).parent/'stub-control.json').read_text())
+time.sleep(float(settings.get('sleep',0)))
+def value(flag):return args[args.index(flag)+1]
+cwd=os.getcwd()
+if Path(sys.argv[0]).name=='opencode':
+ assert (Path(os.environ['XDG_DATA_HOME'])/'opencode/auth.json').is_file()
+ with sqlite3.connect(settings['opencode_db']) as c:
+  c.execute('INSERT INTO session VALUES(?,?,?,?)',('session-stub',cwd,value('--title'),None))
+  m={oc}
+  m['path']['cwd']=cwd
+  c.execute('INSERT INTO message VALUES(?,?,?)',('message-stub','session-stub',json.dumps(m)))
+else:
+ assert value('--provider')=='meta' and value('--sandbox-network')=='enabled'
+ assert '--trust-workspace' not in args
+ sid=value('--session-id')
+ p=Path(settings['muse_sessions'])/'2026/10/12'/sid/'session.jsonl'
+ p.parent.mkdir(parents=True)
+ meta=dict(id='meta',stream=dict(kind='session',id=sid),payload=dict(kind='metadata',record=dict(workspace_root=cwd)))
+ agent={muse}
+ agent['stream']['id']=sid
+ p.write_text(json.dumps(meta)+'\\n'+json.dumps(agent)+'\\n')
+sys.exit(7)
+""".format(python=sys.executable,oc=repr(oc_message()),muse=repr(muse_event()))
+            for tool in ('opencode','muse'):
+                cli=bin_dir/tool;cli.write_text(stub);cli.chmod(0o755)
+            db=base/'opencode.db'
+            with sqlite3.connect(db) as c:
+                c.executescript('CREATE TABLE session(id TEXT, directory TEXT, title TEXT, parent_id TEXT);'
+                    'CREATE TABLE message(id TEXT, session_id TEXT, data TEXT);'
+                    'CREATE TABLE part(id TEXT, session_id TEXT, data TEXT);')
+            env=fixture_env();env.update(EDITION='2026-10',DRY_RUN='0',ALLOW_EXPENSIVE='1',
+                OPENCODE_DB=str(db),MUSE_SESSIONS=str(base/'muse-store'),AGENT_TIMEOUT='10',
+                PATH=str(bin_dir)+os.pathsep+os.environ['PATH'],HOME=str(base/'operator-home'))
+            env.update(polluted_session_env())
+            auth=base/'operator-home/.local/share/opencode/auth.json';auth.parent.mkdir(parents=True)
+            auth.write_text('{"zai-coding-plan":{"key":"offline-credential"}}')
+            settings=dict(opencode_db=str(db),muse_sessions=str(base/'muse-store'))
+            for tool,model in (('opencode','glm-5.3'),('muse','muse-spark-1.3')):
+                (bin_dir/'stub-control.json').write_text(json.dumps(settings))
+                argv=['bash',str(base/'run.sh'),tool,model,'baseline','1']
+                p=subprocess.run(argv,env=env,capture_output=True,text=True,timeout=20)
+                self.assertEqual(p.returncode,0,p.stdout+p.stderr)
+                d=base/'editions/2026-10'/tool/model/'baseline/rep1'
+                r=json.loads((d/'result.json').read_text());st=json.loads((d/'stamp.json').read_text())
+                self.assertEqual(r['edition'],'2026-10');self.assertEqual(st['edition'],'2026-10')
+                self.assertEqual(r['agent_exit'],7,p.stdout+p.stderr+(d/'agent-output.txt').read_text());self.assertEqual(r['capture'],'OK')
+                self.assertEqual(r['outcome'],'FAIL');self.assertGreater(r['cost_list_usd'],0)
+                self.assertEqual(st['gate_basis'],'allow-expensive-override')
+                self.assertTrue(st['allow_expensive']);self.assertEqual(st['clean_config'],tool == 'opencode')
+                assert_minimal_environment(self,d,st,tool)
+                self.assertFalse(list((base/'.tool-config').glob('*/codex/auth.json')))
+                self.assertFalse(list((base/'.tool-config').glob('*/data/opencode/auth.json')))
+                self.assertEqual(st['effort'],'not observable')
+                self.assertIn('native',st['effort_source_checked'])
+                if tool=='opencode':self.assertEqual(st['billing_route'],'zai-coding-plan subscription')
+                self.assertTrue((d/'session.jsonl.sha256').is_file())
+                again=subprocess.run(argv,env=env,capture_output=True,text=True)
+                self.assertEqual(again.returncode,1);self.assertIn('fresh repo',again.stderr)
+                timeout_env=env.copy();timeout_env.update(AGENT_TIMEOUT='1')
+                (bin_dir/'stub-control.json').write_text(json.dumps(dict(settings,sleep=3)))
+                p=subprocess.run(argv[:-1]+['2'],env=timeout_env,capture_output=True,text=True,timeout=20)
+                self.assertEqual(p.returncode,0,p.stdout+p.stderr)
+                timed=json.loads((d.parent/'rep2/result.json').read_text())
+                self.assertTrue(timed['timed_out']);self.assertEqual(timed['outcome'],'FAIL')
+                self.assertIsNone(timed['cost_list_usd']);self.assertNotEqual(timed['capture'],'OK')
+
+
+    def test_fixed_roster_manifest_and_batch_dry_run(self):
+        manifest=json.loads((ROOT/'editions/2026-10/MANIFEST.json').read_text())
+        roster_size=sum(len(models) for models in manifest['roster'].values())
+        existing=sum((ROOT/'editions/2026-10'/tool/model/'orgsync/rep1/result.json').is_file()
+                     for tool,models in manifest['roster'].items() for model in models)
+        legs=roster_size-existing
+        env=fixture_env();env.update(EDITION='2026-10',DRY_RUN='1',ALLOW_EXPENSIVE='1')
+        p=subprocess.run(['bash',str(ROOT/'batch.sh')],env=env,capture_output=True,text=True)
+        self.assertEqual(p.returncode,0,p.stderr)
+        summary=(f'###### BATCH COMPLETE: {legs} legs, {legs} clean exits, '
+                 f'0 non-zero exits, {existing} existing results skipped, ')
+        self.assertRegex(p.stdout, '(?m)^'+re.escape(summary)+r'[0-9]+m ######$')
+        self.assertEqual(p.stdout.count('command:'),legs)
+        for tool,models in manifest['roster'].items():
+            for model in models:self.assertIn(f'2026-10/{tool}/{model}/orgsync rep1',p.stdout)
+        self.assertEqual(manifest['prices_yaml_sha256'],hashlib.sha256((ROOT/'prices.yaml').read_bytes()).hexdigest())
+        for task,props in manifest['tasks'].items():
+            self.assertEqual(props['prompt_sha256'],hashlib.sha256((ROOT/'prompts'/f'{task}.md').read_bytes()).hexdigest())
+            self.assertEqual(props['judge_sha256'],hashlib.sha256((ROOT/f'acceptance_{task}.py').read_bytes()).hexdigest())
+        env['TASKS']='baseline'
+        p=subprocess.run(['bash',str(ROOT/'batch.sh')],env=env,capture_output=True,text=True)
+        self.assertEqual(p.returncode,2)
+
+
+    def test_edition_required_and_export_required(self):
+        env=fixture_env();env.pop('EDITION',None);env['DRY_RUN']='1'
+        p=subprocess.run(['bash',str(ROOT/'run.sh'),'muse','muse-spark-1.3'],env=env,capture_output=True)
+        self.assertNotEqual(p.returncode,0)
+        p=subprocess.run([sys.executable,str(ROOT/'export.py')],capture_output=True)
+        self.assertEqual(p.returncode,2)
+        p=subprocess.run([sys.executable,str(ROOT/'score.py')],capture_output=True)
+        self.assertEqual(p.returncode,2)
+
+    def test_dry_run_does_not_invoke_cli(self):
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)
+            for tool in ('opencode','muse'):
+                stub=p/tool;stub.write_text('#!/bin/sh\necho PAID_CALL_ATTEMPT >&2\nexit 99\n');stub.chmod(0o755)
+                r=self.invoke(tool, 'glm-5.3' if tool=='opencode' else 'muse-spark-1.3', PATH=d+os.pathsep+os.environ['PATH'])
+                self.assertEqual(r.returncode,0,r.stderr);self.assertNotIn('PAID_CALL_ATTEMPT',r.stderr)
+
+
+
+class InterruptTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix='interrupt-fixture-', dir=ROOT)
+        self.addCleanup(self.tmp.cleanup)
+        self.base = Path(self.tmp.name)
+        for name in ('run.sh', 'batch.sh', 'edition.sh', 'score.py', 'run_audit.py',
+                     'token_evidence.py', 'preflight_check.py', 'prices.yaml',
+                     'acceptance_test.py', 'acceptance_orgsync.py'):
+            shutil.copy(ROOT/name, self.base/name)
+        for directory in ('bin', 'prompts', 'editions/2026-10', 'operator-home/.codex',
+                          'operator-home/.local/share/opencode'):
+            (self.base/directory).mkdir(parents=True, exist_ok=True)
+        for name in ('TIER_PIN', 'MANIFEST.json'):
+            shutil.copy(ROOT/'editions/2026-10'/name, self.base/'editions/2026-10'/name)
+        for name in ('baseline.md', 'orgsync.md'):
+            shutil.copy(ROOT/'prompts'/name, self.base/'prompts'/name)
+        home = self.base/'operator-home'
+        (home/'.codex/auth.json').write_text('{"fixture":"offline-codex"}')
+        (home/'.local/share/opencode/auth.json').write_text(
+            '{"zai-coding-plan":{"key":"offline-opencode"}}')
+        self.env = fixture_env()
+        self.env.update(EDITION='2026-10', DRY_RUN='0', ALLOW_EXPENSIVE='1',
+                        HOME=str(home), PATH=str(self.base/'bin')+os.pathsep+os.environ['PATH'],
+                        AGENT_TIMEOUT='60')
+        # Every vendor executable is a stub, including later batch legs if the
+        # regression continues the loop. The receipt is written only mid-leg.
+        stub = r'''#!PYTHON
+import json, os, signal, subprocess, sys, time
+from pathlib import Path
+if sys.argv[1:]==['--version']:print('offline interrupt stub');sys.exit(0)
+base=Path(sys.argv[0]).parent.parent
+child=subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'])
+def stop(sig, frame):
+ child.wait(timeout=5)
+ sys.exit(128+sig)
+signal.signal(signal.SIGTERM, stop)
+with (base/'started.jsonl').open('a') as f:
+ f.write(json.dumps(dict(pid=os.getpid(), pgid=os.getpgrp(), child=child.pid,
+                         cwd=os.getcwd()))+'\n')
+time.sleep(60)
+'''.replace('PYTHON', sys.executable)
+        for name in ('claude', 'codex', 'opencode', 'muse'):
+            cli = self.base/'bin'/name; cli.write_text(stub); cli.chmod(0o755)
+
+    def credentials(self):
+        return sorted(str(p.relative_to(self.base)) for pattern in
+                      ('*/codex/auth.json', '*/data/opencode/auth.json')
+                      for p in (self.base/'.tool-config').glob(pattern))
+
+    def group_alive(self, pgid):
+        try:
+            os.killpg(pgid, 0)
+            return True
+        except ProcessLookupError:
+            return False
+
+    def wait_for(self, predicate, timeout=10):
+        deadline = time.monotonic()+timeout
+        while time.monotonic() < deadline:
+            if predicate():
+                return True
+            time.sleep(.05)
+        return False
+
+    def starts(self):
+        path = self.base/'started.jsonl'
+        return [json.loads(line) for line in path.read_text().splitlines()] if path.exists() else []
+
+    def launch(self, argv):
+        output = (self.base/'runner-output.txt').open('w')
+        self.addCleanup(output.close)
+        p = subprocess.Popen(argv, env=self.env, stdout=output, stderr=subprocess.STDOUT,
+                             start_new_session=True)
+        def cleanup():
+            # Always reap even when the unfixed harness leaks its agent. The
+            # isolated test session also contains the runner's watchdog.
+            try: os.killpg(p.pid, signal.SIGKILL)
+            except ProcessLookupError: pass
+            for receipt in self.starts():
+                try: os.killpg(receipt['pgid'], signal.SIGTERM)
+                except ProcessLookupError: pass
+            for receipt in self.starts():
+                if not self.wait_for(lambda: not self.group_alive(receipt['pgid']), 2):
+                    try: os.killpg(receipt['pgid'], signal.SIGKILL)
+                    except ProcessLookupError: pass
+            p.wait(timeout=5)
+        self.addCleanup(cleanup)
+        return p
+
+    def interrupt_leg(self, sig, tool, model, rep):
+        previous = len(self.starts())
+        p = self.launch(['bash', str(self.base/'run.sh'), tool, model, 'baseline', str(rep)])
+        self.assertTrue(self.wait_for(lambda: len(self.starts()) > previous),
+                        (self.base/'runner-output.txt').read_text())
+        receipt = self.starts()[-1]
+        self.assertNotEqual(receipt['pgid'], p.pid)
+        # Both credentials really were copied; deletion checks cannot pass
+        # merely because setup never reached the credential-copy step.
+        self.assertEqual(len(self.credentials()), 2)
+        os.kill(p.pid, sig)
+        rc = p.wait(timeout=10)
+        dead = self.wait_for(lambda: not self.group_alive(receipt['pgid']), 3)
+        results = list((self.base/'editions/2026-10').rglob('result.json'))
+        observed = (rc, dead, self.credentials(), [str(r.relative_to(self.base)) for r in results])
+        self.assertEqual(observed, (128+sig, True, [], []),
+                         f'{signal.Signals(sig).name} receipt: {observed}\n'+
+                         (self.base/'runner-output.txt').read_text())
+
+    def test_sigint_stops_agent_group_deletes_auth_and_writes_no_result(self):
+        for rep, (tool, model) in enumerate((('codex', 'gpt-6-luna'), ('opencode', 'glm-5.3')), 1):
+            with self.subTest(tool=tool):
+                self.interrupt_leg(signal.SIGINT, tool, model, rep)
+
+    def test_sigterm_stops_agent_group_deletes_auth_and_writes_no_result(self):
+        for rep, (tool, model) in enumerate((('codex', 'gpt-6-luna'), ('opencode', 'glm-5.3')), 1):
+            with self.subTest(tool=tool):
+                self.interrupt_leg(signal.SIGTERM, tool, model, rep)
+
+    def test_config_setup_failure_deletes_copied_auth(self):
+        # Codex auth is copied before malformed OpenCode auth raises in CONFIG.
+        (self.base/'operator-home/.local/share/opencode/auth.json').write_text('{invalid')
+        p = subprocess.run(['bash', str(self.base/'run.sh'), 'codex', 'gpt-6-luna', 'baseline', '1'],
+                           env=self.env, capture_output=True, text=True, timeout=10)
+        self.assertNotEqual(p.returncode, 0, p.stdout+p.stderr)
+        self.assertIn('JSONDecodeError', p.stderr)
+        self.assertTrue(list((self.base/'.tool-config').glob('*/codex')))
+        self.assertEqual(self.credentials(), [])
+        self.assertEqual(self.starts(), [])
+        self.assertFalse(list((self.base/'editions/2026-10').rglob('result.json')))
+
+    def test_interrupted_leg_stops_batch_before_next_leg(self):
+        write_preflight_record(self.base, self.env)
+        p = self.launch(['bash', str(self.base/'batch.sh')])
+        self.assertTrue(self.wait_for(lambda: bool(self.starts())),
+                        (self.base/'runner-output.txt').read_text())
+        # A terminal interrupt reaches batch and run, while the agent is in
+        # the separate process group created by run_with_timeout's set -m.
+        os.killpg(p.pid, signal.SIGINT)
+        stopped = self.wait_for(lambda: p.poll() is not None or len(self.starts()) > 1)
+        self.assertTrue(stopped, (self.base/'runner-output.txt').read_text())
+        observed = (p.poll(), len(self.starts()))
+        self.assertEqual(observed, (130, 1),
+                         f'batch receipt: {observed}\n'+(self.base/'runner-output.txt').read_text())
+
+
+class ReviewRegressionTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(); self.p = Path(self.tmp.name)
+        self.addCleanup(self.tmp.cleanup)
+
+    def muse_config_fixture(self):
+        home=self.p/'home';config=home/'.config/muse';config.mkdir(parents=True)
+        env=fixture_env();env.update(HOME=str(home),XDG_CONFIG_HOME=str(home/'.config'))
+        # Invalid auth/lock contents prove these are never parsed as settings.
+        (config/'auth.json').write_text('auth must never be parsed by this guard')
+        (config/'trust.json').write_text('{"trusted_workspaces":["/operator/home"]}')
+        for name in ('.auth.json.lock', 'settings.json.lock', '.lock.json', 'notes.txt'):
+            (config/name).write_text('not a JSON settings file')
+        (config/'settings.json').write_text('{"schema_version":1,"model":"muse-spark-1.3","provider":"meta"}')
+        return config, env
+
+    def audit_environment(self, env, tool):
+        return subprocess.run([sys.executable,str(ROOT/'run_audit.py'),'environment',tool],env=env,capture_output=True,text=True)
+
+    def test_muse_settings_skips_auth_trust_locks_and_nonjson(self):
+        config,env=self.muse_config_fixture()
+        result=self.audit_environment(env,'muse')
+        self.assertEqual(result.returncode,0,result.stderr)
+
+    def test_muse_settings_refuses_effort_mcp_instructions_only_for_muse(self):
+        config,env=self.muse_config_fixture()
+        for name, data in [('settings.json',{'reasoning_effort':'max'}),
+                           ('other.json',{'mcpServers':{'private':'secret-value'}}),
+                           ('instructions.json',{'instructions':'secret-value'})]:
+            with self.subTest(name=name):
+                p=config/name;p.write_text(json.dumps(data))
+                result=self.audit_environment(env,'muse');self.assertNotEqual(result.returncode,0)
+                self.assertIn('operator Muse config keys refused',result.stderr)
+                self.assertNotIn('secret-value',result.stderr);self.assertNotIn('max',result.stderr)
+                for tool in ('claude-code','codex','opencode'):
+                    result=self.audit_environment(env,tool)
+                    self.assertEqual(result.returncode,0,result.stderr)
+                p.unlink()
+
+    def test_muse_malformed_and_unreadable_real_settings_refuse(self):
+        config,env=self.muse_config_fixture();settings=config/'settings.json'
+        for contents in ('not JSON: secret-value', '[]'):
+            settings.write_text(contents)
+            result=self.audit_environment(env,'muse')
+            self.assertNotEqual(result.returncode,0)
+            self.assertIn('cannot be audited by key names',result.stderr)
+            self.assertNotIn('secret-value',result.stderr)
+        settings.write_text('{}')
+        original=Path.read_text
+        def unreadable(path, *args, **kwargs):
+            if path == settings:raise PermissionError('secret-value')
+            return original(path, *args, **kwargs)
+        with patch.dict(os.environ,env,clear=True), patch.object(Path,'read_text',unreadable):
+            with self.assertRaisesRegex(ValueError,'cannot be audited by key names'):
+                check_environment(tool='muse')
+
+    def test_all_formats_void_mcp_and_browser(self):
+        for name in ('mcp__private__lookup', 'browser_navigate', 'browser', 'playwright.click'):
+            for fmt in ('claude', 'codex', 'opencode', 'muse'):
+                o = {'claude':dict(type='assistant',message=dict(content=[dict(type='tool_use',name=name)])),
+                     'codex':dict(type='response_item',payload=dict(type='function_call',name=name)),
+                     'opencode':dict(type='opencode_part',data=dict(type='tool',tool=name)),
+                     'muse':dict(payload=dict(event=dict(kind='tool_started',tool_name=name)))}[fmt]
+                path=self.p/'log';write_log(path,[o])
+                self.assertEqual(scan_web_tools(path,fmt),(1,[name]),(fmt,name))
+
+    def test_export_legacy_edition_refused_before_overwriting(self):
+        d=self.p/'codex/gpt-5.6-sol/baseline/rep1';d.mkdir(parents=True)
+        (d/'result.json').write_text(json.dumps(dict(tool='codex',label='gpt-5.6-sol')))
+        for name in ('results.csv','results.jsonl'):(self.p/name).write_text('sentinel')
+        self.assertEqual(list(rows(self.p,'2026-07'))[0]['edition'],'2026-07')
+        p=subprocess.run([sys.executable,str(ROOT/'export.py'),str(self.p),'--edition','2026-10'],capture_output=True,text=True)
+        self.assertNotEqual(p.returncode,0);self.assertIn('edition mismatch',p.stderr)
+        for name in ('results.csv','results.jsonl'):self.assertEqual((self.p/name).read_text(),'sentinel')
+
+    def test_unknown_cost_is_no_score_in_every_consumer(self):
+        runs=[dict(edition='2026-10',tool='codex',label='gpt-6-luna',task='baseline',outcome='PASS',cost_list_usd=1),
+              dict(edition='2026-10',tool='codex',label='gpt-6-luna',task='baseline',outcome='FAIL',cost_list_usd=None)]
+        stats=cell_stats(runs)
+        self.assertIsNone(stats['expected_cost_per_accepted_usd'])
+        self.assertIsNone(stats['mean_cost_when_passing_usd'])
+        partial=cell_stats(runs+[dict(outcome='PASS',cost_list_usd=2)])
+        self.assertIsNone(partial['cost_dispersion_pct'])
+        report=Report();verify_cells(runs,report)
+        self.assertEqual(report.rows[0][0],'FAIL');self.assertIn('NO SCORE',report.rows[0][1])
+        for i,r in enumerate(runs,1):
+            d=self.p/f"codex/gpt-6-luna/baseline/rep{i}";d.mkdir(parents=True);(d/'result.json').write_text(json.dumps(r))
+        (self.p/'tier-scores').mkdir();(self.p/'tier-scores/baseline.json').write_text(json.dumps(dict(developers=[dict(developer='gpt-6-luna',tier=100,cost_per_point=0.01)])))
+        p=subprocess.run([sys.executable,str(ROOT/'master_table.py'),str(self.p)],capture_output=True,text=True)
+        self.assertEqual(p.returncode,0,p.stderr)
+        text=(self.p/'MASTER-RESULTS.md').read_text()
+        row=next(l for l in text.splitlines() if l.startswith('| gpt-6-luna |'))
+        self.assertIn('NO SCORE',row);self.assertNotIn('$1.0000',row);self.assertNotIn('100.0',row)
+        self.assertIn("effort scales differ by vendor; each model ran at its CLI's shipped default (stamped)",text)
+
+    def test_muse_redaction_rejects_unknown_stream_and_tool_objects(self):
+        o=muse_event();o['stream'].update(text='secret',private=dict(arguments='secret'))
+        o['payload']['event'].update(tool={'arguments':'secret'},tool_name=['secret'],name='browser_navigate')
+        r=redact_muse('',o)
+        self.assertEqual(r['stream'],dict(kind='session',id='parent'))
+        self.assertNotIn('tool',r['payload']['event']);self.assertNotIn('tool_name',r['payload']['event'])
+        self.assertEqual(r['payload']['event']['name'],'browser_navigate')
+        self.assertNotIn('secret',json.dumps(r))
+
+    def test_codex_filters_cwd_before_counting_and_claude_subagents_refused(self):
+        marker=self.p/'marker';marker.touch();os.utime(marker,(100,100))
+        for name,cwd in (('target','/RUN'),('noise','/OTHER')):
+            write_log(self.p/f'rollout-{name}.jsonl',[dict(type='session_meta',payload=dict(cwd=cwd))])
+        self.assertEqual(codex_logs(self.p,marker,'/RUN'),[str(self.p/'rollout-target.jsonl')])
+        self.assertFalse(claude_subagents(self.p/'project'))
+        (self.p/'project/session/subagents').mkdir(parents=True)
+        self.assertTrue(claude_subagents(self.p/'project'))
+        p=subprocess.run([sys.executable,str(ROOT/'run_audit.py'),'claude-subagents',str(self.p/'project')],capture_output=True,text=True)
+        self.assertNotEqual(p.returncode,0);self.assertIn('spend capture refused',p.stderr)
+
+    def test_effort_observation_never_uses_documented_default(self):
+        for tool,obj in (('claude-code',dict(type='request',output_config=dict(effort='medium'))),
+                         ('codex',dict(type='turn_context',payload=dict(effort='high'))),
+                         ('opencode',dict(type='opencode_message',data=dict(reasoningEffort='low'))),
+                         ('muse',dict(payload=dict(kind='metadata',record=dict(reasoning_effort='high'))))):
+            write_log(self.p/'log',[obj]);r=effort_receipt(self.p/'log',tool)
+            self.assertNotEqual(r['effort'],'not observable');self.assertEqual(r['effort_source'],'observed-unsourced')
+            self.assertTrue(r['effort_evidence_fields'])
+            write_log(self.p/'log',[]);r=effort_receipt(self.p/'log',tool)
+            self.assertEqual(r['effort'],'not observable');self.assertTrue(r['effort_source_checked'])
+        write_log(self.p/'log',[dict(type='turn_context',payload=dict(effort='low')),dict(type='turn_context',payload=dict(effort='high'))])
+        self.assertEqual(effort_receipt(self.p/'log','codex')['effort'],['high','low'])
+
+    def test_sandbox_denial_voids_scorer(self):
+        from score import sum_claude_jsonl
+        log=self.p/'log'
+        write_log(log,[dict(type='assistant',message=dict(id='x',model='claude-haiku-5-5',usage=dict(input_tokens=100,output_tokens=10))),
+                       dict(type='tool_result',payload=dict(output='SandboxDenied: network access blocked'))])
+        self.assertTrue(sandbox_denials(log))
+        p=subprocess.run([sys.executable,str(ROOT/'score.py'),'--edition','2026-10','--format','claude','--log',str(log),'--prices',str(ROOT/'prices.yaml'),'--model-key','claude-haiku-5-5','--label','haiku'],capture_output=True,text=True)
+        self.assertNotEqual(p.returncode,0);self.assertIn('VOIDED',p.stderr);self.assertIn('sandbox denial',p.stderr)
+        write_log(log,[dict(type='request',arguments=dict(text='sandbox denied')),dict(type='turn_context',payload=dict(sandbox_policy=dict(type='workspace-write')))])
+        self.assertEqual(sandbox_denials(log),[])
+
+    def test_capture_failed_partial_and_redacted_log_is_verifiable(self):
+        d=self.p/'muse/muse-spark-1.3/baseline/rep1';d.mkdir(parents=True)
+        broken=muse_event();broken['payload']['event']['usage']['input_tokens']=-1
+        write_log(d/'session.jsonl',[broken]);redact_file(d/'session.jsonl',d/'redacted.jsonl')
+        shutil.copy(d/'redacted.jsonl',d/'session.jsonl')
+        (d/'session.jsonl.sha256').write_text(hashlib.sha256((d/'session.jsonl').read_bytes()).hexdigest())
+        (d/'result.json').write_text(json.dumps(dict(tool='muse',capture='NATIVE_STORE_FAILED',cost_list_usd=None,outcome='FAIL')))
+        (d/'stamp.json').write_text(json.dumps(dict(judge='acceptance_test.py',judge_sha256=hashlib.sha256((ROOT/'acceptance_test.py').read_bytes()).hexdigest())))
+        shutil.copy(ROOT/'prices.yaml',d/'prices.snapshot.yaml')
+        r=Report();verify_run(str(d),'rep1',r)
+        self.assertTrue(all(st=='PASS' for st,_,_ in r.rows),r.rows)
+        self.assertTrue(any('capture failure recorded' in what for _,what,_ in r.rows))
+
+    def test_nine_model_triggers_with_declared_failure_expansion(self):
+        manifest=json.loads((ROOT/'editions/2026-10/MANIFEST.json').read_text())
+        self.assertEqual(manifest['tasks']['orgsync']['reps'],1)
+        keys=[(t,m,'orgsync') for t,ms in manifest['roster'].items() for m in ms]
+        def cells(perfect,partial):
+            return {k:cell_stats([dict(outcome='PASS',cost_list_usd=1)] if i<perfect else
+                      [dict(outcome='PASS' if i<perfect+partial and r==2 else 'FAIL',cost_list_usd=1) for r in range(3)])
+                    for i,k in enumerate(keys)}
+        self.assertEqual(saturation_verdict(cells(8,0),'orgsync',manifest)['verdict'],'SATURATED')
+        self.assertEqual(saturation_verdict(cells(4,0),'orgsync',manifest)['verdict'],'OVER-HARD')
+        self.assertEqual(saturation_verdict(cells(4,1),'orgsync',manifest)['verdict'],'IN-BAND')
+        self.assertIn('no verdict',saturation_verdict(dict(list(cells(8,0).items())[:-1]),'orgsync',manifest)['verdict'])
+        one_run={k:cell_stats([dict(outcome='PASS',cost_list_usd=1)]) for k in keys}
+        self.assertEqual(saturation_verdict(one_run,'orgsync',manifest)['verdict'],'SATURATED')
+
+    def test_prices_sources_no_openai_write_and_haiku_per_request_tier(self):
+        from score import price, sum_claude_jsonl
+        prices,version=load_prices(ROOT/'prices.yaml');self.assertEqual(version,11)
+        self.assertEqual(prices['gpt-6.1-sol']['input_per_m'],2)
+        self.assertEqual(prices['gpt-6.1-sol']['cache_read_mult'],.05)
+        text=(ROOT/'prices.yaml').read_text();manifest=json.loads((ROOT/'editions/2026-10/MANIFEST.json').read_text())
+        for models in manifest['roster'].values():
+            for model in models:
+                line=next(l for l in text.splitlines() if l.startswith('  '+model+':'))
+                self.assertIn('source_url: "https://',line);self.assertIn('as_of: "2026-10-12"',line)
+                if 'provider: openai' in line:self.assertNotIn('cache_write_',line)
+        write_log(self.p/'log',[dict(type='assistant',message=dict(id='x',usage=dict(input_tokens=100000,output_tokens=10))),dict(type='assistant',message=dict(id='y',usage=dict(input_tokens=100001,output_tokens=10)))])
+        t=sum_claude_jsonl(self.p/'log')
+        self.assertAlmostEqual(price(t,prices['claude-haiku-5-5'],'claude')[0],(100000*.1+10*.5+100001*.5+10*2.5)/1e6)
+
+    def test_runner_spend_blocking_and_clean_default_flags(self):
+        env=fixture_env();env.update(EDITION='2026-10',ALLOW_EXPENSIVE='1',DRY_RUN='1',HOME=str(self.p/'operator-home'))
+        def run(tool,model,task="orgsync",**patch):
+            return subprocess.run(['bash',str(ROOT/'run.sh'),tool,model,task],env=dict(env,**patch),capture_output=True,text=True)
+        for tool,model in (('codex','gpt-off-roster'),('opencode','glm-off-roster'),('claude-code','claude-off-roster'),('muse','muse-off-roster')):
+            p=run(tool,model);self.assertNotEqual(p.returncode,0);self.assertIn('off-roster',p.stderr)
+        p=run('opencode','glm-5.3',DRY_RUN='0',OPENCODE_PROVIDER='ollama-cloud',GATE_CHECK='1')
+        self.assertEqual(p.returncode,2);self.assertIn('excluded',p.stderr)
+        for tool,model in (('opencode','glm-5.3'),('muse','muse-spark-1.3')):
+            p=run(tool,model,EDITION='2026-07',DRY_RUN='0');self.assertEqual(p.returncode,2);self.assertIn('not in Edition 1',p.stderr)
+        for key,value in (('CLAUDE_EFFORT','high'),('CLAUDE_CODE_EFFORT_LEVEL','high'),('MAX_THINKING_TOKENS','10000'),('CLAUDE_CODE_EXTRA_BODY','{"output_config":{"effort":"max"}}'),('CODEX_MODEL_REASONING_EFFORT','high'),('OPENCODE_CONFIG_CONTENT','{"agent":{"build":{"reasoningEffort":"high"}}}'),('MUSE_EXPERIMENTAL_FIRST_TURN_MINIMAL_EFFORT','1')):
+            p=run('codex','gpt-6-luna',**{key:value});self.assertNotEqual(p.returncode,0);self.assertIn('inherited effort',p.stderr)
+        for tool,model,flags in [('claude-code','haiku',['--safe-mode',"--setting-sources ''",'--strict-mcp-config','--disallowedTools Task Agent']),('codex','gpt-6-luna',['--ignore-user-config','--ignore-rules','-c sandbox_workspace_write.network_access=true','network_policy=workspace-write']),('opencode','glm-5.3',['OPENCODE_DISABLE_PROJECT_CONFIG=1','OPENCODE_DISABLE_EXTERNAL_SKILLS=1','OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=1']),('muse','muse-spark-1.3',['USER=','LOGNAME=','--no-foreign-personal-context','--disable-reminders','--disable-web-tools','--provider meta','--sandbox-network enabled','inherited trust cannot be disabled'])]:
+            p=run(tool,model);self.assertEqual(p.returncode,0,p.stderr)
+            for flag in flags:self.assertIn(flag,p.stdout)
+            self.assertNotIn('--reasoning-effort',p.stdout)
+        for tool,model in (('opencode','glm-5.3'),('muse','muse-spark-1.3')):
+            p=run(tool,model,task='baseline',ALLOW_EXPENSIVE='0');self.assertEqual(p.returncode,3);self.assertIn('REFUSED',p.stderr)
+            p=run(tool,model,task='baseline');self.assertIn('gate=allow-expensive-override',p.stdout)
+        p=run('codex','gpt-6-luna',ALLOW_EXPENSIVE='0');self.assertEqual(p.returncode,3);self.assertIn('anchors require logged',p.stderr)
+
+    def test_batch_anchor_pass_stops_at_one_fail_or_missing_expands_and_skips_existing(self):
+        for outcome in ('PASS', 'FAIL', 'missing'):
+            base=self.p/outcome;base.mkdir()
+            shutil.copy(ROOT/'batch.sh',base/'batch.sh');shutil.copy(ROOT/'edition.sh',base/'edition.sh')
+            shutil.copy(ROOT/'preflight_check.py',base/'preflight_check.py')
+            stub=base/'run.sh'
+            stub.write_text('''#!{python}
+import json, sys
+from pathlib import Path
+base=Path(__file__).parent
+tool, model, task, rep=sys.argv[1:]
+with (base/'launches').open('a') as f:f.write(' '.join(sys.argv[1:])+'\\n')
+if not ({outcome!r}=='missing' and rep=='1'):
+ p=base/'editions/2026-10'/tool/model/task/('rep'+rep)/'result.json'
+ p.parent.mkdir(parents=True,exist_ok=True)
+ assert not p.exists(), 'must never overwrite existing result'
+ p.write_text(json.dumps(dict(outcome={outcome!r} if rep=='1' else 'PASS')))
+'''.format(python=sys.executable,outcome=outcome));stub.chmod(0o755)
+            b=base/'bin';b.mkdir();(b/'sleep').write_text('#!/bin/sh\nexit 0\n');(b/'sleep').chmod(0o755)
+            env=fixture_env();env.update(EDITION='2026-10',DRY_RUN='0',ALLOW_EXPENSIVE='1',PATH=str(b)+os.pathsep+os.environ['PATH'])
+            write_preflight_record(base, env)
+            p=subprocess.run(['bash',str(base/'batch.sh')],env=env,capture_output=True,text=True)
+            self.assertEqual(p.returncode,0,p.stderr)
+            calls=(base/'launches').read_text().splitlines()
+            self.assertEqual(len(calls),9 if outcome=='PASS' else 27)
+            manifest=json.loads((ROOT/'editions/2026-10/MANIFEST.json').read_text())
+            for tool,models in manifest['roster'].items():
+                for model in models:
+                    for rep in ((1,) if outcome=='PASS' else (1,2,3)):
+                        self.assertIn(f'{tool} {model} orgsync {rep}',calls)
+            existing = {p: p.read_bytes() for p in (base/'editions').rglob('result.json')}
+            (base/'launches').unlink()
+            rerun=subprocess.run(['bash',str(base/'batch.sh')],env=env,capture_output=True,text=True)
+            self.assertEqual(rerun.returncode,0,rerun.stderr)
+            calls=(base/'launches').read_text().splitlines() if (base/'launches').exists() else []
+            self.assertEqual(len(calls),9 if outcome=='missing' else 0)
+            for p, data in existing.items():self.assertEqual(p.read_bytes(),data)
+            # Edition 2's initial scheduling cannot be overridden to N=3.
+            refused=subprocess.run(['bash',str(base/'batch.sh')],env=dict(env,REPS='3'),capture_output=True,text=True)
+            self.assertEqual(refused.returncode,2)
+
+    def test_claude_and_codex_capture_receipts_with_offline_stub_clis(self):
+        with tempfile.TemporaryDirectory(prefix='harness-fixture-',dir=ROOT) as tmp:
+            base=Path(tmp)
+            for name in ('run.sh','edition.sh','run_audit.py','score.py','token_evidence.py','prices.yaml','acceptance_test.py'):
+                shutil.copy(ROOT/name,base/name)
+            for directory in ('prompts','editions/2026-10','bin','operator-home/.codex','operator-home/.claude'):
+                (base/directory).mkdir(parents=True,exist_ok=True)
+            for name in ('TIER_PIN','MANIFEST.json'):shutil.copy(ROOT/'editions/2026-10'/name,base/'editions/2026-10'/name)
+            shutil.copy(ROOT/'prompts/baseline.md',base/'prompts/baseline.md')
+            (base/'operator-home/.codex/auth.json').write_text('{"fixture":"offline-credential"}')
+            (base/'operator-home/.codex/config.toml').write_text('model_reasoning_effort = "max"\n')
+            (base/'operator-home/.claude/settings.json').write_text('{"effortLevel":"max"}')
+            stub='''#!{python}
+import json,os,sys
+from pathlib import Path
+if sys.argv[1:]==['--version']:print('offline stub');sys.exit(0)
+settings=json.loads((Path(sys.argv[0]).parent/'stub-control.json').read_text())
+Path('stub-env-names.json').write_text(json.dumps(sorted(os.environ)))
+assert os.environ['TERM']=='dumb' and os.environ['NO_COLOR']=='1'
+if Path(sys.argv[0]).name=='claude':
+ assert '.tool-config' not in os.environ['HOME']
+ assert 'CLAUDE_CONFIG_DIR' not in os.environ and 'ANTHROPIC_API_KEY' not in os.environ
+ assert '--bare' not in sys.argv and '--safe-mode' in sys.argv
+ assert sys.argv[sys.argv.index('--setting-sources')+1]==''
+else:
+ assert '.tool-config' in os.environ['HOME']
+ assert (Path(os.environ['CODEX_HOME'])/'auth.json').is_file()
+ assert 'sandbox_workspace_write.network_access=true' in sys.argv
+ assert not (Path(os.environ['CODEX_HOME'])/'config.toml').exists()
+ assert not (Path(os.environ['CLAUDE_CONFIG_DIR'])/'settings.json').exists()
+cwd=os.getcwd()
+def write(p,objects):
+ p.parent.mkdir(parents=True,exist_ok=True)
+ p.write_text(''.join(json.dumps(o)+'\\n' for o in objects))
+if Path(sys.argv[0]).name=='claude':
+ project=Path(os.environ['HOME'])/'.claude/projects'/cwd.replace('/','-').replace('.','-')
+ sid=sys.argv[sys.argv.index('--session-id')+1]
+ write(project/(sid+'.jsonl'),[dict(type='request',output_config=dict(effort='low')),dict(type='assistant',message=dict(id='x',model='claude-haiku-5-5',usage=dict(input_tokens=100,output_tokens=10)))])
+ if settings.get('STUB_SUBAGENTS')=='1':write(project/sid/'subagents/a.jsonl',[dict(type='assistant',message=dict(id='child',usage=dict(input_tokens=100,output_tokens=10)))])
+else:
+ root=Path(os.environ['CODEX_HOME'])/'sessions'
+ event=dict(type='event_msg',payload=dict(type='token_count',info=dict(total_token_usage=dict(input_tokens=100,output_tokens=10,total_tokens=110))))
+ context=dict(type='turn_context',payload=dict(effort='high'))
+ if settings.get('STUB_SETTING_SOURCE')=='1':context['payload']['effort_source']='config'
+ objects=[dict(type='session_meta',payload=dict(cwd=cwd)),context,event]
+ if settings.get('STUB_MIXED_SOURCE')=='1':
+  context['payload']['effort_source']='config'
+  objects.append(dict(type='request',effort='high',effort_source='cli-default'))
+ if settings.get('STUB_SANDBOX')=='1':objects.append(dict(type='tool_result',payload=dict(output='SandboxDenied: network access blocked')))
+ write(root/'rollout-target.jsonl',objects)
+ write(root/'rollout-noise.jsonl',[dict(type='session_meta',payload=dict(cwd='/unrelated')),event])
+sys.exit(7)
+'''.format(python=sys.executable)
+            for name in ('claude','codex'):
+                cli=base/'bin'/name;cli.write_text(stub);cli.chmod(0o755)
+            env=fixture_env();env.update(EDITION='2026-10',DRY_RUN='0',ALLOW_EXPENSIVE='1',AGENT_TIMEOUT='10',HOME=str(base/'operator-home'),PATH=str(base/'bin')+os.pathsep+os.environ['PATH'])
+            env.update(polluted_session_env())
+            for tool,model,rep,patch in [('claude-code','haiku',1,{}),('claude-code','haiku',2,{'STUB_SUBAGENTS':'1'}),('codex','gpt-6-luna',1,{}),('codex','gpt-6-luna',2,{'STUB_SANDBOX':'1'}),('codex','gpt-6-luna',3,{'STUB_SETTING_SOURCE':'1'}),('codex','gpt-6-luna',4,{'STUB_MIXED_SOURCE':'1'})]:
+                (base/'bin/stub-control.json').write_text(json.dumps(patch))
+                p=subprocess.run(['bash',str(base/'run.sh'),tool,model,'baseline',str(rep)],env=env,capture_output=True,text=True,timeout=20)
+                self.assertEqual(p.returncode,0,p.stdout+p.stderr)
+                d=base/f'editions/2026-10/{tool}/{model}/baseline/rep{rep}'
+                r=json.loads((d/'result.json').read_text());st=json.loads((d/'stamp.json').read_text())
+                self.assertEqual(st['clean_config'],tool == 'codex')
+                assert_minimal_environment(self,d,st,tool)
+                self.assertFalse(list((base/'.tool-config').glob('*/codex/auth.json')))
+                self.assertFalse(list((base/'.tool-config').glob('*/data/opencode/auth.json')))
+                for secret in ('dummy-secret','dummy-anthropic-key','dummy-meta-key'):
+                    self.assertNotIn(secret,p.stdout+p.stderr)
+                self.assertEqual(st['effort'],'low' if tool=='claude-code' else 'high')
+                if patch.get('STUB_SUBAGENTS'):
+                    self.assertEqual(r['capture'],'CLAUDE_SUBAGENTS_REFUSED');self.assertIsNone(r['cost_list_usd'])
+                    self.assertIn('spend capture refused',p.stderr)
+                elif patch:
+                    self.assertEqual(r['outcome'],'VOID');self.assertIn('void_reason',r)
+                    if patch.get('STUB_SETTING_SOURCE'):self.assertEqual(st['effort_source'],'config')
+                    if patch.get('STUB_MIXED_SOURCE'):self.assertEqual(st['effort_source'],['cli-default','config'])
+                else:
+                    self.assertEqual(r['capture'],'OK');self.assertGreater(r['cost_list_usd'],0)
+                    self.assertEqual(st['effort_source'],'observed-unsourced')
+                if tool=='claude-code':
+                    self.assertEqual(st['billing_route'],'claude-code-subscription')
+                    self.assertIn('operator real home/default config dir',st['auth_policy'])
+                    self.assertEqual(st['session_id'],st['run_id'])
+                    self.assertIn('requested-UUID',st['capture_scope'])
+                if tool=='codex':self.assertEqual(st['capture_scope'],'newer-than-marker+session_meta.cwd==run_dir')
+
+class PreflightTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix='preflight-fixture-', dir=ROOT)
+        self.addCleanup(self.tmp.cleanup)
+        self.base = Path(self.tmp.name)
+        for name in ('preflight_http.py', 'run.sh', 'batch.sh', 'preflight.sh', 'preflight_check.py',
+                     'edition.sh', 'run_audit.py', 'score.py', 'token_evidence.py', 'prices.yaml'):
+            shutil.copy(ROOT/name, self.base/name)
+        for directory in ('editions/2026-10', 'bin', 'operator-home/.codex',
+                          'operator-home/.local/share/opencode', 'operator-home/.config/muse'):
+            (self.base/directory).mkdir(parents=True, exist_ok=True)
+        for name in ('TIER_PIN', 'MANIFEST.json'):
+            shutil.copy(ROOT/'editions/2026-10'/name, self.base/'editions/2026-10'/name)
+        # No prompts, skeleton, fixtures or judges: preflight must skip them.
+        self.env = fixture_env()
+        self.env.update(EDITION='2026-10', DRY_RUN='0', ALLOW_EXPENSIVE='1',
+                        HOME=str(self.base/'operator-home'),
+                        PATH=str(self.base/'bin')+os.pathsep+os.environ['PATH'],
+                        CLAUDE_CONFIG_DIR=str(self.base/'wrong-claude-config'),
+                        XDG_CONFIG_HOME=str(self.base/'wrong-xdg-config'),
+                        MUSE_AUTH_PATH=str(self.base/'wrong-muse-auth.json'))
+        self.env.update(polluted_session_env())
+        self.env.update(USER='wrong-parent-user', LOGNAME='wrong-parent-user')
+        home = self.base/'operator-home'
+        (home/'.codex/auth.json').write_text('{"fixture":"codex-credential"}')
+        (home/'.local/share/opencode/auth.json').write_text(json.dumps({
+            'zai-coding-plan': {'key': 'opencode-credential'}, 'excluded': {'key': 'do-not-copy'}}))
+        (home/'.config/muse/auth.json').write_text('{"storage":"keychain","mechanism":"oauth","fixture":"muse-credential"}')
+
+    def install_stubs(self):
+        stub = r'''#!PYTHON
+import json, os, sqlite3, sys
+from pathlib import Path
+args=sys.argv[1:]; tool=Path(sys.argv[0]).name
+if args==['--version']:print('offline stub');sys.exit(0)
+base=Path(sys.argv[0]).parent.parent
+settings=json.loads((base/'stub-control.json').read_text()) if (base/'stub-control.json').exists() else {}
+def value(flag):return args[args.index(flag)+1]
+def write(path,objects):
+ path.parent.mkdir(parents=True,exist_ok=True)
+ path.write_text(''.join(json.dumps(o)+'\n' for o in objects))
+import re, urllib.request
+url=re.search(r'http://127\.0\.0\.1:[0-9]+/ok/[a-z-]+',args[-1]).group()
+assert 'with a shell command' in args[-1]
+with (base/'calls.jsonl').open('a') as f:f.write(json.dumps(dict(tool=tool,args=args,env_names=sorted(os.environ)))+'\n')
+mode=settings.get('mode') if settings.get('tool')==tool else None
+inp,out=(0,0) if mode=='zero' else (100,10)
+cwd=os.getcwd()
+if tool in ('claude','muse'):
+ import pwd
+ assert Path(os.environ['HOME'])==base/'operator-home'
+ assert os.environ['USER']==os.environ['LOGNAME']==pwd.getpwuid(os.getuid()).pw_name
+ assert not set(('XDG_CONFIG_HOME','XDG_DATA_HOME','XDG_CACHE_HOME','MUSE_AUTH_PATH','CLAUDE_CONFIG_DIR','CODEX_HOME','ANTHROPIC_API_KEY','META_API_KEY')) & set(os.environ)
+ assert not list((base/'.tool-config').glob('*/config/muse/auth.json'))
+if mode!='no-capture':
+ if tool=='claude':
+  assert Path(os.environ['HOME'])==base/'operator-home'
+  assert 'CLAUDE_CONFIG_DIR' not in os.environ and 'ANTHROPIC_API_KEY' not in os.environ
+  assert '--bare' not in args and '--safe-mode' in args
+  sid=value('--session-id');project=Path(os.environ['HOME'])/'.claude/projects'/cwd.replace('/','-').replace('.','-')
+  write(project/(sid+'.jsonl'),[dict(type='assistant',sessionId=sid,message=dict(id='x',model='claude-haiku-5-5',usage=dict(input_tokens=inp,output_tokens=out)))])
+  # Another session in this cwd must not contaminate the requested UUID capture.
+  write(project/'unrelated.jsonl',[dict(type='assistant',message=dict(id='noise',usage=dict(input_tokens=99999,output_tokens=1)))])
+  if mode=='subagents':write(project/sid/'subagents/a.jsonl',[])
+ elif tool=='codex':
+  root=Path(os.environ['CODEX_HOME'])
+  assert json.loads((root/'auth.json').read_text())==dict(fixture='codex-credential')
+  assert not (root/'config.toml').exists()
+  write(root/'sessions/rollout-stub.jsonl',[dict(type='session_meta',payload=dict(cwd=cwd)),dict(type='event_msg',payload=dict(type='token_count',info=dict(total_token_usage=dict(input_tokens=inp,output_tokens=out,total_tokens=inp+out))))])
+ elif tool=='opencode':
+  root=Path(os.environ['XDG_DATA_HOME'])/'opencode'
+  assert json.loads((root/'auth.json').read_text())=={'zai-coding-plan':{'key':'opencode-credential'}}
+  assert not (Path(os.environ['XDG_CONFIG_HOME'])/'opencode/opencode.json').exists()
+  with sqlite3.connect(root/'opencode.db') as c:
+   c.executescript('CREATE TABLE session(id TEXT, directory TEXT, title TEXT, parent_id TEXT); CREATE TABLE message(id TEXT, session_id TEXT, data TEXT); CREATE TABLE part(id TEXT, session_id TEXT, data TEXT);')
+   c.execute('INSERT INTO session VALUES(?,?,?,?)',('stub',cwd,value('--title'),None))
+   m=dict(role='assistant',modelID='glm-5.3',providerID='zai-coding-plan',path=dict(cwd=cwd),time=dict(completed=1791800000000),tokens=dict(total=inp+out,input=inp,output=out,reasoning=0,cache=dict(read=0,write=0)))
+   c.execute('INSERT INTO message VALUES(?,?,?)',('m','stub',json.dumps(m)))
+ else:
+  assert json.loads((Path(os.environ['HOME'])/'.config/muse/auth.json').read_text())==dict(storage='keychain',mechanism='oauth',fixture='muse-credential')
+  assert all(flag in args for flag in ('--no-foreign-personal-context','--worktree','--approval-mode','--approval-judge','--contributor-mode','--disable-web-tools','--disable-reminders'))
+  sid=value('--session-id')
+  write(Path(os.environ['HOME'])/'.local/share/muse/sessions/2026/10/12'/sid/'session.jsonl',[
+   dict(id='meta',stream=dict(kind='session',id=sid),payload=dict(kind='metadata',record=dict(workspace_root=cwd))),
+   dict(id='a',recorded_at=1791800000000000,stream=dict(kind='session',id=sid),payload=dict(kind='run',run_id='run',event=dict(kind='model_completed',model='muse-spark-1.3',usage=dict(input_tokens=inp,output_tokens=out))))])
+body='OK'
+if mode not in ('blocked-loopback', 'fake-body'):
+ body=urllib.request.build_opener(urllib.request.ProxyHandler({})).open(url).read().decode()
+ if mode=='missing-body':body='OK'
+print('Not logged in · Please run /login' if mode=='login' else body)
+sys.exit(7 if mode=='exit' else 0)
+'''.replace('PYTHON', sys.executable)
+        for tool in ('claude', 'codex', 'opencode', 'muse'):
+            path=self.base/'bin'/tool; path.write_text(stub); path.chmod(0o755)
+
+    def invoke(self):
+        return subprocess.run(['bash', str(self.base/'preflight.sh')], env=self.env,
+                              capture_output=True, text=True, timeout=25)
+
+    def test_all_four_use_runner_auth_and_capture_then_write_record(self):
+        self.install_stubs()
+        config=self.base/'operator-home/.config/muse'
+        (config/'trust.json').write_text('{"trusted_workspaces":["/operator/home"]}')
+        (config/'.auth.json.lock').write_text('not JSON')
+        (config/'settings.json').write_text('{"schema_version":1,"model":"muse-spark-1.3","provider":"meta"}')
+        p=self.invoke(); self.assertEqual(p.returncode, 0, p.stdout+p.stderr)
+        record=json.loads((self.base/'.preflight/pass.json').read_text())
+        self.assertEqual(set(record['tools']), set(TOOLS))
+        self.assertEqual([record['tools'][t]['tokens'] for t in TOOLS], [110]*4)
+        self.assertEqual(p.stdout.count('PREFLIGHT PASS'), 4)
+        for receipt in record['tools'].values():
+            self.assertIn('date_utc', receipt); self.assertLess(time.time()-receipt['passed_at'], 60)
+        calls=[json.loads(line) for line in (self.base/'calls.jsonl').read_text().splitlines()]
+        self.assertEqual([call['tool'] for call in calls], ['claude','codex','opencode','muse'])
+        self.assertNotIn('dummy-meta-key', (self.base/'.preflight/pass.json').read_text()+p.stdout+p.stderr)
+        self.assertFalse(list((self.base/'.preflight').glob('run.*')))
+        self.assertFalse(list((self.base/'.tool-config').iterdir()))
+        self.assertFalse(list((self.base/'editions/2026-10').glob('*/*/*/rep*')))
+        gate=subprocess.run([sys.executable,str(self.base/'preflight_check.py'),'require','--root',str(self.base)],env=self.env,capture_output=True,text=True)
+        self.assertEqual(gate.returncode,0,gate.stderr)
+
+    def test_preflight_muse_settings_refusal_does_not_block_other_tools(self):
+        self.install_stubs()
+        config=self.base/'operator-home/.config/muse'
+        (config/'.auth.json.lock').write_text('not JSON')
+        (config/'trust.json').write_text('{"trusted_workspaces":["/operator/home"]}')
+        (config/'settings.json').write_text('{"reasoning_effort":"max"}')
+        p=self.invoke();self.assertEqual(p.returncode,1,p.stdout+p.stderr)
+        self.assertIn('operator Muse config keys refused: reasoning_effort',p.stderr)
+        self.assertEqual(p.stdout.count('PREFLIGHT PASS'),3)
+        calls=[json.loads(line)['tool'] for line in (self.base/'calls.jsonl').read_text().splitlines()]
+        self.assertEqual(calls,['claude','codex','opencode'])
+        self.assertFalse((self.base/'.preflight/pass.json').exists())
+
+    def test_preflight_dry_run_never_calls_cli_or_grants_passes(self):
+        self.install_stubs()
+        write_preflight_record(self.base, self.env)
+        record = (self.base/'.preflight/pass.json').read_bytes()
+        self.env['DRY_RUN'] = '1'
+        p = self.invoke()
+        self.assertEqual(p.returncode, 0, p.stdout+p.stderr)
+        self.assertEqual(p.stdout.count('command:'), 4)
+        self.assertFalse((self.base/'calls.jsonl').exists())
+        self.assertEqual((self.base/'.preflight/pass.json').read_bytes(), record)
+
+    def test_runner_preflight_rejects_login_zero_exit_missing_and_subagents(self):
+        self.install_stubs()
+        for mode, reason in [('login','login/auth prompt'),('zero','zero or invalid tokens'),
+                             ('exit','agent exit 7'),('no-capture','capture failed'),
+                             ('subagents','capture failed'), ('blocked-loopback','loopback request not observed'), ('fake-body','loopback request not observed'), ('missing-body','loopback request/body')]:
+            with self.subTest(mode=mode):
+                write_preflight_record(self.base,self.env)
+                (self.base/'stub-control.json').write_text(json.dumps(dict(tool='claude',mode=mode)))
+                p=self.invoke()
+                self.assertEqual(p.returncode,1,p.stdout+p.stderr)
+                self.assertIn(reason,p.stderr)
+                self.assertFalse((self.base/'.preflight/pass.json').exists())
+                self.assertEqual(p.stdout.count('PREFLIGHT PASS'),3)
+
+    def test_batch_refuses_missing_stale_partial_future_and_zero_passes(self):
+        # A paid batch may only invoke this harmless stub after a fresh record.
+        run=self.base/'run.sh';run.write_text('#!/bin/sh\ntouch "$(dirname "$0")/launched"\nexit 0\n');run.chmod(0o755)
+        for condition in ('missing','stale','partial','future','zero','malformed','changed'):
+            with self.subTest(condition=condition):
+                path=self.base/'.preflight/pass.json'
+                if condition=='missing':path.unlink(missing_ok=True)
+                else:
+                    write_preflight_record(self.base,self.env,age=3601 if condition=='stale' else -60 if condition=='future' else 0)
+                    d=json.loads(path.read_text())
+                    if condition=='partial':del d['tools']['muse']
+                    if condition=='zero':d['tools']['codex']['tokens']=0
+                    if condition=='changed':d['policy_key']='old-runner'
+                    path.write_text('bad JSON' if condition=='malformed' else json.dumps(d))
+                p=subprocess.run(['bash',str(self.base/'batch.sh')],env=self.env,capture_output=True,text=True)
+                self.assertEqual(p.returncode,4,p.stdout+p.stderr)
+                self.assertIn('fresh four-tool preflight required',p.stderr)
+                self.assertFalse((self.base/'launched').exists())
+
+    def test_freshness_invalidated_by_home_provider_runner_and_all_policy_files(self):
+        def require(env):
+            return subprocess.run([sys.executable,str(self.base/'preflight_check.py'),'require','--root',str(self.base)],env=env,capture_output=True,text=True)
+        for key, value in [('HOME',str(self.base/'different-home')),('OPENCODE_PROVIDER','different-provider')]:
+            write_preflight_record(self.base,self.env)
+            self.assertNotEqual(require(dict(self.env,**{key:value})).returncode,0)
+        for name in POLICY_FILES:
+            with self.subTest(file=name):
+                write_preflight_record(self.base,self.env)
+                path=self.base/name;original=path.read_bytes()
+                path.write_bytes(original+b' ')
+                try:self.assertNotEqual(require(self.env).returncode,0)
+                finally:path.write_bytes(original)
+
+    def test_freshness_rejects_tool_model_and_loopback_receipt_mismatches(self):
+        for key, value in [('tool','muse'),('model','gpt-6-astra'),('loopback',False)]:
+            write_preflight_record(self.base,self.env)
+            path=self.base/'.preflight/pass.json';record=json.loads(path.read_text())
+            record['tools']['codex'][key]=value;path.write_text(json.dumps(record))
+            p=subprocess.run([sys.executable,str(self.base/'preflight_check.py'),'require','--root',str(self.base)],env=self.env,capture_output=True,text=True)
+            self.assertNotEqual(p.returncode,0)
+
+    def test_preflight_mode_refuses_nonfloor_models_before_call(self):
+        self.install_stubs()
+        for tool, model in [('claude-code','opus'),('codex','gpt-6-astra')]:
+            p=subprocess.run(['bash',str(self.base/'run.sh'),tool,model,'baseline','1'],env=dict(self.env,PREFLIGHT='1',PREFLIGHT_RUN_ROOT=str(self.base/'throwaway')),capture_output=True,text=True)
+            self.assertNotEqual(p.returncode,0);self.assertIn('limited to floor/sole models',p.stderr)
+        self.assertFalse((self.base/'calls.jsonl').exists())
+
+    def test_assertion_rejects_auth_markers_and_zero_usage_offline(self):
+        run=self.base/'probe';run.mkdir()
+        log=run/'session.jsonl'
+        write_log(log,[dict(type='assistant',message=dict(id='x',usage=dict(input_tokens=100,output_tokens=10)))])
+        for output in ('Not logged in · Please run /login','/login','Please authenticate','Missing API key'):
+            (run/'agent-output.txt').write_text(output)
+            with self.assertRaisesRegex(ValueError,'login/auth prompt'):
+                assert_probe('claude-code','haiku',run,0,'OK')
+        (run/'agent-output.txt').write_text('OK')
+        write_log(log,[dict(type='assistant',message=dict(id='x',usage=dict(input_tokens=0,output_tokens=0)))])
+        with self.assertRaisesRegex(ValueError,'zero or invalid tokens'):
+            assert_probe('claude-code','haiku',run,0,'OK')
+
+
+if __name__=='__main__':unittest.main()

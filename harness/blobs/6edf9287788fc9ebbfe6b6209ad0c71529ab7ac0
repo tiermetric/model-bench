@@ -1,0 +1,272 @@
+#!/usr/bin/env python3
+"""Flatten an edition's run bundles into machine-readable datasets.
+
+Produces two files, both stable-schema and safe to append to across editions:
+
+  results.jsonl  -- ONE LINE PER RUN. The atomic record. Never per-cell:
+                    aggregation is a group-by the reader performs, so nobody
+                    has to trust our summary. This is also what makes a
+                    cherry-picked edition detectable -- the runs are all here.
+  results.csv    -- the same rows, for spreadsheets and quick plotting.
+
+Why per-run and not per-cell: a cell figure is a claim; a run is evidence. Every
+number in a published edition must be recomputable from these rows plus the
+archived session logs, which is exactly what verify.py checks.
+
+Usage:  python3 export.py [root] --edition NAME
+        python3 export.py [root] --edition 2026-07 --out DIR [--dry-run]
+
+--out builds a local public verification kit, including archived submissions
+and redacted usage evidence. It never publishes or pushes. --dry-run validates
+the complete file plan without writing; sealed paths are a hard refusal.
+"""
+import argparse
+import csv
+import json
+import os
+import sys
+import glob
+import shutil
+import re
+from pathlib import Path
+from redact import redact_file, sha256_file
+from verify import sealed_paths, is_sealed
+
+FIELDS = [
+    "effort", "effort_source", "effort_source_checked", "billing_route",
+    "edition", "task", "tool", "model", "model_key", "rep",
+    "outcome", "acceptance", "own_tests", "edge_failures",
+    "cost_list_usd", "priced",
+    "input_uncached", "cache_read", "cache_write", "output", "reasoning",
+    "wall_seconds", "agent_exit", "timed_out", "capture",
+    "date_utc", "tier_version", "tool_version",
+    "prompt", "prompt_file_sha256", "judge", "judge_sha256",
+    "prices_yaml_sha256", "python_version", "machine", "bundle",
+]
+
+
+def rows(root, edition):
+    for p in sorted(glob.glob(os.path.join(root, "*/*/*/rep*/result.json"))):
+        d = os.path.dirname(p)
+        try:
+            with open(p) as fh:
+                res = json.load(fh)
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"WARN: unreadable {p}: {exc}", file=sys.stderr)
+            continue
+        sp = os.path.join(d, "stamp.json")
+        st = {}
+        if os.path.exists(sp):
+            with open(sp) as fh:
+                st = json.load(fh)
+        tok = res.get("tokens") or {}
+        recorded_edition = res.get("edition") or st.get("edition") or "2026-07"
+        if recorded_edition != edition:
+            raise ValueError(f"edition mismatch in {p}: {recorded_edition} != {edition}")
+        yield {
+            "edition": recorded_edition,
+            **{k: res.get(k, st.get(k)) for k in ("effort", "effort_source", "effort_source_checked", "billing_route")},
+            "task": res.get("task") or st.get("prompt"),
+            "tool": res.get("tool"),
+            "model": res.get("label"),
+            "model_key": res.get("model_key") or st.get("model_flag"),
+            "rep": res.get("rep"),
+            # outcome is the scored fact; acceptance/own_tests are its inputs.
+            # own_tests is diagnostic only -- own PASS + judge FAIL is the
+            # "confident failure" signal, and it is only visible if we keep both.
+            "outcome": res.get("outcome"),
+            "acceptance": res.get("acceptance"),
+            "own_tests": res.get("own_tests"),
+            "edge_failures": res.get("edge_failures"),
+            "cost_list_usd": res.get("cost_list_usd"),
+            "priced": res.get("priced"),
+            "input_uncached": tok.get("input_uncached"),
+            "cache_read": tok.get("cache_read"),
+            "cache_write": tok.get("cache_write"),
+            "output": tok.get("output"),
+            "reasoning": tok.get("reasoning"),
+            "wall_seconds": res.get("wall_seconds"),
+            "agent_exit": res.get("agent_exit"),
+            "timed_out": res.get("timed_out"),
+            "capture": res.get("capture"),
+            "date_utc": st.get("date_utc"),
+            "tier_version": st.get("tier_version"),
+            "tool_version": st.get("tool_version"),
+            "prompt": st.get("prompt"),
+            "prompt_file_sha256": st.get("prompt_file_sha256"),
+            "judge": st.get("judge"),
+            "judge_sha256": st.get("judge_sha256"),
+            "prices_yaml_sha256": st.get("prices_yaml_sha256"),
+            "python_version": st.get("python_version"),
+            "machine": st.get("machine"),
+            # Relative, never absolute: the bundle must be findable after the
+            # archive is cloned somewhere else, on someone else's machine.
+            "bundle": os.path.relpath(d, root),
+        }
+
+
+def refuse_sealed(paths, exclusions, root=None):
+    for name in paths:
+        if is_sealed(name, exclusions, root):
+            raise ValueError(f"refusing public kit: sealed path {name}")
+
+
+def kit_plan(root, data, edition):
+    """Allow only verification code, revealed dependencies, and run evidence."""
+    root = Path(root).resolve()
+    exclusions = sealed_paths(root)
+    if not (root / ".export-exclude").is_file():
+        raise ValueError("refusing public kit: .export-exclude absent")
+    sealed_hashes = {sha256_file(p) for p in root.rglob("*")
+                     if p.is_file() and is_sealed(p, exclusions, root)}
+    files = set()
+
+    def add(name):
+        source = root / name
+        if source.is_symlink():
+            raise ValueError(f"refusing public kit: symlink {name}")
+        if source.is_dir():
+            for child in sorted(source.iterdir()):
+                if child.name != "__pycache__":
+                    add(child.relative_to(root).as_posix())
+        elif source.is_file():
+            if not source.name.endswith(".pyc"):
+                files.add(name)
+        else:
+            raise ValueError(f"refusing public kit: required artifact absent: {name}")
+
+    for name in ("verify.py", "export.py", "score.py", "token_evidence.py", "redact.py",
+                 "aggregate.py", "run_audit.py", "preflight_check.py", "control/test_harness.py",
+                 "TASKS.md", "PROTOCOL.md", "LICENSE", "LICENSE-DATA", ".export-exclude",
+                 f"editions/{edition}/REPORT.md", f"editions/{edition}/MANIFEST.json"):
+        add(name)
+    for row in data:
+        for field in ("prompt_file_sha256", "prices_yaml_sha256"):
+            if not isinstance(row[field], str) or not re.fullmatch(r"[0-9a-f]{64}", row[field]):
+                raise ValueError(f"refusing public kit: invalid {field}")
+        if row["prompt_file_sha256"] in sealed_hashes:
+            raise ValueError("refusing public kit: prompt hash identifies sealed content")
+        bundle = row["bundle"]
+        for name in ("result.json", "stamp.json", "prices.snapshot.yaml",
+                     "session.jsonl", "session.jsonl.sha256", "submission"):
+            add(f"{bundle}/{name}")
+        # Preserve these original archives where they are. This does not
+        # assemble an orgsync re-judge target or change submission/.
+        if row["task"] == "orgsync":
+            for name in ("orgsync", "config.json", "tests/existing"):
+                add(f"{bundle}/{name}")
+        judge = row["judge"]
+        if not judge or Path(judge).is_absolute() or ".." in Path(judge).parts:
+            raise ValueError("refusing public kit: invalid stamped judge path")
+        # Revealed judges only. A sealed/absent judge travels as a hash, so
+        # the verifier will SKIP it rather than disclosing an answer key.
+        if not is_sealed(judge, exclusions, root) and (root / judge).is_file():
+            add(judge)
+            if judge == "acceptance_orgsync.py":
+                add("fixtures/orgsync")
+                add("tasks/orgsync-skeleton")
+        add(f"evidence/prompts/{row['prompt_file_sha256']}.md")
+        add(f"evidence/prices/{row['prices_yaml_sha256']}.yaml")
+    files.update(("results.csv", "results.jsonl", "EVIDENCE-MANIFEST.jsonl"))
+    refuse_sealed(files, exclusions, root)
+    return sorted(files), exclusions
+
+
+def write_datasets(root, data):
+    root = Path(root)
+    with (root / "results.jsonl").open("w") as fh:
+        for row in data:
+            fh.write(json.dumps(row, sort_keys=True) + "\n")
+    with (root / "results.csv").open("w", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=FIELDS)
+        writer.writeheader()
+        writer.writerows(data)
+
+
+def export_kit(root, out, data, edition, dry_run=False):
+    root, out = Path(root).resolve(), Path(out).resolve()
+    files, exclusions = kit_plan(root, data, edition)
+    if out == root or root in out.parents and out.name != "publish":
+        raise ValueError("refusing public kit: use an external directory or <root>/publish")
+    if out.exists() and any(out.iterdir()):
+        refuse_sealed([p.relative_to(out).as_posix() for p in out.rglob("*")], exclusions, out)
+        raise ValueError("refusing public kit: output directory must be empty")
+    submissions = sum("/submission/" in name for name in files)
+    submission_dirs = len({name.split("/submission/", 1)[0] for name in files if "/submission/" in name})
+    print(f"PUBLIC KIT {'DRY-RUN' if dry_run else 'LOCAL'}: {len(data)} bundles · "
+          f"{submission_dirs} submission directories · {submissions} submission files · "
+          f"{len(files)} files · 0 sealed paths")
+    if dry_run:
+        return
+    out.mkdir(parents=True, exist_ok=True)
+    generated = {"results.csv", "results.jsonl", "EVIDENCE-MANIFEST.jsonl"}
+    generated.update(f"{row['bundle']}/{name}" for row in data
+                     for name in ("result.json", "session.jsonl", "session.jsonl.sha256"))
+    for name in files:
+        if name in generated:
+            continue
+        target = out / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(root / name, target)
+    receipts = []
+    for row in data:
+        bundle = row["bundle"]
+        source, target = root / bundle, out / bundle
+        fmt, kept = redact_file(source / "session.jsonl", target / "session.jsonl")
+        digest = sha256_file(target / "session.jsonl")
+        (target / "session.jsonl.sha256").write_text(digest + "\n")
+        res = json.loads((source / "result.json").read_text())
+        for key, value in res.items():
+            if isinstance(value, str) and value.startswith("/"):
+                res[key] = os.path.basename(value)
+        (target / "result.json").write_text(json.dumps(res, indent=2, sort_keys=True) + "\n")
+        receipts.append(dict(bundle=bundle, format=fmt, records_kept=kept,
+                             original_sha256=sha256_file(source / "session.jsonl"),
+                             redacted_sha256=digest))
+    (out / "EVIDENCE-MANIFEST.jsonl").write_text(
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in receipts))
+    write_datasets(out, data)
+    refuse_sealed([p.relative_to(out).as_posix() for p in out.rglob("*")], exclusions, out)
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument('root', nargs='?', default=os.path.dirname(os.path.abspath(__file__)))
+    ap.add_argument('--edition', required=True, choices=['2026-07', '2026-10'])
+    ap.add_argument('--out', help='build a local public kit in an empty directory')
+    ap.add_argument('--dry-run', action='store_true', help='validate the public kit without writing')
+    args = ap.parse_args()
+    root, edition = args.root, args.edition
+    if args.dry_run and not args.out:
+        ap.error('--dry-run requires --out')
+
+    data = list(rows(root, edition))
+    if not data:
+        print("no run bundles found", file=sys.stderr)
+        return 1
+
+    if args.out:
+        try:
+            export_kit(root, args.out, data, edition, args.dry_run)
+        except (OSError, ValueError) as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        return 0
+    write_datasets(root, data)
+    jl, cv = os.path.join(root, "results.jsonl"), os.path.join(root, "results.csv")
+
+    passes = sum(1 for r in data if r["outcome"] == "PASS")
+    spend = sum(r["cost_list_usd"] or 0 for r in data)
+    tasks = sorted({r["task"] for r in data})
+    models = sorted({r["model"] for r in data})
+    print(f"exported {len(data)} runs -> {jl} + {cv}")
+    print(f"  edition : {edition}")
+    print(f"  tasks   : {', '.join(tasks)}")
+    print(f"  models  : {len(models)} ({', '.join(models)})")
+    print(f"  outcomes: {passes} PASS / {len(data) - passes} not-PASS")
+    print(f"  spend   : ${spend:.4f} (list rates, all runs)")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

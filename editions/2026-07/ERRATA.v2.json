@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "edition": "2026-07",
+  "revision": 2,
+  "entries": [
+    {
+      "date": "2026-10-15",
+      "claim": "2026-07-C01: editions/2026-07/REPORT.md, Method / verification and cost tables; PROTOCOL.md §1 and §4.3, capture-parity claim.",
+      "replacement": "Claude costs are derived from deduplicated Claude Code usage logs. Their completeness against independent provider accounting remains unvalidated, including for the subscription routes used here. Missing usage would understate those costs. Codex costs use logged cumulative counters; those counters do not independently establish complete capture. If the logs undercount, costs are understated, TIER scores read high, and Claude looks relatively cheaper in cross-vendor comparisons. Accounting consistency and reproducibility from captured evidence are the properties checked; capture parity against independent provider accounting is not proven. No historical cost multiplier or measured error bound is established.",
+      "evidence": [
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/score.py",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/token_evidence.py",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/PROTOCOL.md"
+      ]
+    },
+    {
+      "date": "2026-10-15",
+      "claim": "2026-07-C02: editions/2026-07/REPORT.md, How each model worked (output already includes reasoning) and per-run output headings.",
+      "replacement": "Claude Code 2.1.218 logs carry no thinking breakdown. Anthropic documents thinking as billed output, but inclusion in these archived logs has not been independently checked. We price the recorded output count without adding an inferred thinking count.",
+      "evidence": [
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/claude-code/opus/orgsync/rep1/stamp.json",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/claude-code/opus/orgsync/rep1/session.jsonl",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/score.py",
+        "https://platform.claude.com/docs/en/build-with-claude/extended-thinking"
+      ]
+    },
+    {
+      "date": "2026-10-15",
+      "claim": "2026-07-C03: editions/2026-07/REPORT.md, The finding / What this edition does and does not show, cross-vendor interpretation.",
+      "replacement": "Each result is a model in its own vendor's CLI; this edition cannot separate model from tool. The experimental unit is the complete model-tool configuration, including effort settings, tool permissions, caching policy and billing route. Cross-vendor cost comparisons describe only the tested configurations and tasks; they do not isolate model efficiency or establish a purchasing recommendation. Effort settings were not recorded for Edition 1. Every GPT cell was cheaper than every passing Claude cell on each task; a tool or vendor effect could produce that pattern. October configuration and cache-share measurements must not be backdated to July.",
+      "evidence": [
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/metrics.csv",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/claude-code/opus/orgsync/rep1/stamp.json",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/codex/gpt-5.6-sol/orgsync/rep1/stamp.json"
+      ]
+    },
+    {
+      "date": "2026-10-15",
+      "claim": "2026-07-C04: editions/2026-07/REPORT.md, The finding:14-18, claimed top-of-order inversion.",
+      "replacement": "Opus had the higher observed mean cost on orgsync, but its run range overlaps Fable's; three runs do not establish a stable ordering. For the two-sided exact permutation test of the difference in mean cost, with three runs per model, the observed p-value is 0.30 and the minimum achievable p-value is 0.10. This does not establish equivalence. The duration/cronspec orderings survive descriptively: their observed run ranges do not overlap for any model pair. Range separation is an editorial condition, not a significance criterion; sample means and table sorting do not establish stable population ordering. Independence of July runs has not been established; the permutation p-value is a conditional calculation under that assumption.",
+      "evidence": [
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/metrics.csv"
+      ]
+    },
+    {
+      "date": "2026-10-15",
+      "claim": "2026-07-C05: editions/2026-07/REPORT.md, admission rule / orgsync failure finding, calibration selection.",
+      "replacement": "The three Edition 1 failures in this comparison are the calibration runs that admitted orgsync to service, at $0.527148, $0.563410 and $0.465123. They were reused as scored runs, not fresh held-out observations. The probability that the admission-selected panel contained a failure was 1 by construction. The Edition 2 successor passed this already published task; this comparison shows that the successor passed, does not measure how much the model line improved, and is not evidence that the task separates models. Fresh replicates do not make a calibration-selected task held out.",
+      "evidence": [
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/metrics.csv",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-10/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/TASKS.md"
+      ]
+    },
+    {
+      "date": "2026-10-15",
+      "claim": "2026-07-C06: editions/2026-07/REPORT.md, Method / Known limitations; PROTOCOL.md §4.1 and §9, preregistration claims.",
+      "replacement": "Historical exceptions and amendments are not prospective preregistration. Edition 1 reused calibration failures and missed §5.6 escrow and a judge-hash publication deadline. Original manifests and run bytes remain historical evidence. No enforced prospective lock or independent anchor is demonstrated by the published artifacts; future commitment/deviation enforcement is separate work, not a property conferred on this edition by this erratum.",
+      "evidence": [
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/PROTOCOL.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/TASKS.md"
+      ]
+    },
+    {
+      "date": "2026-10-15",
+      "claim": "2026-07-C07: editions/2026-07/REPORT.md, Method, independent judge; PROTOCOL.md §5.4 hidden/never sees claims.",
+      "replacement": "These are operator-written acceptance tests, with commitment timing and prior-publication limitations disclosed. Independent means separate from the submitted program, not independent authorship or independent validation. Hidden at an invocation does not mean previously unseen: orgsync prompt and judge were public from 2026-07-23, before October scoring. Duration remained active with a public judge, and cronspec had a public judge without a recorded reveal event. Public availability establishes an opportunity for prior exposure, not proof of training inclusion. No paired unpublished constants-variant contamination control was demonstrated for any scored task. Published-task passes are historical task/configuration observations, not held-out capability evidence.",
+      "evidence": [
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/TASKS.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/acceptance_orgsync.py",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/acceptance_cronspec.py",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/acceptance_test.py"
+      ]
+    },
+    {
+      "date": "2026-10-15",
+      "claim": "2026-07-C08: editions/2026-07/REPORT.md, How to read the tables, TIER column.",
+      "replacement": "The benchmark's TIER column is fixed task-difficulty points per $1,000 of captured AI usage priced at list rates. It differs from the product's TIER, which uses merged-work outcome points and its own eligibility and observed-quality rules. A benchmark acceptance is not a merged pull request; the values are not comparable with a product score. This is an observational ratio, not a causal estimate of AI productivity, value or return.",
+      "evidence": [
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-10/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/PROTOCOL.md"
+      ]
+    },
+    {
+      "date": "2026-10-15",
+      "claim": "2026-07-C09: editions/2026-07/REPORT.md, dispersion and reliability; PROTOCOL.md §4.1 leading-indicator claim.",
+      "replacement": "Dispersion as a leading indicator of the failure edge is an unvalidated hypothesis, not an established predictive relationship. Three costs per cell are descriptive observations, not a calibrated uncertainty interval or evidence of long-run reliability. In Edition 2, GLM 5.3 Flash had 46.2% dispersion and passed all three runs; that does not validate or refute a predictive rule. Shared cache state can invalidate independence assumptions. The October first-call cache observation was not a July independence measurement; no effective sample size or direction of variance error is established for July.",
+      "evidence": [
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/metrics.csv",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-10/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/PROTOCOL.md"
+      ]
+    },
+    {
+      "date": "2026-10-15",
+      "claim": "2026-07-C10: editions/2026-07/REPORT.md, verification instructions / Method and Stamp.",
+      "replacement": "Default verification checks hashes, recorded usage/cost derivations and the implemented numeric table comparisons; it executes no submissions. A successful check does not establish every narrative fact, complete usage capture, judge validity, or production quality. Missing required artifacts or unavailable judges can be reported as SKIP while verification exits 0; a zero exit code alone does not mean every submission was rejudged. No third-party clean-rejudge receipt has been established. These editions are historical case studies with errata; no claim to reproduce the Model Report yourself or to independently re-execute its model runs is made.",
+      "evidence": [
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/verify.py",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/TASKS.md"
+      ]
+    },
+    {
+      "date": "2026-10-15",
+      "claim": "2026-07-C11: editions/2026-07/REPORT.md, evidence preparation / commitment and hash guarantees.",
+      "replacement": "A reader without the original logs cannot prove their pre-redaction hashes from the redacted kit. Matching current hashes establishes consistency with the shipped bytes, not historical custody or commitment timing. Wall time rests on harness receipts. TASKS.md records that §5.6 escrow was not met, no independently anchored timestamp proof exists, and orgsync rep1's judge hash reached the ledger 4m34s after its first verdict. Commit history and post-judgment stamps cannot retroactively supply the missing pre-result guarantee. These limitations remain attached to both editions; this dated correction supplies neither an external timestamp nor a prospective commitment gate.",
+      "evidence": [
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/TASKS.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/verify.py",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-10/EVIDENCE-MANIFEST.jsonl"
+      ]
+    },
+    {
+      "date": "2026-10-16",
+      "claim": "2026-07-C12: editions/2026-07/REPORT.md, Method, in brief:383-405 and Stamp, model/tool configuration; supplements C03.",
+      "replacement": "Each result is a model in its own vendor's CLI; this edition cannot separate model from tool. The experimental unit is the complete model-tool configuration, including effort settings, tool permissions, caching policy and billing route. Cross-vendor cost comparisons describe only the tested configurations and tasks; they do not isolate model efficiency or establish a purchasing recommendation. Effort settings were not recorded for Edition 1. Every GPT cell was cheaper than every passing Claude cell on each task; a tool or vendor effect could produce that pattern. October configuration and cache-share measurements must not be backdated to July.",
+      "evidence": [
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/metrics.csv",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/claude-code/opus/orgsync/rep1/stamp.json",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/codex/gpt-5.6-sol/orgsync/rep1/stamp.json",
+        "HARNESS-LINEAGE.json",
+        "harness/README.md"
+      ]
+    },
+    {
+      "date": "2026-10-16",
+      "claim": "2026-07-C13: editions/2026-07/REPORT.md, What this edition does and does not show, The admission rule:345-357, calibration-selected failures; supplements C05.",
+      "replacement": "The three Edition 1 failures in this comparison are the calibration runs that admitted `orgsync` to service. They were reused as scored runs, not fresh held-out observations. This comparison shows that the successor passed; it does not measure how much the model line improved, and it is not evidence that the task separates models. Fresh replicates do not make a calibration-selected task held out.",
+      "evidence": [
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/metrics.csv",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-10/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/TASKS.md"
+      ]
+    },
+    {
+      "date": "2026-10-16",
+      "claim": "2026-07-C14: editions/2026-07/REPORT.md, Results:86-156 and What this edition does and does not show, Reliability:359-362, cost ordering and dispersion; supplements C04/C09.",
+      "replacement": "Under a two-sided exact permutation test with 3 runs per configuration, the smallest attainable p is 0.10 (2 of 20 arrangements), so no pairwise cost ordering reaches p≤0.05. Independence of July runs has not been established; this is a conditional calculation under that assumption. No cost ordering is established; only non-overlapping cost tiers are described. The October first-call cache evidence is not a July measurement, and no direction of variance error is established for July.",
+      "evidence": [
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-07/metrics.csv",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/editions/2026-10/REPORT.md",
+        "https://github.com/tiermetric/model-bench/blob/60489d2a862b44f88ff5b2038ed02566ff139934/PROTOCOL.md"
+      ]
+    },
+    {
+      "date": "2026-10-16",
+      "claim": "2026-07-C15: editions/2026-07/REPORT.md, Stamp / Reproduce the verification:420-444, verification scope and rejudge instructions.",
+      "replacement": "Measured on 2026-10-16 in an exported --edition all kit from reviewed base commit 72a226e872715225df93424c802f09baa2bf4b17 with local review repairs, using the verifier hash in REJUDGE-RECEIPT.json: 63 verdicts reproduced (60 accepted, 3 rejected); RE-JUDGE 63 bundles · PASS 63 · FAIL 0 · SKIP 0. The two edition commands together reproduced 93 distinct archived outcomes; the exported July edition mirror was byte-checked against the root bundles and its 63 outcomes were rejudged once. Default verification executes no submissions. The opt-in --rejudge executes the archived model-written programs against their stamped, revealed acceptance judges on disposable copies; it does not re-run models or validate the judge, production quality, or capture completeness. Temporary copies and a reduced environment are not an operating-system sandbox. Missing required artifacts or unavailable judges are reported as SKIP; a zero exit code alone does not mean every submission was rejudged. --require-no-skips makes every such omission fail. These measured exported-kit runs had no OS network isolation. Only the Docker launcher provides network isolation; a bare-host run executes model-written code with the user's account and network. The exported rejudge-networkless.sh workflow runs with --network none, checks both editions with --require-no-skips and requires a planted flipped verdict to fail. No third-party clean-rejudge receipt has been established.",
+      "evidence": [
+        "REJUDGE-RECEIPT.json",
+        "verify.py",
+        "rejudge_workflow.py",
+        "rejudge-networkless.sh",
+        "control/test_rejudge_workflow.py",
+        "design/orgsync/controls/control_check.py"
+      ]
+    }
+  ]
+}

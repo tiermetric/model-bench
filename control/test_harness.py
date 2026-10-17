@@ -26,12 +26,30 @@ sys.path.insert(0, str(ROOT))
 from token_evidence import capture_opencode, capture_muse, opencode_before, sum_native_jsonl
 from score import load_prices, price_native, scan_web_tools
 from redact import redact_file, scan_banned
-from verify import Report, verify_run, verify_cells, rejudge_run, verify_manifest
-from export import rows, kit_rows, kit_plan, export_kit
+from verify import Report, verify_run, verify_cells, rejudge_run, verify_manifest, sealed_paths
+from export import (rows, kit_rows, kit_plan, export_kit, archive_manifest, scan_export_text,
+                    scan_export_file, KIT_FILES, KIT_DIRECTORIES, KIT_SANITIZE_FILES)
 from aggregate import cell_stats, saturation_verdict
 from run_audit import codex_logs, claude_subagents, effort_receipt, sandbox_denials, check_environment
 from redact import redact_muse
 from preflight_check import assert_probe, policy_key, TOOLS, POLICY_FILES, probe_models, require_fresh, save_record
+
+
+# Guard the whole control process, including importers such as test_errata.
+# Synthetic sealed fixtures live elsewhere; real sealed source bytes may never
+# be opened by a control, even when running in the private checkout.
+PRIVATE_SEALED = tuple((ROOT / name).resolve() for name in
+                       sealed_paths(ROOT))
+
+
+def forbid_private_sealed_reads(event, args):
+    if event == 'open' and isinstance(args[0], (str, bytes, os.PathLike)):
+        path = Path(os.fsdecode(args[0])).resolve()
+        if any(path == boundary or boundary in path.parents for boundary in PRIVATE_SEALED):
+            raise PermissionError('controls must not open private sealed sources')
+
+
+sys.addaudithook(forbid_private_sealed_reads)
 
 
 RUN_TABLE_SHA = 'b3aa945f75af6573c29a3f47610f6f3460afa0665188b679dd2ea261265c9a15'
@@ -39,7 +57,21 @@ RUN_TABLE_SHA = 'b3aa945f75af6573c29a3f47610f6f3460afa0665188b679dd2ea261265c9a1
 
 def use_run_table(root):
     """Disposable runner fixtures reproduce the open edition's v11 run pin."""
-    shutil.copy(ROOT/'evidence/prices'/f'{RUN_TABLE_SHA}.yaml', root/'prices.yaml')
+    shutil.copy(ROOT/'editions/2026-10/evidence/prices'/f'{RUN_TABLE_SHA}.yaml', root/'prices.yaml')
+
+
+def fixture_session(source, target):
+    """Preserve usage while generating raw/redacted behavior on either side.
+
+    Published input logs are already redacted. A synthetic discarded record
+    makes fixtures deterministic without private transcript bytes or receipts.
+    """
+    redact_file(source, target)
+    with target.open('a') as log:
+        log.write(json.dumps(dict(type='fixture_private_text',
+                                  text='synthetic discarded transcript')) + '\n')
+    target.with_name(target.name + '.sha256').write_text(
+        hashlib.sha256(target.read_bytes()).hexdigest() + '\n')
 
 
 def fixture_env():
@@ -128,8 +160,17 @@ def muse_event(rid='a', sid='parent', kind='run', event='model_completed', model
 
 class NativeEvidenceTests(unittest.TestCase):
     def setUp(self):
+        identity = 'public-kit-' + 'control-8291'
+        environment = patch.dict(os.environ, USER=identity, LOGNAME=identity)
+        environment.start(); self.addCleanup(environment.stop)
         self.tmp = tempfile.TemporaryDirectory(); self.p = Path(self.tmp.name)
         self.addCleanup(self.tmp.cleanup)
+
+    def test_private_sealed_sources_cannot_be_opened(self):
+        for path in PRIVATE_SEALED:
+            with self.subTest(boundary=path.relative_to(ROOT).as_posix()), \
+                 self.assertRaisesRegex(PermissionError, 'private sealed sources'):
+                path.read_bytes()
 
     def test_redaction_check_rejects_non_session_paths_and_username(self):
         import getpass
@@ -283,6 +324,9 @@ class VerifyReportTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory(); self.p = Path(self.tmp.name)
         self.addCleanup(self.tmp.cleanup)
         self.edition = self.p/'editions/2026-10'
+        self.edition.mkdir(parents=True)
+        (self.edition/'MANIFEST.json').write_text(json.dumps(dict(edition='2026-10')),
+                                                 encoding='utf-8')
         for rep in (1, 2):
             d=self.edition/f'codex/fixture/baseline/rep{rep}';d.mkdir(parents=True)
             write_log(d/'session.jsonl', [dict(type='event_msg', payload=dict(
@@ -302,7 +346,7 @@ class VerifyReportTests(unittest.TestCase):
         self.report.write_text(f'**2** runs · ${total} total · 2 accepted / 0 not accepted\n'
             '| model | E[$/accepted] | TIER |\n|---|---|---|\n| fixture | $0.0010 | 1,000,000 |\n')
 
-    def invoke(self, script=None):
+    def invoke(self, script=None, *, args=()):
         saved = os.environ.get('VERIFY_RECEIPT_SCRIPT')
         if saved and script is None:
             # Execute the saved bytes with the real repo location for containment.
@@ -312,7 +356,7 @@ class VerifyReportTests(unittest.TestCase):
             argv = [sys.executable, '-c', code, str(self.edition)]
         else:
             argv = [sys.executable, str(script or ROOT/'verify.py'), str(self.edition)]
-        return subprocess.run(argv, capture_output=True, text=True)
+        return subprocess.run([*argv, *args], capture_output=True, text=True)
 
     def test_report_in_passed_edition_is_checked(self):
         p=self.invoke();self.assertEqual(p.returncode,0,p.stdout+p.stderr)
@@ -333,6 +377,98 @@ class VerifyReportTests(unittest.TestCase):
         self.report.unlink()
         p=self.invoke();self.assertEqual(p.returncode,0,p.stdout+p.stderr)
         self.assertIn(f'[SKIP] report {self.report}: no REPORT.md to check',p.stdout)
+
+    def test_require_no_skips_complete_fixture_passes(self):
+        p = self.invoke(args=['--require-no-skips'])
+        self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+        self.assertIn('FAIL 0 · SKIP 0', p.stdout)
+        self.assertIn('VERIFIED', p.stdout)
+
+    def test_require_no_skips_no_bundles_converts_skipped_checks(self):
+        import verify
+        shutil.rmtree(self.edition / 'codex')
+        for args, status in (([], 'SKIP'), (['--require-no-skips'], 'FAIL')):
+            with self.subTest(args=args):
+                stdout, stderr = io.StringIO(), io.StringIO()
+                def skipped_errata(edition, report, expected):
+                    report.add('SKIP', 'fixture errata check')
+                with patch.object(sys, 'argv', ['verify.py', str(self.edition), *args]), \
+                     patch.object(verify, 'verify_errata', side_effect=skipped_errata), \
+                     contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+                    code = verify.main()
+                self.assertEqual(code, 2)
+                self.assertIn('no run bundles under', stderr.getvalue())
+                self.assertIn(f'[{status}] fixture errata check', stdout.getvalue())
+
+    def assert_missing_report_rejected(self, script=None):
+        p = self.invoke(script, args=['--require-no-skips'])
+        self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+        self.assertIn(f'[FAIL] report {self.report}: no REPORT.md to check', p.stdout)
+        self.assertIn('--require-no-skips: check would be SKIP', p.stdout)
+        self.assertNotIn('VERIFIED', p.stdout)
+
+    def test_require_no_skips_missing_report_negative_control(self):
+        self.report.unlink()
+        self.assert_missing_report_rejected()
+        # The same negative control must kill a verifier that ignores SKIPs.
+        checkout = self.checkout_verifier()
+        mutant = checkout / 'verify.py'
+        source = mutant.read_text()
+        guard = 'if require_no_skips and st == "SKIP":'
+        self.assertEqual(source.count(guard), 1)
+        mutant.write_text(source.replace(guard, 'if False:'))
+        p = self.invoke(mutant, args=['--require-no-skips'])
+        self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+        self.assertIn(f'[SKIP] report {self.report}: no REPORT.md to check', p.stdout)
+
+    def test_require_no_skips_names_every_skipped_check(self):
+        self.report.unlink()
+        bundles = sorted(self.edition.glob('codex/fixture/baseline/rep*'))
+        for bundle in bundles:
+            (bundle / 'session.jsonl.sha256').unlink()
+        p = self.invoke(args=['--require-no-skips'])
+        self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+        for bundle in bundles:
+            self.assertIn(f'[FAIL] {os.path.relpath(bundle)}: session log or hash absent', p.stdout)
+        self.assertIn(f'[FAIL] report {self.report}: no REPORT.md to check', p.stdout)
+        self.assertIn('FAIL 3 · SKIP 0', p.stdout)
+
+    def test_require_no_skips_summarizes_evidence_failures_and_converted_skips(self):
+        self.report.unlink()
+        bundles = sorted(self.edition.glob('codex/fixture/baseline/rep*'))
+        (bundles[1] / 'session.jsonl.sha256').unlink()
+        result_path = bundles[0] / 'result.json'
+        result = json.loads(result_path.read_text())
+        result['cost_list_usd'] = 0.002
+        result_path.write_text(json.dumps(result))
+        p = self.invoke(args=['--require-no-skips'])
+        self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+        self.assertIn('FAIL 3 · SKIP 0', p.stdout)
+        self.assertIn('1 CHECK(S) FAILED — published figures do not follow from the evidence.',
+                      p.stdout)
+        self.assertIn('2 CHECK(S) FAILED — --require-no-skips requires every check to execute.',
+                      p.stdout)
+        self.assertNotIn('VERIFIED', p.stdout)
+
+    def test_require_no_skips_rejudge_missing_submission(self):
+        bundles = sorted(self.edition.glob('codex/fixture/baseline/rep*'))
+        for bundle in bundles:
+            shutil.copytree(ROOT / 'codex/gpt-5.6-luna/baseline/rep1/submission',
+                            bundle / 'submission')
+        p = self.invoke(args=['--rejudge', '--require-no-skips'])
+        self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+        self.assertIn('RE-JUDGE 2 bundles · PASS 2 · FAIL 0 · SKIP 0', p.stdout)
+        shutil.rmtree(bundles[0] / 'submission')
+        label = f'{os.path.relpath(bundles[0])}: re-judge'
+        p = self.invoke(args=['--rejudge'])
+        self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+        self.assertIn(f'[SKIP] {label}', p.stdout)
+        self.assertIn('RE-JUDGE 2 bundles · PASS 1 · FAIL 0 · SKIP 1', p.stdout)
+        p = self.invoke(args=['--rejudge', '--require-no-skips'])
+        self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+        self.assertIn(f'[FAIL] {label} -- --require-no-skips: check would be SKIP;', p.stdout)
+        self.assertIn('submission', p.stdout)
+        self.assertIn('RE-JUDGE 2 bundles · PASS 1 · FAIL 1 · SKIP 0', p.stdout)
 
     def declare_report_table(self):
         table_tmp = tempfile.TemporaryDirectory(dir=ROOT)
@@ -369,7 +505,7 @@ class VerifyReportTests(unittest.TestCase):
 
     def checkout_verifier(self):
         checkout = self.p/'checkout';checkout.mkdir()
-        for name in ('verify.py', 'score.py', 'token_evidence.py', 'acceptance_test.py'):
+        for name in ('verify.py', 'errata.py', 'redact.py', 'score.py', 'token_evidence.py', 'acceptance_test.py'):
             source = Path(os.environ.get('VERIFY_RECEIPT_SCRIPT', str(ROOT/name))) if name == 'verify.py' else ROOT/name
             shutil.copy(source, checkout/name)
         return checkout
@@ -526,7 +662,7 @@ class VerifySharedCostTests(unittest.TestCase):
 
 
 class VerifyReviewReceiptTests(unittest.TestCase):
-    """PR #14 receipts; optionally load a saved verifier/revision for RED checks."""
+    """Verifier review receipts; optionally load a saved verifier/revision for RED checks."""
     def setUp(self):
         script = os.environ.get('VERIFY_RECEIPT_SCRIPT', str(ROOT/'verify.py'))
         spec = importlib.util.spec_from_file_location('receipt_verify', script)
@@ -625,7 +761,8 @@ class LateAdmissionTests(unittest.TestCase):
             shutil.copy(ROOT/name, self.base/name)
         for directory in ('prompts', 'editions/2026-10'):
             shutil.copytree(ROOT/directory, self.base/directory,
-                            ignore=shutil.ignore_patterns('claude-code', 'codex', 'opencode', 'muse'))
+                            ignore=shutil.ignore_patterns('claude-code', 'codex', 'opencode', 'muse',
+                                                          'cutover.md', 'foreman.md', 'orgsync-v2.md'))
         self.manifest_path = self.base/'editions/2026-10/MANIFEST.json'
         self.manifest = json.loads(self.manifest_path.read_text())
         shutil.copy(ROOT/'editions/2026-10/opencode/glm-5.3-flash/orgsync/rep1/prices.snapshot.yaml', self.base/'prices.yaml')
@@ -759,10 +896,13 @@ class LateAdmissionTests(unittest.TestCase):
         paragraph = report.split('Git comparison of `66bd8ec` and reviewed head `1ad7ea8`:',1)[1].split('\n\n',1)[0]
         names = re.findall(r'`([\w./]+\.(?:sh|py))`', paragraph.split('are\nbyte-identical',1)[0])
         self.assertGreaterEqual(len(names), 10)
+        lineage = json.loads((ROOT / 'HARNESS-LINEAGE.json').read_text())
+        def published(ref, name):
+            revision = next(r for r in lineage['revisions'].values()
+                            if any(alias.startswith(ref) for alias in r['aliases']))
+            return (ROOT / 'harness/blobs' / revision['files'][name]['blob']).read_bytes()
         for name in names:
-            a = subprocess.check_output(['git','show',f'66bd8ec:{name}'],cwd=ROOT)
-            b = subprocess.check_output(['git','show',f'1ad7ea8:{name}'],cwd=ROOT)
-            self.assertEqual(a,b,name)
+            self.assertEqual(published('66bd8ec', name), published('1ad7ea8', name), name)
 
     def test_flash_admitted_with_v13_pin(self):
         entry = self.manifest['late_admissions'][0]
@@ -819,7 +959,7 @@ class LateAdmissionTests(unittest.TestCase):
         self.assertIn('FATAL: pinned prices version mismatch', p.stderr)
 
     def test_bundle_verifier_accepts_each_run_pin_and_rejects_tampering(self):
-        for version, source in ((11, ROOT/'evidence/prices'/f'{RUN_TABLE_SHA}.yaml'),
+        for version, source in ((11, ROOT/'editions/2026-10/evidence/prices'/f'{RUN_TABLE_SHA}.yaml'),
                                 (13, self.base/'prices.yaml')):
             d = self.base/f'codex/fixture/baseline/rep{version}'; d.mkdir(parents=True)
             write_log(d/'session.jsonl', [dict(type='event_msg', payload=dict(
@@ -853,7 +993,7 @@ class LateAdmissionTests(unittest.TestCase):
             d = self.base/f'editions/2026-10/{tool}/{model}/orgsync/rep1'
             d.mkdir(parents=True)
             for source_version in (11, 13):
-                source = (ROOT/'evidence/prices'/f'{RUN_TABLE_SHA}.yaml' if source_version==11
+                source = (ROOT/'editions/2026-10/evidence/prices'/f'{RUN_TABLE_SHA}.yaml' if source_version==11
                           else self.base/'prices.yaml')
                 shutil.copy(source, d/'prices.snapshot.yaml')
                 write_log(d/'session.jsonl', [dict(type='event_msg', payload=dict(
@@ -889,15 +1029,21 @@ class LateAdmissionTests(unittest.TestCase):
             self.manifest_path.write_text(json.dumps(self.manifest))
 class EditionOneVerificationTests(unittest.TestCase):
     def setUp(self):
+        identity = 'public-kit-' + 'control-8291'
+        mapping = patch.dict(os.environ, USER=identity, LOGNAME=identity, EXPORT_IDENTITY_MAP=json.dumps({
+            'Av' + 'ery ruling B': 'operator ruling B',
+            "fixture/interactive (Av" + "ery's interactive": "an internal checkout (the operator's interactive",
+            'Av' + 'ery Example': 'the operator', 'Av' + 'ery': 'the operator'}))
+        mapping.start(); self.addCleanup(mapping.stop)
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.p = Path(self.tmp.name)
         source = ROOT / 'codex/gpt-5.6-luna/baseline/rep1'
         self.bundle = self.p / 'codex/gpt-5.6-luna/baseline/rep1'
         self.bundle.mkdir(parents=True)
-        for name in ('result.json', 'stamp.json', 'session.jsonl',
-                     'session.jsonl.sha256', 'prices.snapshot.yaml'):
+        for name in ('result.json', 'stamp.json', 'prices.snapshot.yaml'):
             shutil.copyfile(source / name, self.bundle / name)
+        fixture_session(source / 'session.jsonl', self.bundle / 'session.jsonl')
         shutil.copytree(source / 'submission', self.bundle / 'submission')
         self.manifest = json.loads((ROOT / 'editions/2026-07/MANIFEST.json').read_text())
         self.manifest['roster'] = {'codex': ['gpt-5.6-luna']}
@@ -920,6 +1066,16 @@ class EditionOneVerificationTests(unittest.TestCase):
         positive = self.invoke('--rejudge')
         self.assertEqual(positive.returncode, 0, positive.stdout + positive.stderr)
         self.assertIn('RE-JUDGE 1 bundles · PASS 1 · FAIL 0 · SKIP 0', positive.stdout)
+        mutant_dir = self.p / 'mutant'
+        mutant_dir.mkdir()
+        for name in ('score.py', 'token_evidence.py', 'acceptance_test.py', 'errata.py', 'redact.py'):
+            shutil.copyfile(ROOT / name, mutant_dir / name)
+        source = (ROOT / 'verify.py').read_text()
+        mutant = mutant_dir / 'verify.py'
+        mutant.write_text(source)
+        unmutated = self.invoke('--rejudge', script=mutant)
+        self.assertEqual(unmutated.returncode, 0, unmutated.stdout + unmutated.stderr)
+        self.assertIn('RE-JUDGE 1 bundles · PASS 1 · FAIL 0 · SKIP 0', unmutated.stdout)
         result_path = self.bundle / 'result.json'
         result = json.loads(result_path.read_text())
         result['outcome'] = 'FAIL'  # the sole planted corruption
@@ -931,14 +1087,8 @@ class EditionOneVerificationTests(unittest.TestCase):
         # Kill the comparison in a disposable verifier copy. The SAME
         # negative-control assertion must fail, proving it is not satisfied
         # merely by invoking a judge or checking its exit code/hash.
-        mutant_dir = self.p / 'mutant'
-        mutant_dir.mkdir()
-        for name in ('score.py', 'token_evidence.py', 'acceptance_test.py'):
-            shutil.copyfile(ROOT / name, mutant_dir / name)
-        source = (ROOT / 'verify.py').read_text()
         comparison = '"PASS" if verdict == recorded else "FAIL"'
         self.assertEqual(source.count(comparison), 1)
-        mutant = mutant_dir / 'verify.py'
         mutant.write_text(source.replace(comparison, '"PASS"'))
         with self.assertRaises(AssertionError):
             self.assert_rejudge_rejects_flipped_verdict(script=mutant)
@@ -1005,20 +1155,25 @@ print('ACCEPTANCE_RESULT pass=True failures=0 errors=0 tests=1')
     def public_kit_fixture(self):
         bundle = self.orgsync_bundle()
         source = ROOT / 'codex/gpt-5.6-luna/orgsync/rep1'
-        for name in ('session.jsonl', 'session.jsonl.sha256', 'prices.snapshot.yaml'):
-            shutil.copyfile(source / name, bundle / name)
-        for name in ('verify.py', 'edition_report.py', 'export.py', 'score.py', 'token_evidence.py', 'redact.py',
-                     'aggregate.py', 'run_audit.py', 'preflight_check.py', 'control/test_harness.py',
-                     'TASKS.md', 'PROTOCOL.md', 'LICENSE', 'LICENSE-DATA', '.export-exclude',
+        shutil.copyfile(source / 'prices.snapshot.yaml', bundle / 'prices.snapshot.yaml')
+        fixture_session(source / 'session.jsonl', bundle / 'session.jsonl')
+        for name in (*KIT_FILES, 'editions/2026-10/TIER_PIN',
                      'editions/2026-07/REPORT.md', 'editions/2026-07/metrics.csv',
                      'acceptance_test.py', 'acceptance_orgsync.py'):
             target = self.p / name; target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(ROOT / name, target)
-        for name in ('fixtures/orgsync', 'tasks/orgsync-skeleton'):
+            if name in KIT_SANITIZE_FILES:
+                target.write_text('Public document fixture.\n')
+            else:
+                # Preserve executable runner modes for acceptance dry paths.
+                shutil.copy(ROOT / name, target)
+        shutil.copytree(ROOT / 'harness/blobs', self.p / 'harness/blobs')
+        (self.p / 'ARCHIVE-EXPORT.jsonl').write_text('')
+        for name in ('fixtures/orgsync', 'tasks/orgsync-skeleton', *KIT_DIRECTORIES):
             shutil.copytree(ROOT / name, self.p / name)
         data = list(rows(self.p, '2026-07'))
         for row in data:
             for name in (f"evidence/prompts/{row['prompt_file_sha256']}.md",
+                         f"evidence/judges/{row['judge_sha256']}.py",
                          f"evidence/prices/{row['prices_yaml_sha256']}.yaml"):
                 target = self.p / name; target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(ROOT / name, target)
@@ -1029,6 +1184,358 @@ print('ACCEPTANCE_RESULT pass=True failures=0 errors=0 tests=1')
             target = self.p / 'prompts' / (task + '.md'); target.parent.mkdir(exist_ok=True)
             shutil.copyfile(ROOT / 'prompts' / (task + '.md'), target)
         return data, bundle
+
+    def sealed_fixture_bytes(self):
+        return ''.join(f'Confidential fixture row {i:03d}: deterministic answer {i * 37:05d}.\n'
+                       for i in range(48)).encode()
+
+    def test_explicit_kit_allowlist_and_anchored_directories(self):
+        data, _ = self.public_kit_fixture()
+        for name in ('calibration/cutover.x', 'design/orgsync-v2/x', 'prompts/foreman.md',
+                     'prompts/unreviewed.md', 'archive/unreviewed.txt'):
+            path = self.p / name; path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('private sentinel')
+        files, _ = kit_plan(self.p, data, '2026-07')
+        self.assertTrue(set(KIT_FILES) <= set(files))
+        self.assertIn('design/orgsync/controls/control_check.py', files)
+        self.assertFalse(any(name.startswith('editions/2026-10/') for name in files))
+        for name in ('calibration/cutover.x', 'design/orgsync-v2/x', 'prompts/foreman.md',
+                     'prompts/unreviewed.md', 'archive/unreviewed.txt'):
+            self.assertNotIn(name, files)
+        for name in ('calibration/cutover.x', 'design/orgsync-v2/x', 'prompts/foreman.md'):
+            with self.subTest(name=name), patch('export.KIT_FILES', (*KIT_FILES, name)):
+                with self.assertRaisesRegex(ValueError, 'sealed path'):
+                    export_kit(self.p, self.p / 'publish', data, '2026-07', dry_run=True)
+        (self.p / 'README.md').unlink()
+        with self.assertRaisesRegex(ValueError, 'required artifact absent: README.md'):
+            kit_plan(self.p, data, '2026-07')
+
+    def test_unreviewed_prompt_and_judge_cannot_expand_allowlist(self):
+        data, _ = self.public_kit_fixture()
+        prompt = self.p / 'prompts/unreviewed.md'; prompt.write_text('unreviewed task sentinel')
+        digest = hashlib.sha256(prompt.read_bytes()).hexdigest()
+        shutil.copyfile(prompt, self.p / f'evidence/prompts/{digest}.md')
+        original = data[0]['prompt_file_sha256']
+        data[0]['prompt_file_sha256'] = digest
+        with self.assertRaisesRegex(ValueError, 'revealed prompt'):
+            kit_plan(self.p, data, '2026-07')
+        data[0]['prompt_file_sha256'] = original
+        (self.p / 'unreviewed_judge.py').write_text('unreviewed judge sentinel')
+        data[0]['judge'] = 'unreviewed_judge.py'
+        with self.assertRaisesRegex(ValueError, 'judge is not allowlisted'):
+            kit_plan(self.p, data, '2026-07')
+
+    def test_revealed_judge_evidence_is_complete_and_hash_checked(self):
+        data, _ = self.public_kit_fixture()
+        out = self.p / 'publish'
+        export_kit(self.p, out, data, '2026-07')
+        for row in data:
+            name = f"evidence/judges/{row['judge_sha256']}.py"
+            self.assertEqual((out / name).read_bytes(), (self.p / row['judge']).read_bytes())
+        checked = subprocess.run([sys.executable, 'evidence.py', '--check'],
+                                 cwd=out, capture_output=True, text=True)
+        self.assertEqual(checked.returncode, 0, checked.stdout + checked.stderr)
+        self.assertIn('0 problem(s)', checked.stdout)
+        blob = self.p / f"evidence/judges/{data[0]['judge_sha256']}.py"
+        blob.write_text('changed judge evidence\n')
+        with self.assertRaisesRegex(ValueError, 'hash-match a revealed judge'):
+            kit_plan(self.p, data, '2026-07')
+
+    def test_sealed_judge_evidence_negative_control(self):
+        data, _ = self.public_kit_fixture()
+        secret = self.p / 'acceptance_cutover.py'
+        secret.write_bytes(self.sealed_fixture_bytes())
+        digest = hashlib.sha256(secret.read_bytes()).hexdigest()
+        name = f'evidence/judges/{digest}.py'
+        (self.p / name).write_bytes(secret.read_bytes())
+        files, _ = kit_plan(self.p, data, '2026-07')
+        self.assertNotIn(name, files)
+        for candidate, reason in (('acceptance_cutover.py', 'sealed path'),
+                                  (name, 'sealed content')):
+            for dry_run in (True, False):
+                with self.subTest(candidate=candidate, dry_run=dry_run), patch(
+                        'export.KIT_FILES', (*KIT_FILES, candidate)):
+                    with self.assertRaisesRegex(ValueError, reason):
+                        export_kit(self.p, self.p / 'publish', data, '2026-07', dry_run=dry_run)
+                self.assertFalse((self.p / 'publish').exists())
+        data[0]['judge_sha256'] = digest
+        with self.assertRaisesRegex(ValueError, 'hash-match a revealed judge'):
+            kit_plan(self.p, data, '2026-07')
+
+    def test_sealed_prompt_in_json_keys_negative_control(self):
+        data, _ = self.public_kit_fixture()
+        secret = self.p / 'prompts/cutover.md'
+        secret.write_bytes(self.sealed_fixture_bytes())
+        for payload in ({secret.read_text(): True},
+                        {'safe': [{'nested': {secret.read_text(): True}}]}):
+            source = self.p / 'master_table.py'
+            source.write_text(json.dumps(payload))
+            self.assertEqual(scan_export_file(source), [])
+            for dry_run in (True, False):
+                with self.subTest(nested='safe' in payload, dry_run=dry_run):
+                    with self.assertRaisesRegex(ValueError, 'sealed content'):
+                        export_kit(self.p, self.p / 'publish', data, '2026-07', dry_run=dry_run)
+                self.assertFalse((self.p / 'publish').exists())
+
+    def test_allowlist_sealed_negative_control(self):
+        data, _ = self.public_kit_fixture()
+        secret = self.p / 'sealed/answer.txt'; secret.parent.mkdir()
+        secret.write_text('sealed answer key sentinel')
+        with (self.p / '.export-exclude').open('a') as boundary:
+            boundary.write('\nsealed/\n')
+        for dry_run in (True, False):
+            with self.subTest(dry_run=dry_run), patch('export.KIT_FILES', (*KIT_FILES, 'sealed/answer.txt')):
+                with self.assertRaisesRegex(ValueError, 'sealed path'):
+                    export_kit(self.p, self.p / 'publish', data, '2026-07', dry_run=dry_run)
+            self.assertFalse((self.p / 'publish').exists())
+        # A renamed copy planted in an otherwise legitimate allowlist entry.
+        (self.p / 'master_table.py').write_bytes(secret.read_bytes())
+        with self.assertRaisesRegex(ValueError, 'sealed content'):
+            export_kit(self.p, self.p / 'publish', data, '2026-07', dry_run=True)
+
+    def test_edited_and_historical_sealed_content_negative_controls(self):
+        data, _ = self.public_kit_fixture()
+        secret = self.p / 'prompts/cutover.md'
+        secret.write_bytes(self.sealed_fixture_bytes())
+        old = secret.read_bytes()
+        git_env = dict(os.environ, GIT_CONFIG_GLOBAL='/dev/null', GIT_CONFIG_NOSYSTEM='1')
+        subprocess.run(['git', 'init', '-q', str(self.p)], check=True, env=git_env)
+        subprocess.run(['git', '-C', str(self.p), 'add', '.export-exclude', 'prompts/cutover.md'], check=True, env=git_env)
+        subprocess.run(['git', '-C', str(self.p), '-c', 'user.name=Fixture',
+                        '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'sealed fixture'], check=True, env=git_env)
+        secret.write_text('Replacement answer key sentinel. ' * 8)
+        midpoint = len(old) // 2
+        edited = old[:midpoint] + b' EDITED ' + old[midpoint + 1:]
+        for payload in (old, edited, old + b'\nEdited wrapper\n', secret.read_bytes() + b'\nEdited wrapper\n',
+                        old.replace(b'\n', b'\r\n'), json.dumps({'prompt': old.decode()}).encode(),
+                        b''.join(b'> ' + line + b'\n' for line in old.splitlines()),
+                        b''.join(b'# ' + line + b'\n' for line in edited.splitlines())):
+            (self.p / 'master_table.py').write_bytes(payload)
+            with self.subTest(payload=payload[-20:]), self.assertRaisesRegex(ValueError, 'sealed content'):
+                export_kit(self.p, self.p / 'publish', data, '2026-07', dry_run=True)
+
+    def test_new_allowlist_identity_and_path_negative_controls(self):
+        data, _ = self.public_kit_fixture()
+        path = self.p / 'master_table.py'; original = path.read_bytes()
+        for leak in ('/' + 'home/private-person/work', 'Inten' + 'teon',
+                     'private-host' + '.local', 'operator' + '@private-company.dev'):
+            path.write_text(leak)
+            for dry_run in (True, False):
+                with self.subTest(leak=leak, dry_run=dry_run), self.assertRaisesRegex(ValueError, 'redaction leak'):
+                    export_kit(self.p, self.p / 'publish', data, '2026-07', dry_run=dry_run)
+                self.assertFalse((self.p / 'publish').exists())
+        path.write_bytes(original)
+        name = 'design/orgsync/-' + 'Users-private-person-work/file.txt'
+        path = self.p / name; path.parent.mkdir(); path.write_text('safe bytes')
+        with self.assertRaisesRegex(ValueError, 'source path'):
+            kit_plan(self.p, data, '2026-07')
+
+    def archive_guard_fixture(self, entry):
+        data, _ = self.public_kit_fixture()
+        # Every candidate has a real source: missing files cannot mask a guard.
+        (self.p / 'archive').mkdir()
+        source = self.p / entry['path']
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text('safe archive fixture\n')
+        (self.p / 'ARCHIVE-EXPORT.jsonl').write_text(json.dumps(entry) + '\n')
+        return data
+
+    def test_archive_manifest_parent_guard(self):
+        data = self.archive_guard_fixture(dict(path='archive/../fixture.txt', transform='copy'))
+        with self.assertRaisesRegex(ValueError, '^refusing public kit: invalid archive manifest entry$'):
+            export_kit(self.p, self.p / 'publish', data, '2026-07', dry_run=True)
+
+    def test_archive_manifest_key_guard(self):
+        data = self.archive_guard_fixture(dict(path='archive/file', transform='copy', extra=True))
+        with self.assertRaisesRegex(ValueError, '^refusing public kit: invalid archive manifest entry$'):
+            export_kit(self.p, self.p / 'publish', data, '2026-07', dry_run=True)
+
+    def test_archive_manifest_transform_guard(self):
+        data = self.archive_guard_fixture(dict(path='archive/file', transform='unknown'))
+        with self.assertRaisesRegex(ValueError, '^refusing public kit: invalid archive manifest entry$'):
+            export_kit(self.p, self.p / 'publish', data, '2026-07', dry_run=True)
+
+    def test_archive_manifest_raw_log_guard(self):
+        data = self.archive_guard_fixture(dict(path='archive/agent-output.txt', transform='sanitize'))
+        for name in ('agent-output.txt', 'AGENT-OUTPUT.TXT', 'session.jsonl', 'SESSION.JSONL',
+                     'cronspec-pilot.log', 'CRONSPEC-PILOT.LOG'):
+            (self.p / 'archive' / name).write_text('raw transcript\n')
+            for transform in ('copy', 'sanitize'):
+                (self.p / 'ARCHIVE-EXPORT.jsonl').write_text(json.dumps(
+                    dict(path='archive/' + name, transform=transform)) + '\n')
+                with self.subTest(name=name, transform=transform), self.assertRaisesRegex(
+                        ValueError, '^refusing public kit: archive raw logs require usage transformation$'):
+                    export_kit(self.p, self.p / 'publish', data, '2026-07', dry_run=True)
+
+    def test_archive_manifest_refuses_invalid_or_unsafe_entries(self):
+        data = self.archive_guard_fixture(dict(path='archive/file', transform='copy'))
+        manifest = self.p / 'ARCHIVE-EXPORT.jsonl'
+        for entry in (dict(path=str(self.p / 'archive/file'), transform='copy'), ['not an entry']):
+            manifest.write_text(json.dumps(entry) + '\n')
+            with self.subTest(entry=entry), self.assertRaisesRegex(
+                    ValueError, '^refusing public kit: invalid archive manifest entry$'):
+                archive_manifest(self.p)
+        manifest.write_text((json.dumps(dict(path='archive/file', transform='copy')) + '\n') * 2)
+        with self.assertRaisesRegex(ValueError, '^refusing public kit: invalid archive manifest entry$'):
+            kit_plan(self.p, data, '2026-07')
+        (self.p / 'archive/directory').mkdir()
+        manifest.write_text(json.dumps(dict(path='archive/directory', transform='copy')) + '\n')
+        with self.assertRaisesRegex(ValueError, '^refusing public kit: archive entry is not a file: archive/directory$'):
+            kit_plan(self.p, data, '2026-07')
+
+    def test_archive_usage_refuses_plain_text(self):
+        data = self.archive_guard_fixture(dict(path='archive/agent-output.txt', transform='usage'))
+        (self.p / 'archive/agent-output.txt').write_text('Input tokens: 123; output tokens: 45\n')
+        for dry_run in (True, False):
+            with self.subTest(dry_run=dry_run), self.assertRaisesRegex(ValueError, 'usage transform kept 0 records'):
+                export_kit(self.p, self.p / 'publish', data, '2026-07', dry_run=dry_run)
+            self.assertFalse((self.p / 'publish').exists())
+
+    def test_operator_host_name_guard(self):
+        data, _ = self.public_kit_fixture()
+        host = 'operator-' + 'host-sentinel'
+        (self.p / 'master_table.py').write_text(host)
+        with patch('export.socket.gethostname', return_value=host):
+            with self.assertRaisesRegex(ValueError, 'operator host name'):
+                export_kit(self.p, self.p / 'publish', data, '2026-07', dry_run=True)
+            self.assertEqual(scan_export_text('prefix' + host + 'suffix'), [])
+        for generic in ('localhost', 'localhost.localdomain', '127.0.0.1', '::1', '192.168.1.2'):
+            with self.subTest(host=generic), patch('export.socket.gethostname', return_value=generic):
+                self.assertEqual(scan_export_text(generic + ' README'), [])
+
+    def test_export_identity_scan_boundaries(self):
+        with patch('redact.getpass.getuser', return_value='root'):
+            self.assertEqual(scan_export_text('root ROOT Root directory', source_path=True), [])
+            self.assertEqual(scan_export_text('root ROOT Root directory'), [])
+            path = self.p / 'username-check.txt'; path.write_text('root')
+            self.assertIn(('operator username', 1), scan_export_file(path))
+        self.assertIn(('email address', 1), scan_export_text('bob@' + 'example.com.evil.org'))
+        self.assertEqual(scan_export_text('bob@' + 'example.com'), [])
+        self.assertIn(('private identity', 1), scan_export_text('Inten' + 'teon'))
+        self.assertEqual(scan_export_text('ExampleOrg/example-project#999'), [])
+
+    def test_casefolded_nested_raw_log_guard(self):
+        data, bundle = self.public_kit_fixture()
+        (bundle / 'submission/AGENT-OUTPUT.TXT').write_text('raw transcript\n')
+        with self.assertRaisesRegex(ValueError, 'unredacted session log'):
+            export_kit(self.p, self.p / 'publish', data, '2026-07', dry_run=True)
+
+    def test_sanitizer_refuses_missing_or_invalid_private_mapping(self):
+        from export import sanitize_archive
+        source, target = self.p / 'source', self.p / 'target'
+        source.write_text('Av' + 'ery Example ruled.\n')
+        for value in (None, '', '{}', '[]', '{invalid', '{"":"replacement"}',
+                      json.dumps({'Av' + 'ery': ''}), json.dumps({'Av' + 'ery': None}),
+                      json.dumps({'Av' + 'ery': 7})):
+            with self.subTest(value=value), patch.dict(os.environ, clear=False):
+                os.environ.pop('EXPORT_IDENTITY_MAP', None)
+                if value is not None:
+                    os.environ['EXPORT_IDENTITY_MAP'] = value
+                with self.assertRaisesRegex(ValueError, 'EXPORT_IDENTITY_MAP'):
+                    sanitize_archive(source, target)
+                self.assertFalse(target.exists())
+
+    def test_export_refuses_identity_in_unsanitized_staged_file(self):
+        data, _ = self.public_kit_fixture()
+        (self.p / 'README.md').write_text('AV' + 'ERY Example\n')
+        for dry_run in (True, False):
+            with self.subTest(dry_run=dry_run):
+                with self.assertRaisesRegex(ValueError, 'identity.*README.md') as raised:
+                    export_kit(self.p, self.p / 'publish', data, '2026-07', dry_run=dry_run)
+                self.assertNotIn('av' + 'ery', str(raised.exception).casefold())
+                self.assertFalse((self.p / 'publish').exists())
+
+    def test_export_partial_identity_map_refuses_and_full_map_passes(self):
+        data, _ = self.public_kit_fixture()
+        # A known key embedded in a longer spelling survives word-boundary edits.
+        spelling = 'Av' + 'eryExample'
+        (self.p / 'TASKS.md').write_text(spelling.upper() + '\n')
+        partial = {'Av' + 'ery': 'the operator'}
+        with patch.dict(os.environ, EXPORT_IDENTITY_MAP=json.dumps(partial)):
+            with self.assertRaisesRegex(ValueError, 'identity.*TASKS.md'):
+                export_kit(self.p, self.p / 'publish', data, '2026-07')
+        self.assertFalse((self.p / 'publish').exists())
+        with patch.dict(os.environ, EXPORT_IDENTITY_MAP=json.dumps({**partial, spelling: 'the operator'})):
+            export_kit(self.p, self.p / 'publish', data, '2026-07')
+        self.assertEqual((self.p / 'publish/TASKS.md').read_text(), 'the operator\n')
+
+    def test_archive_operator_phrases_are_sanitized(self):
+        data = self.archive_guard_fixture(dict(path='archive/FINDING.md', transform='sanitize'))
+        finding = self.p / 'archive/FINDING.md'
+        finding.write_text('Action (' + 'Av' + 'ery ruling B, 2026-07-22): 7/7; $1.815\n')
+        provenance = self.p / 'archive/PROVENANCE.txt'
+        provenance.write_text("note: run copied from fixture/interactive (Av" + "ery's interactive "
+                              "2026-07-22 session; log referenced in result.json)\n")
+        originals = {p: p.read_bytes() for p in (finding, provenance)}
+        (self.p / 'ARCHIVE-EXPORT.jsonl').write_text(''.join(json.dumps(
+            dict(path='archive/' + p.name, transform='sanitize')) + '\n' for p in originals))
+        out = self.p / 'publish'
+        export_kit(self.p, out, data, '2026-07')
+        self.assertEqual((out / 'archive/FINDING.md').read_text(),
+                         'Action (operator ruling B, 2026-07-22): 7/7; $1.815\n')
+        self.assertEqual((out / 'archive/PROVENANCE.txt').read_text(),
+                         "note: run copied from an internal checkout (the operator's interactive "
+                         "2026-07-22 session; log referenced in result.json)\n")
+        for path, original in originals.items():
+            self.assertEqual(path.read_bytes(), original)
+
+    def test_kit_document_operator_names_are_sanitized(self):
+        data, _ = self.public_kit_fixture()
+        names = ('master_table.py', 'TASKS.md', 'results.md', 'PROTOCOL.md')
+        for name in names:
+            (self.p / name).write_text("Av" + "ery's ruling; ratified by Av" + "ery Example; 7/7; $1.815\n")
+        originals = {name: (self.p / name).read_bytes() for name in names}
+        out = self.p / 'publish'
+        export_kit(self.p, out, data, '2026-07')
+        for name in names:
+            self.assertEqual((out / name).read_text(),
+                             "the operator's ruling; ratified by the operator; 7/7; $1.815\n")
+            self.assertEqual((self.p / name).read_bytes(), originals[name])
+
+    def test_archive_transformations_preserve_originals_and_rescan(self):
+        data, _ = self.public_kit_fixture()
+        archive = self.p / 'archive/pilot'; archive.mkdir(parents=True)
+        log = archive / 'agent-output.txt'
+        log.write_text(json.dumps(dict(type='assistant', message=dict(id='one', model='fixture',
+                       content=[dict(text='private transcript')], usage=dict(input_tokens=5, output_tokens=7)))) + '\n')
+        metadata = archive / 'result.json'
+        metadata.write_text(json.dumps(dict(log='/' + 'Users/private-person/session.jsonl',
+                                           lower='/' + 'users/x/session.jsonl', upper='/' + 'HOME/x/session.jsonl',
+                                           encoded_lower='/x/.claude/projects/-' + 'users-x-work/s.jsonl',
+                                           encoded_upper='/x/.claude/projects/-' + 'HOME-x-work/s.jsonl',
+                                           encoded='/x/.claude/projects/-' + 'Users-private-person-work/s.jsonl')))
+        plain = archive / 'finding.md'; plain.write_text('public finding\n')
+        manifest = self.p / 'ARCHIVE-EXPORT.jsonl'
+        manifest.write_text(''.join(json.dumps(dict(path=f'archive/pilot/{name}', transform=transform)) + '\n'
+                            for name, transform in (('agent-output.txt', 'usage'), ('result.json', 'sanitize'),
+                                                    ('finding.md', 'copy'))))
+        originals = {p: p.read_bytes() for p in (log, metadata, plain)}
+        out = self.p / 'publish'
+        export_kit(self.p, out, data, '2026-07', dry_run=True)
+        self.assertFalse(out.exists())
+        export_kit(self.p, out, data, '2026-07')
+        published = out / 'archive/pilot'
+        self.assertNotIn('private transcript', (published / log.name).read_text())
+        self.assertEqual(json.loads((published / log.name).read_text())['message']['usage']['input_tokens'], 5)
+        self.assertEqual(json.loads((published / metadata.name).read_text())['log'], '[home]/session.jsonl')
+        for key in ('lower', 'upper'):
+            self.assertEqual(json.loads((published / metadata.name).read_text())[key], '[home]/session.jsonl')
+        for key in ('encoded_lower', 'encoded_upper'):
+            self.assertEqual(json.loads((published / metadata.name).read_text())[key],
+                             '/x/.claude/projects/[home]/s.jsonl')
+        self.assertEqual(json.loads((published / metadata.name).read_text())['encoded'],
+                         '/x/.claude/projects/[home]/s.jsonl')
+        self.assertEqual((published / plain.name).read_bytes(), plain.read_bytes())
+        for path, payload in originals.items():
+            self.assertEqual(path.read_bytes(), payload)
+        shutil.rmtree(out)
+        # Sanitizing a home path must not conceal an independent identity leak.
+        metadata.write_text(json.dumps(dict(log='/' + 'Users/private-person/session.jsonl',
+                                           diagnostic='Inten' + 'teon')))
+        for dry_run in (True, False):
+            with self.assertRaisesRegex(ValueError, 'redaction leak'):
+                export_kit(self.p, out, data, '2026-07', dry_run=dry_run)
+            self.assertFalse(out.exists())
 
     def test_export_kit_real_write_preserves_archives_and_redacts(self):
         from verify import ORGSYNC_ARCHIVED_FILES
@@ -1095,7 +1602,47 @@ print('ACCEPTANCE_RESULT pass=True failures=0 errors=0 tests=1')
         manifest['scored_models'] = 1
         manifest['tasks']['orgsync']['reps_run'] = 1
         manifest_path.write_text(json.dumps(manifest))
-        return kit_rows(self.p, 'all'), bundle
+        data = kit_rows(self.p, 'all')
+        self.lineage_bundle_fixture(data)
+        return data, bundle
+
+    def lineage_bundle_fixture(self, data):
+        # Each reduced panel needs a matching all-edition lineage bundle set.
+        lineage = json.loads((ROOT / 'HARNESS-LINEAGE.json').read_text())
+        selected = {row['bundle'] for row in data}
+        lineage['bundles'] = [b for b in lineage['bundles'] if b['bundle'] in selected]
+        (self.p / 'HARNESS-LINEAGE.json').write_text(json.dumps(lineage))
+
+    def test_export_refuses_missing_fabricated_and_duplicate_lineage_bundles(self):
+        data, _ = self.combined_kit_fixture()
+        path = self.p / 'HARNESS-LINEAGE.json'
+        original = json.loads(path.read_text())
+        for edition in ('all', '2026-07'):
+            selected = data if edition == 'all' else [r for r in data if r['edition'] == edition]
+            path.write_text(json.dumps(original))
+            kit_plan(self.p, selected, edition)
+            for case, message in (('empty', 'missing selected bundles'),
+                                  ('missing', 'missing selected bundles'),
+                                  ('fabricated', 'stamp_sha256 mismatch'),
+                                  ('duplicated', 'duplicate bundle'),
+                                  ('unexpected', 'unexpected bundles')):
+                if edition != 'all' and case == 'unexpected':
+                    continue  # A single edition may retain unselected manifest entries.
+                changed = json.loads(json.dumps(original))
+                bundle = next(b for b in changed['bundles'] if b['bundle'] == selected[0]['bundle'])
+                if case == 'empty':
+                    changed['bundles'] = []
+                elif case == 'missing':
+                    changed['bundles'].remove(bundle)
+                elif case == 'fabricated':
+                    bundle['stamp_sha256'] = '0' * 64
+                elif case == 'duplicated':
+                    changed['bundles'].append(dict(bundle))
+                else:
+                    changed['bundles'].append(dict(bundle, bundle='unselected/fixture'))
+                path.write_text(json.dumps(changed))
+                with self.subTest(edition=edition, case=case), self.assertRaisesRegex(ValueError, message):
+                    kit_plan(self.p, selected, edition)
 
     def test_combined_kit_real_build_contains_both_editions(self):
         data, october = self.combined_kit_fixture()
@@ -1191,7 +1738,7 @@ print('ACCEPTANCE_RESULT pass=True failures=0 errors=0 tests=1')
         data, october = self.combined_kit_fixture()
         sealed = self.p / 'prompts/cutover.md'
         sealed.parent.mkdir(exist_ok=True)
-        shutil.copyfile(ROOT / 'prompts/cutover.md', sealed)
+        sealed.write_bytes(self.sealed_fixture_bytes())
         shutil.copyfile(sealed, october / 'submission/innocent.md')
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaisesRegex(ValueError, 'sealed content'):
@@ -1251,7 +1798,7 @@ print('ACCEPTANCE_RESULT pass=True failures=0 errors=0 tests=1')
 
     def test_combined_kit_refuses_unrevealed_prompt_bytes(self):
         data, october = self.combined_kit_fixture()
-        payload = (ROOT / 'prompts/cutover.md').read_bytes() + b'!'
+        payload = self.sealed_fixture_bytes() + b'!'
         digest = hashlib.sha256(payload).hexdigest()
         evidence = october.parents[3] / 'evidence/prompts' / (digest + '.md')
         evidence.write_bytes(payload)
@@ -1307,7 +1854,7 @@ print('ACCEPTANCE_RESULT pass=True failures=0 errors=0 tests=1')
             with self.assertRaisesRegex(ValueError, 'unredacted session log'):
                 export_kit(self.p, Path(tmp), data, 'all')
 
-    def verification_kit_fixture(self):
+    def verification_kit_fixture(self, *, runner_inputs=False):
         _, october = self.combined_kit_fixture()
         # A complete small panel can exercise the shipped verifier and report
         # derivation, including July's one repeated usage snapshot.
@@ -1320,11 +1867,14 @@ print('ACCEPTANCE_RESULT pass=True failures=0 errors=0 tests=1')
         for task in july_manifest['tasks']:
             for rep in (1, 2, 3):
                 name = f'codex/gpt-5.6-terra/{task}/rep{rep}'
-                shutil.copytree(ROOT / name, self.p / name)
+                shutil.copytree(ROOT / name, self.p / name,
+                                ignore=shutil.ignore_patterns('session.jsonl'))
+                fixture_session(ROOT / name / 'session.jsonl', self.p / name / 'session.jsonl')
                 row = next(rows(self.p, '2026-07')) if task == 'cronspec' and rep == 1 else None
                 if row:
-                    name = f"evidence/prompts/{row['prompt_file_sha256']}.md"
-                    shutil.copyfile(ROOT / name, self.p / name)
+                    for name in (f"evidence/prompts/{row['prompt_file_sha256']}.md",
+                                 f"evidence/judges/{row['judge_sha256']}.py"):
+                        shutil.copyfile(ROOT / name, self.p / name)
         shutil.copyfile(ROOT / 'acceptance_cronspec.py', self.p / 'acceptance_cronspec.py')
         edition = october.parents[3]
         for rep in (2, 3):
@@ -1358,7 +1908,18 @@ print('ACCEPTANCE_RESULT pass=True failures=0 errors=0 tests=1')
             self.assertEqual(generated.returncode, 0, generated.stdout + generated.stderr)
         output = tempfile.TemporaryDirectory(); self.addCleanup(output.cleanup)
         out = Path(output.name)
-        export_kit(self.p, out, kit_rows(self.p, 'all'), 'all')
+        data = kit_rows(self.p, 'all')
+        self.lineage_bundle_fixture(data)
+        export_kit(self.p, out, data, 'all')
+        if runner_inputs:
+            # The small panel omits baseline and late-admission evidence.
+            # Acceptance dry runs need every revealed judge, the full frozen
+            # October roster and its late rate pins in this disposable kit.
+            manifest = json.loads((ROOT / 'editions/2026-10/MANIFEST.json').read_text())
+            late_prices = [f"editions/2026-10/evidence/prices/{entry['prices_yaml_sha256']}.yaml"
+                           for entry in manifest['late_admissions']]
+            for name in ('acceptance_test.py', 'editions/2026-10/MANIFEST.json', *late_prices):
+                shutil.copyfile(ROOT / name, out / name)
         return out
 
     def test_combined_kit_own_verifier_passes_both_editions(self):
@@ -1412,7 +1973,14 @@ print('ACCEPTANCE_RESULT pass=True failures=0 errors=0 tests=1')
         from export import refuse_sealed
         data, _ = self.public_kit_fixture()
         judge = data[0]['judge']; (self.p / '.export-exclude').write_text(judge + '\n')
-        files, exclusions = kit_plan(self.p, data, '2026-07')
+        # Lineage now carries historical judges: sealing one must refuse the
+        # entire kit, including its historical copies.
+        with self.assertRaisesRegex(ValueError, 'sealed path'):
+            kit_plan(self.p, data, '2026-07')
+        # Independently retain coverage of the legacy judge-selection guard
+        # for a kit that carries no historical dependency blobs.
+        with patch('harness_lineage.public_files', return_value=[]):
+            files, exclusions = kit_plan(self.p, data, '2026-07')
         self.assertNotIn(judge, files)
         with self.assertRaisesRegex(ValueError, 'sealed path'):
             refuse_sealed(files + [judge], exclusions, self.p)
@@ -1424,7 +1992,8 @@ print('ACCEPTANCE_RESULT pass=True failures=0 errors=0 tests=1')
                 skipped.append(name)
                 return False
             return is_sealed(name, paths, root)
-        with patch('export.is_sealed', side_effect=omit_selection_guard):
+        with patch('harness_lineage.public_files', return_value=[]), \
+                patch('export.is_sealed', side_effect=omit_selection_guard):
             with self.assertRaisesRegex(ValueError, 'sealed path'):
                 kit_plan(self.p, data, '2026-07')
 
@@ -1561,7 +2130,8 @@ print('ACCEPTANCE_RESULT pass=True failures=0 errors=0 tests=1')
 
     def test_public_kit_ships_submissions_and_refuses_sealed_paths(self):
         data = list(rows(ROOT, '2026-07'))
-        files, exclusions = kit_plan(ROOT, data, '2026-07')
+        with patch('export.sealed_contents', return_value=set()):
+            files, exclusions = kit_plan(ROOT, data, '2026-07')
         self.assertEqual(len(data), 63)
         for name in ('edition_report.py', 'editions/2026-07/metrics.csv'):
             self.assertIn(name, files)
@@ -1576,7 +2146,8 @@ print('ACCEPTANCE_RESULT pass=True failures=0 errors=0 tests=1')
         out = self.p / 'public'
         (out / 'prompts').mkdir(parents=True)
         (out / 'prompts/cutover.md').write_text('sentinel')
-        with self.assertRaisesRegex(ValueError, 'sealed path'):
+        with patch('export.sealed_contents', return_value=set()), \
+             self.assertRaisesRegex(ValueError, 'sealed path'):
             export_kit(ROOT, out, data, '2026-07')
         self.assertEqual((out / 'prompts/cutover.md').read_text(), 'sentinel')
 
@@ -1589,7 +2160,8 @@ class RunnerTests(unittest.TestCase):
             shutil.copy(ROOT/name, self.base/name)
         for directory in ('prompts', 'editions/2026-10', 'evidence/prices'):
             shutil.copytree(ROOT/directory, self.base/directory,
-                            ignore=shutil.ignore_patterns('claude-code', 'codex', 'opencode', 'muse'))
+                            ignore=shutil.ignore_patterns('claude-code', 'codex', 'opencode', 'muse',
+                                                          'cutover.md', 'foreman.md', 'orgsync-v2.md'))
         use_run_table(self.base)
 
     def test_closed_edition_refuses_dry_run(self):
@@ -1722,7 +2294,7 @@ sys.exit(7)
             for model in models:self.assertIn(f'2026-10/{tool}/{model}/orgsync rep1',p.stdout)
         self.assertEqual(manifest['prices_yaml_version'],11)
         self.assertEqual(manifest['prices_yaml_sha256'],RUN_TABLE_SHA)
-        self.assertEqual(hashlib.sha256((ROOT/'evidence/prices'/f'{RUN_TABLE_SHA}.yaml').read_bytes()).hexdigest(),RUN_TABLE_SHA)
+        self.assertEqual(hashlib.sha256((ROOT/'editions/2026-10/evidence/prices'/f'{RUN_TABLE_SHA}.yaml').read_bytes()).hexdigest(),RUN_TABLE_SHA)
         pin=(ROOT/'editions/2026-10/TIER_PIN').read_text()
         self.assertIn('prices_yaml_version: 11',pin)
         self.assertIn(f'prices_yaml_sha256: {RUN_TABLE_SHA}',pin)
@@ -2094,7 +2666,8 @@ class ReviewRegressionTests(unittest.TestCase):
             shutil.copy(ROOT/name,base/name)
         for directory in ('prompts','editions/2026-10','evidence/prices'):
             shutil.copytree(ROOT/directory,base/directory,
-                            ignore=shutil.ignore_patterns('claude-code','codex','opencode','muse'))
+                            ignore=shutil.ignore_patterns('claude-code','codex','opencode','muse',
+                                                          'cutover.md','foreman.md','orgsync-v2.md'))
         use_run_table(base)
         env=fixture_env();env.update(EDITION='2026-10',ALLOW_EXPENSIVE='1',DRY_RUN='1',HOME=str(self.p/'operator-home'))
         def run(tool,model,task="orgsync",**patch):

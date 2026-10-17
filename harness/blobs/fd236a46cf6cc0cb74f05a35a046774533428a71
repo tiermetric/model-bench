@@ -1,0 +1,128 @@
+#!/usr/bin/env python3
+"""Generate Edition 2's CSV and numeric tables from archived evidence. Offline.
+
+python3 edition_report.py editions/2026-10
+No model invocation; result.json and rate snapshots are never edited.
+"""
+import argparse
+import csv
+import json
+import re
+import statistics
+from collections import defaultdict
+from pathlib import Path
+
+from verify import METRIC_FIELDS, derive_run_metrics, load_prices, metric_strings, sha256_file
+
+
+SCOPE = "*One task — the integration anchor only; per-task results, not a model ranking.*"
+
+
+def model_groups(metrics, manifest):
+    groups = defaultdict(list)
+    for row in metrics:
+        groups[(row['tool'], row['model'])].append(row)
+    expected = [(tool, model) for tool, models in manifest['roster'].items() for model in models]
+    if set(groups) != set(expected):
+        raise ValueError('metrics must cover exactly the manifest roster')
+    return [(model, sorted(groups[(tool, model)], key=lambda r: r['rep'])) for tool, model in expected]
+
+
+def cost_stats(rows):
+    costs = [r['cost_list_usd'] for r in rows]
+    accepted = sum(r['outcome'] == 'PASS' for r in rows)
+    total = sum(costs)
+    return dict(accepted=accepted, total=total, expected=total/accepted if accepted else None,
+                tier=5*accepted/(total/1000) if accepted else None,
+                low=min(costs), high=max(costs),
+                dispersion=100*statistics.stdev(costs)/statistics.mean(costs) if len(costs)>1 else None)
+
+
+def median_range(rows, key):
+    values = [r[key] for r in rows]
+    if any(v is None for v in values):
+        return 'not reported'
+    return f'{statistics.median(values):,} ({min(values):,} – {max(values):,})'
+
+
+def generated_tables(metrics, manifest):
+    groups = model_groups(metrics, manifest)
+    results = ['| model | outcome | rep1 $ | rep2 $ | rep3 $ | TIER ↑ | E[$/accepted] ↓ | run-to-run range | dispersion |',
+               '|---|---|---:|---:|---:|---:|---:|---|---:|']
+    work = ['| model | E[$/accepted] ↓ | wall seconds median (range) | model calls / responses median (range) | billed tokens median (range) |',
+            '|---|---:|---:|---:|---:|']
+    runs = ['| model | rep | outcome | wall seconds | model calls / responses | uncached input | cache read | cache write | output (incl. reasoning) | of which reasoning | all tokens billed | list cost $ |',
+            '|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|']
+    money = ['| model | uncached input | cache read | cache write | output (incl. reasoning) | of which reasoning | all tokens billed |',
+             '|---|---:|---:|---:|---:|---:|---:|']
+    for model, rows in groups:
+        st = cost_stats(rows)
+        if [r['rep'] for r in rows] != [1, 2, 3]:
+            raise ValueError(f'{model}: Edition 2 requires rep1..3')
+        costs = ' | '.join(f'{r["cost_list_usd"]:.6f}' for r in rows)
+        tier = f'{st["tier"]:,.0f}' if st['accepted'] else 'NO SCORE'
+        expected = f'${st["expected"]:.4f}' if st['accepted'] else 'NO SCORE'
+        results.append(f'| {model} | {st["accepted"]}/{len(rows)} | {costs} | {tier} | {expected} | ${st["low"]:.4f} – ${st["high"]:.4f} | {st["dispersion"]:.1f}% |')
+        work.append(f'| {model} | {expected} | {median_range(rows,"wall_seconds")} | {median_range(rows,"model_calls")} | {median_range(rows,"total_tokens")} |')
+        totals = ['not reported' if any(r[k] is None for r in rows) else f'{sum(r[k] for r in rows):,}'
+                  for k in ('input_uncached','cache_read','cache_write','output','reasoning','total_tokens')]
+        money.append(f'| {model} | ' + ' | '.join(totals) + ' |')
+        for r in rows:
+            values = [str(r['rep']),r['outcome'],str(r['wall_seconds']),str(r['model_calls'])]
+            values += ['not reported' if r[k] is None else f'{r[k]:,}' for k in
+                       ('input_uncached','cache_read','cache_write','output','reasoning','total_tokens')]
+            runs.append(f'| {model} | ' + ' | '.join(values) + f' | {r["cost_list_usd"]:.6f} |')
+    return {'results':'\n'.join(results), 'how-models-worked':'\n'.join(work),
+            'per-run':'\n'.join(runs), 'token-totals':'\n'.join(money)}
+
+
+def load_metrics(root):
+    manifest = json.loads((root/'MANIFEST.json').read_text())
+    table = manifest['report_rate_table']
+    repo = Path(__file__).resolve().parent
+    path = (repo/table['path']).resolve()
+    if Path(table['path']).is_absolute() or not path.is_relative_to(repo):
+        raise ValueError('report rate table must be inside repo')
+    if sha256_file(path) != table['sha256']:
+        raise ValueError('report rate table sha256 mismatch')
+    if not re.search(r'^version:\s*'+str(table['version'])+r'\s*$',path.read_text(),re.M):
+        raise ValueError('report rate table version mismatch')
+    prices = load_prices(path)
+    metrics = [derive_run_metrics(p.parent, prices, root) for p in sorted(root.glob('*/*/*/rep*/result.json'))]
+    metrics.sort(key=lambda r: r['bundle'])
+    return manifest, metrics
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument('root', type=Path)
+    args = ap.parse_args()
+    manifest, metrics = load_metrics(args.root)
+    with (args.root/manifest['metrics_file']).open('w',newline='') as fh:
+        writer = csv.DictWriter(fh,fieldnames=METRIC_FIELDS)
+        writer.writeheader();writer.writerows(metric_strings(r) for r in metrics)
+    path = args.root/'REPORT.md'
+    text = path.read_text()
+    total = sum(r['cost_list_usd'] for r in metrics)
+    accepted = sum(r['outcome']=='PASS' for r in metrics)
+    n = len(metrics)
+    model_count = sum(len(models) for models in manifest['roster'].values())
+    text = re.sub(r'^\*\*2026-10 ·.*?\*\*$',
+                  f'**2026-10 · ten models · one task · {n} runs · ${total:.4f} at list rates · {accepted} accepted / {n-accepted} not**',
+                  text, flags=re.M)
+    text = re.sub(r'^\| runs \|.*$', f'| runs | **{n}** ({model_count} models × 1 task × N=3) |',text,flags=re.M)
+    recorded = sum(json.loads((args.root/r['bundle']/'result.json').read_text())['cost_list_usd'] for r in metrics)
+    text = re.sub(r'^\| total spend \|.*$',
+                  f'| total spend | **${total:.4f}** (list rates, report table `prices.yaml` v{manifest["report_rate_table"]["version"]}; sum of {n} six-decimal run costs, ${total:.6f}; recorded v11/v13 bundle costs sum to ${recorded:.6f}) |',text,flags=re.M)
+    text = re.sub(r'^\| outcomes \|.*$',f'| outcomes | {accepted} accepted · {n-accepted} not accepted |',text,flags=re.M)
+    for name, table in generated_tables(metrics,manifest).items():
+        pattern = r'(<!-- table:'+name+r' -->\n).*?(\n<!-- /table:'+name+r' -->)'
+        text, n = re.subn(pattern,lambda m:m[1]+table+m[2],text,flags=re.S)
+        if n != 1:
+            raise ValueError(f'expected one table placeholder for {name}')
+    path.write_text(text)
+    print(f'Generated {len(metrics)} per-run metrics and four report tables; {accepted} accepted; ${total:.6f} at v{manifest["report_rate_table"]["version"]}.')
+
+
+if __name__ == '__main__':
+    main()

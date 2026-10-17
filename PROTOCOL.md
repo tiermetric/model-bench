@@ -2,6 +2,13 @@
 
 **Version 1.5 · published 2026-07-22, amended 2026-10-13 · Edition 2 rulings apply prospectively; Edition 1 remains frozen.**
 
+**Dated claims amendment 1.6 · 2026-10-15.** The v1.5 banner above is retained
+as Edition 2's historical protocol declaration. This amendment corrects current
+claims and prospective presentation;
+it does not change the frozen editions, their scores, or their protocol stamps.
+Superseded wording is retained at the end of §9. Edition 3 process/enforcement
+amendments and public kit work remain deferred.
+
 This document is the *standard*. It is published **before** the results it
 governs, and it is versioned independently of them. If a later edition changes
 anything below, the change is recorded in §9 with the edition it took effect in
@@ -15,22 +22,35 @@ labelled exploratory (N=1, one task). It is retained for the record but is
 
 ## 1. What this measures — and what it does not
 
-The TIER Model Report measures **cost per passing outcome**: the money a model
-spends to produce work that an independent judge accepts.
+The TIER Model Report measures **cost per passing outcome**: captured usage
+over all runs, priced at list rates, divided by the number of runs accepted by
+operator-written acceptance tests, on the edition's fixed task set. This measures
+models in their tested tool configurations; it is not TIER's product score.
+
+**Historical case studies.** Editions 1 and 2 are presented as historical case
+studies. Corrections use [versioned report errata](ERRATA.md). Edition-local
+entries are pending in this revision; C02, C05, C06, C09, C10 and C11 below
+identify those corrections, not an already published errata chain. Publication
+requires the entries and their actual revision/hash pins to be verified and
+published. Claims describe what the tested configurations passed
+and what their captured usage cost on those tasks. Published-task results do
+not establish general capability, a model ranking, or a purchasing recommendation.
 
 It is **not** a capability leaderboard, not a "best model" ranking, and not a
 speed benchmark. A model that fails a task has no cost-efficiency number for
 that task — cost without a passing outcome is not efficiency, it is just spend.
 
 The report is published by the maintainers of TIER, an open-source measurement
-tool. Two commitments make that publishable rather than self-serving:
+tool. Three commitments make that publishable rather than self-serving:
 
-1. **Capture parity is proven before publication.** Every vendor in an edition
-   is captured by a mechanism whose containment invariants have been verified
-   (§4.3). A vendor whose spend cannot be captured honestly is *excluded and
-   named as excluded* — never estimated. The inclusion bar is published, and a
-   capture parser for an excluded vendor is accepted by pull request, so
-   inclusion is a test anyone can make pass rather than an editorial favour.
+1. **Capture checks establish accounting consistency and re-derivation from
+   captured evidence.** They do not prove completeness against independent
+   provider accounting. Claude costs are derived from deduplicated Claude Code
+   usage logs; their completeness remains unvalidated, including for the
+   subscription routes used here. Codex costs use logged cumulative counters;
+   those counters do not independently establish complete capture. Missing usage
+   would understate costs and inflate benchmark TIER scores; missing Claude
+   usage would also make Claude appear relatively cheaper in vendor comparisons.
 2. **Results publish unedited, including when they are commercially
    inconvenient to us.** Edition 0's headline was that Codex swept the cheap end
    and Claude — the publisher's own stack — did not win. That demonstrates the
@@ -42,29 +62,28 @@ tool. Two commitments make that publishable rather than self-serving:
    than as silence.
 
 **No overall winner is ever crowned, and no composite score is ever published.**
-Results are reported as a per-tier efficiency frontier: the set of models not
-dominated on both cost and reliability. Ranking across difficulty tiers is
-unsupported by construction. Any single number blending cost with reliability —
-or blending tiers — is prohibited outright, because a composite is where hidden
-editorial weighting lives: it is an overall winner wearing a lab coat.
+Results describe observed acceptance counts and list-rate costs per task.
+Neither task tiers nor model results are pooled into an overall score.
+Descriptive table sorting is presentation, not evidence of a stable ranking.
 
-What the reader gets instead is a decision: *for work that looks like this,
-these are the efficient choices, at this expected cost per accepted outcome.*
-Rankings **within** a tier on a **stated** axis are legitimate; any number that
-collapses axes or tiers is not.
+The experimental unit is the complete model-tool configuration, including the
+recorded effort, tool permissions, caching policy and billing route.
+Cross-vendor cost comparisons describe only the tested configurations and tasks;
+they do not isolate model efficiency or establish a purchasing recommendation.
 
 ---
 
 ## 2. The unit of measurement
 
-One **cell** = one (model × task) pair. One **run** = one execution of a cell in
-a fresh, empty git repository.
+One **cell** = one (tool × model × task) configuration. One **run** = one
+execution of a cell in a fresh git repository populated with any task-declared
+skeleton and fixtures.
 
-A run produces exactly four measured facts:
+Runs and their replicates supply the following measurements and diagnostics:
 
 | fact | how it is obtained |
 |---|---|
-| **outcome** | independent hidden judge: PASS / FAIL (binary) |
+| **outcome** | operator-written acceptance tests: PASS / FAIL (binary); publication and commitment limits in §4.5 |
 | **self-reported outcome** | the model's *own* test suite: PASS / FAIL (diagnostic only, never scored) |
 | **spend** | the tool's own session log, priced at published list rates |
 | **wall-clock** | harness-measured, reported, never scored |
@@ -114,12 +133,14 @@ reproducible across days, and grading is not binary.
 
 - **Self-contained and offline.** The prompt states everything needed. Scored
   tasks forbid web tools; the harness *voids* any scored run whose log contains
-  a web tool call (§4.4). **"Offline" means no traffic leaves the machine.** A
+  a web tool call (§4.4). **"Offline" enforces web-tool denial and audit; shell
+  network is available on some legs and is neither blocked nor audited.** A
   task may ship a fixture service the harness starts on loopback — a canned API
   with scripted pagination, errors and malformed payloads is legitimate task
   environment, and model-authored code calling `127.0.0.1` is the work, not a
-  violation. The fixture ships inside the task's archive, so the task stays
-  re-verifiable in years to come. What is forbidden is a *live external
+  violation. Long-term re-verification requires the fixture and its dependencies
+  to be archived and exported; the current export omits some artifacts (§8, C10).
+  What is forbidden is a *live external
   dependency*: a task whose fixture is someone else's running service can never
   be re-verified, only remembered, and its behavior differs by vendor sandbox
   and by day.
@@ -185,6 +206,10 @@ everyone is *supposed* to pass it — so it is never declared saturated and neve
 graduates on that basis. Its job is to price identical accepted work across
 models and across time.
 
+Published anchors measure cost on familiar tasks and provide regression
+tripwires. They are not held-out capability evidence. Prior public availability
+creates an opportunity for exposure; it does not prove training inclusion.
+
 ### 3.4 The calibration ladder — before a task enters service
 
 No task reaches a scored panel without first being calibrated. This is
@@ -195,9 +220,7 @@ Calibration climbs from the **weakest** model upward, because the weakest model
 is the most sensitive difficulty detector available and the cheapest to run:
 
 - **Two lanes, one per vendor, ordered by vendor capability tier** — not by
-  price. Price is not a capability ordering: our cheapest model has also been
-  among the most capable, so a price-sorted ladder would begin at the ceiling
-  and mistake "our cheap model is good" for "the task is saturated".
+  price. Price is not a capability ordering.
 - **Floor detectors** are the bottom rung of each lane. A rung is N=3.
 - **Climb on failure** (a model fails its rung at ≥2/3 FAIL, so try the next
   model up that lane); **stop the lane on success** (≥2/3 PASS).
@@ -210,8 +233,9 @@ is the most sensitive difficulty detector available and the cheapest to run:
   floor alone.
 - **If the whole ladder fails**, the task is over-hard; reduce one lever.
 
-Calibration runs are **authoring data**. They are never published as scored
-results, and they are recorded in the task's finding at reveal.
+Calibration runs are **authoring data**. Edition 1 reused calibration runs
+as scored results under the historical completion rule below, including Haiku
+orgsync failures (C05). This was not a fresh scored-panel replication.
 
 **The cheap-first rule is binding, and it is enforced by the harness, not by
 memory.** No expensive model may be run against a task until a cheaper model
@@ -242,8 +266,9 @@ partial roster at mixed N. Both of those are visible in the data itself, and
 both are what make it unscoreable. Neither is caused by having run the cheap
 models first.
 
-A ladder becomes a panel when **all four** hold, and every one of them is
-checkable after the fact from the archived bundles:
+The historical completion rule requires **all four** conditions below. Bundles
+support artifact and sample-size comparisons; they do not independently establish
+that the roster was fixed before execution (C06, C11):
 
 1. **Declared roster, complete.** Every model in the roster declared before the
    first run has a cell. No model was added because it did well, and none was
@@ -264,10 +289,11 @@ deciding *when to stop based on what you saw*; running a fixed, pre-declared
 design in cheapest-first order is not that, and paying flagship prices a second
 time to relabel identical data would buy nothing but a different filename.
 
-> **Applied 2026-07-23 (Steve's ruling), first use:** the `orgsync` panel.
-> Roster of 7 fixed in `batch.sh` before the first run; N=3 declared per cell;
-> all 21 runs verified to share prompt `94950b00`, judge `b948f904` and rate
-> table `9ab9cba3`. Conformant. Publishes as scored.
+> **Applied 2026-07-23 (the operator's ruling), first use:** the `orgsync` panel.
+> The operator recorded a roster of 7 and N=3 per cell.
+> All 21 bundles share prompt `94950b00`, judge `b948f904` and rate
+> table `9ab9cba3`; those bytes do not prove pre-result roster commitment.
+> Published as scored with calibration-reuse and commitment exceptions (C05, C06, C11).
 >
 > **CORRECTED 2026-07-29 — condition 4 was not met for one run, and this ruling
 > previously overstated it.** The sentence here read "both hashes published in
@@ -295,9 +321,9 @@ time to relabel identical data would buy nothing but a different filename.
 > a stranger: condition 4 exists so a reader need not trust our stamps, and for
 > rep1 a reader must. For the other 20 runs they need not.
 >
-> Anyone can settle rep1 independently rather than taking this on trust: the judge
-> is revealed, the submission is archived, and re-running the one against the
-> other reproduces the verdict.
+> The judge is revealed and the submission is archived. No third-party
+> clean-rejudge receipt has been established; replay cannot establish the missing
+> pre-result commitment (C10, C11).
 >
 > The remedy is disclosure, not a quiet reword — the timeline is recoverable from
 > our own git log, so hiding it would be both dishonest and futile. Going forward
@@ -310,15 +336,13 @@ time to relabel identical data would buy nothing but a different filename.
 
 ### 4.1 Sample size
 
-**Edition 2 ruling (R-2026-10-12-21, 2026-10-12): “If you did not run the
-multiple runs yet. Then yes, let's just do one run each.”** This supersedes
-R-2026-10-12-18 (“Yes, 3 runs each”) before any multiple paid runs were launched
-by the fix pass. Edition 2 keeps the anchor rule: one run per model, expanding
-a non-PASS or missing rep1 result to N=3. Its report publishes without run-to-run
-range/dispersion and explicitly discloses that limitation; N=1 cells provide
-point estimates. Existing valid rep1 bundles count; `batch.sh` skips any rep
-with a `result.json` and never overwrites it. The sole declaration remains
-`editions/2026-10/MANIFEST.json`; the temporary root amendment is removed.
+**Edition 2 sampling history.** R-2026-10-12-21 initially selected N=1
+anchors with non-PASS or missing rep1 expansion to N=3. R-2026-10-12-24
+superseded that schedule with N=3 for all nine original configurations;
+R-2026-10-13-1 admitted GLM 5.3 Flash at N=3, giving 30 runs across ten
+configurations. Reps 2–3 were added after all first results were known; this
+was a disclosed post-result amendment, not prospective preregistration (C06).
+Edition 1 also reports N=3 per cell. Superseded hybrid rules are retained in §9.
 
 **N=3 runs per cell** for any active scored task, across the **full declared
 roster**, and **all runs are reported** — including failures, including a cell
@@ -334,41 +358,16 @@ where runs disagree.
 > re-derived later. At N=1 a cell has no pass *rate*, so a single failure cannot
 > be distinguished from a flake and no reliability claim survives one edition;
 > and **cost dispersion cannot be computed at all**, since dispersion needs more
-> than one observation — the error bar on the published cost figure disappears
-> with it, along with the leading-indicator signal that a model near its limit
-> thrashes before it fails.
+> than one observation. Dispersion describes observed costs; its proposed role
+> as a leading indicator of failure is an unvalidated hypothesis (C09).
 >
-> Edition 1 is the reference point that makes the trade legible: at N=3 it
-> recorded haiku failing `orgsync` 3 times out of 3 on the identical assertion,
-> with its own tests passing every time. At N=1 that is one failure,
-> indistinguishable from noise, and there would have been no basis to call it a
-> finding. If a later edition drops to N=1, it reports cost as a point estimate,
-> labels it as such, and makes no reliability claim from a single edition.
+> Edition 1 recorded Haiku failing `orgsync` 3/3 with its own tests passing.
+> These were calibration runs reused for scoring, not a fresh confirmation of
+> reliability (C05). N=1 costs are point estimates without within-cell dispersion.
 
-**Replication is spent where it buys something.** Cheap models are replicated;
-expensive models are not, unless a result demands it. The reasoning is that
-replication buys two things — a pass-*rate* and a cost *error bar* — and both
-are worth most exactly where a model is near its limit, which is where cheap
-models live. Confirming that a flagship can do work a mid-tier model already
-does reliably is the lowest-information run available, and the most expensive.
-
-So: a model in the **floor and mid tiers runs N=3**; a model in the **top tier
-runs N=1** on a task the tier below has already passed. A top-tier model is
-replicated to N=3 only when its single run FAILS, or when it is the only model
-that passes — in both cases the third run is where the information is. Any cell
-published at N=1 is labelled as such, and an edition mixing N is honest about it
-rather than averaging over the difference.
-
-Anchor Set tasks run at **N=1 per edition** (§5.1): they are saturated by
-definition, so replicating them buys no reliability information — they are
-there to price the same work over time and to trip if a model ever fails work
-its predecessors passed. Any anchor failure escalates that cell to N=3
-immediately. Calibration (§3.4) is fixed at N=3 per rung. There is no optional
-stopping anywhere in this protocol. Cherry-picking a
-"representative" run is prohibited. N is **fixed and declared before the runs**:
-we never add replicates after seeing a result. Adding runs to a cell that looks
-unsettled is optional stopping — it biases the pass-rate and invites the fair
-accusation that we ran until the number looked right.
+Cherry-picking a "representative" run is prohibited; all runs are reported.
+The historical “we never add replicates after seeing a result” assertion does
+not describe the completed October panel (C06).
 
 Where runs disagree, the pass-*rate* is the result.
 
@@ -390,16 +389,16 @@ The cheap model is the expensive one. We report the mean over passing runs too,
 labelled **"cost when it works"**, because it answers a different and legitimate
 question — but it is never the headline and never the sort key.
 
-**Cost dispersion is reported alongside every cell figure** — the within-cell
-variation across replicates. It is never scored, but it is not decoration: it is
-the error bar on the number this report publishes, and at N=1 it cannot be
-computed at all. It also behaves as a leading indicator of the failure edge. In
-Edition 1, mean within-cell variation was 4.0% on the EASY task and 8.4% on the
-MEDIUM one — but one cell (haiku on `cronspec`) ran 22.5% while every other
-model on that task sat between 2% and 10%. That model passed the task 3/3, and
-failed the next task up 3/3. A model near the limit of its competence thrashes
-before it fails, and the thrash is visible in the cost of work it is still
-completing.
+**Cost dispersion describes the observed replicates.** The reported run range
+and dispersion are descriptive sample statistics, not confidence intervals or
+validated predictors of later failure. At N=1, within-cell dispersion cannot
+be computed. Three runs do not establish a stable cost ordering or a general
+reliability claim.
+
+**Prospective presentation rule (2026-10-15).** Headline claims of stable cost
+ordering require non-overlapping observed run ranges. Descriptive sample means
+and table sorting remain permissible with their limitations stated. Range
+separation is an editorial condition, not a significance criterion.
 
 A cell with **zero** passing runs has no cost-efficiency figure at all: cost
 without an accepted outcome is not efficiency, it is just spend. Such a cell
@@ -422,13 +421,21 @@ Each run gets a fresh directory and a fresh `git init`. The harness **refuses**
 to reuse an existing run directory — there is no staging, no retry-in-place, and
 no partial-credit rerun.
 
-Runs are executed **headless** and non-interactively. Exact commands and
-network/sandbox postures for all four legs are in `README.md`; `DRY_RUN=1`
-prints their actual argv and clean-config environment without invoking a CLI.
-Codex retains `workspace-write` and session logging (never `--ephemeral`).
+The private harness executes runs **headless** and non-interactively.
+Its `README.md` describes the invocation and isolation policies, and
+`DRY_RUN=1` prints argv and configuration without invoking a vendor CLI.
+That README and the vendor-CLI execution harness are not included in the
+current public export. They are private-source references, not public
+reproduction instructions. Public kit restoration is deferred until after
+launch; no claim that readers can reproduce the Model Report themselves is made.
 
-**Effort (R-EFFORT D, v1.3): each model runs at its CLI's shipped default under
-guarded configuration.** Codex and OpenCode receive fresh home/XDG config trees;
+**Effort (R-EFFORT D, v1.3): the harness sets no effort flag.** Effective
+effort is observed only where session metadata supplies it; absence of a flag
+or metadata does not demonstrate a common default across configurations.
+
+Claude Code and Muse ran from the operator's home and config directories under the harness's recorded isolation policy: Claude Code with customisation disabled by safe-mode and isolation flags, Muse with a settings-key allowlist and isolation flags (an inherited-trust residual remains); the other tools ran from a fresh config home.
+
+Codex and OpenCode receive fresh home/XDG config trees;
 only auth credentials may be copied. Codex copies `auth.json` from the operator's
 `CODEX_HOME` to clean `CODEX_HOME`; OpenCode copies only the selected provider's
 `auth.json` entry to clean XDG data. Credentials are never printed.
@@ -480,19 +487,14 @@ operator setting are **VOID**. The **2026-10-12 first paid Edition 2 attempt
 was VOID**, a harness auth failure: all Claude legs reported “Not logged in ·
 Please run /login” with zero tokens; Codex/OpenCode/Muse never ran. It is **not
 part of Edition 2's record**. The operator moved the void bundles out of the
-tree. Four later valid Claude rep1 orgsync bundles (Fable 5.1, Opus 5.5, Sonnet 5.5 and Haiku 5.5) are PASS and retained unchanged; they count as the N=1 anchor runs.
+tree. Four later valid Claude rep1 orgsync bundles (Fable 5.1, Opus 5.5, Sonnet 5.5 and Haiku 5.5) are PASS and retained unchanged; they are rep1 of the completed N=3 cells (C06).
 
-Every Edition 2 results table carries: **“effort scales differ by vendor; each
-model ran at its CLI's shipped default (stamped)”**. Edition 1 effort was
-**unrecorded**; cross-edition comparisons hold only where defaults are unchanged,
-with each vendor's dated release notes cited: [Claude Code changelog](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md),
-[Codex releases](https://github.com/openai/codex/releases),
-[OpenCode releases](https://github.com/anomalyco/opencode/releases), and [Muse Code changelog](https://dev.meta.ai/docs/muse-code/changelog)
-(release entries must be obtained and dated before a longitudinal claim).
-The dated CLI versions in stamps are the join keys; these links are not proof
-that defaults stayed unchanged. No cross-edition effort equivalence is claimed
-by this build. A **default-vs-high sensitivity study** is pre-declared as a
-**separate later study**, scoped by a cost pilot first, outside this edition.
+Edition 2's retained tables describe effort as each CLI's shipped default;
+that wording does not establish effective effort for unobservable runs.
+Edition 1 effort was unrecorded. Cross-edition comparisons do not establish
+effort equivalence, and CLI release notes alone cannot supply an unrecorded
+run setting. The proposed default-versus-high study is separate from the
+published editions.
 
 Any `mcp__*`, browser/computer-use, or web-tool invocation **voids** an offline
 run. A Claude `subagents/` directory fails capture loudly because its spend
@@ -551,12 +553,12 @@ GLM's `billing_route` is stamped as **zai-coding-plan subscription**. It is
 Spend is read from **each tool's own local session log** — not from a proxy, not
 from vendor billing APIs, not estimated from the transcript.
 
-| tool | source | containment invariants verified |
+| tool | source | recorded fields and accounting checks |
 |---|---|---|
-| Claude Code | `~/.claude/projects/<cwd-slug>/<session>.jsonl` | reasoning is billed inside output and not separately reported; cache-read and cache-write are reported separately |
+| Claude Code | `~/.claude/projects/<cwd-slug>/<session>.jsonl` | reasoning not separately reported; inclusion in output unvalidated (C02); cache-read and cache-write reported separately |
 | Codex | `~/.codex/sessions/**/rollout-*.jsonl` (`token_count`) | `total == input + output`; `reasoning ⊆ output`; `cached_input ⊆ input` |
 
-The scorer **asserts** these invariants and dies loudly if they break (e.g. a
+The scorer **asserts** the Codex counter invariants and dies loudly if they break (e.g. a
 codex log with `cached > input` is a fatal error, not a warning). Reasoning
 tokens are never added on top of output. Cached input is subtracted to obtain
 the uncached share.
@@ -568,7 +570,7 @@ rate: inflating cache reads to full price would manufacture a larger and false
 number. Anthropic cache writes are priced 1.25× (5m) / 2× (1h). OpenAI's pricing page
 now lists a cache-write price (1.25× input, fetched 2026-10-12); until a rate
 audit adopts it, any nonzero OpenAI write is billed at input rate and warned
-about. Edition 2's three Codex runs recorded no cache writes.
+about. Edition 2's nine Codex runs recorded no cache writes.
 
 A model with no pricing row is **not** substituted with a neighbouring model's
 rate. It is either priced by adding an audited row (with a `prices.yaml` version
@@ -616,8 +618,12 @@ only pass is not a measurement:
 
 ### 4.5 The judge
 
-Each task has one hidden acceptance suite (`acceptance_<task>.py`) that the
-model never sees. It tests **only prompt-stated behavior**.
+Each task has operator-written acceptance tests (`acceptance_<task>.py`),
+intended to check only prompt-stated behavior. Their commitment timing and
+prior-publication limitations are disclosed in `TASKS.md`: the duration judge
+was public while active, cronspec's reveal lacked a recorded event, and the
+orgsync judge hash reached the ledger after the first scored verdict (§3.4.1).
+A separate test program is not an independently authored or validated judge.
 
 Before a task is used, its judge is validated against at minimum:
 
@@ -683,22 +689,22 @@ and a `FINDING.md` recording what it showed and why it graduated.
 
 ### 5.2 Saturation is a result, not an embarrassment
 
-A task saturating means the models got better at that work. That is a
-**capability finding and it is published as a headline**, in the edition where
-it happened, with the pass-rate that triggered it.
+Saturation records the declared roster's observed pass counts on the fixed
+task under §3.3. It does not by itself show capability improvement, general
+reliability, or that a published task was held out.
 
 ### 5.3 Language rule
 
-The report says **"the failure edge moved"**. It does not say "we made it
-harder." The distinction is not cosmetic: the first describes the models, which
-is what the report is about; the second describes us, and invites the suspicion
-that difficulty is tuned to produce a desired ranking.
+Describe the measured event: which tested configurations passed which task,
+in how many runs, at what captured list-rate cost. Published-task passes do
+not support a capability or ranking headline. A harder successor changes the
+task; it does not by itself show that the models improved.
 
 ### 5.4 What is public, and when
 
-The task archive is public. An unpublished benchmark is an unfalsifiable one,
-and "trust our hidden tasks" is not a standard a vendor-adjacent publisher can
-ask anyone to accept.
+The table states the publication policy, not the historical release timeline.
+Edition 1 publication was authorized on 2026-10-13 (`TASKS.md`); Edition 2
+remains labelled "not published" in its retained manifest (C06).
 
 | artifact | policy |
 |---|---|
@@ -707,28 +713,22 @@ ask anyone to accept.
 | **judges** | SHA-256 public immediately; **source revealed at graduation or retirement** |
 
 The judge is the single sealed artifact, because the judge is the answer key.
-Everything needed to see what we test against and how the bar has moved —
-prompts, difficulty metadata, and the full pass-rate history — is public from
-day one.
+The immediate-publication policy does not establish that prompts, difficulty
+metadata or pass-rate history were public from execution day one (C06).
 
-**Publication is the contamination channel, and we say so.** A published task
-enters the next generation's training data, with repetition and an answer
-attached. We accept that cost deliberately in exchange for falsifiability, and
-we manage it two ways: the active frontier judge stays sealed until its task
-graduates, and each scored task is paired with an **unpublished variant** —
-identical in structure, differing in constants — so the instrument keeps
-measuring capability after the public member is absorbed. A partial publication
-delay is explicitly rejected: editions fire every few weeks while training
-cutoffs move in 6–12 month steps, so a short embargo protects nothing while
-costing transparency now.
+**Publication creates an opportunity for prior exposure.** It does not prove
+that a task entered a particular model's training data. Our intended
+contamination mitigation is to keep new frontier judges sealed until
+graduation. Historical exceptions are recorded in `TASKS.md`; in particular,
+the duration judge was public while its task remained active. No scored task
+has the paired unpublished constants variant previously described here.
+Published-task passes therefore carry the prior-exposure limitation; no
+paired-variant contamination control has been demonstrated.
 
-**Anchor pass-rates carry a contamination caveat** from their third edition
-onward. This is disclosed rather than defended: a task that is almost certainly
-in a model's training data no longer cleanly measures capability. Two things
-survive it — the **cost** anchor (a memorized task is a *cheaper* task, and
-"familiarity reduced the price of this work by X%" is itself a legitimate
-finding) and the **tripwire** (a model failing work it has almost certainly
-seen is a louder alarm, not a quieter one).
+**The exposure caveat applies whenever the task was public before execution**,
+including anchors and the active EASY floor. These results describe cost on
+published tasks and can serve as regression tripwires. They do not measure
+the causal effect of familiarity on cost or establish held-out capability.
 
 ### 5.5 Versioning
 
@@ -773,16 +773,14 @@ would have used it.
 
 The commitment witness must not be something we alone control. "Trust our commit
 history" is the weakest available claim for a report whose entire value is
-neutrality, so the hash is additionally anchored to a timestamp proof we cannot
-forge.
+neutrality. No independently anchored timestamp proof exists for these editions;
+`TASKS.md` records the unmet escrow requirement (C11).
 
 ### 5.7 The lineage receipt
 
-Every edition ships a **manifest** listing, for every task that has ever been
-scored: its tier, the editions it ran in, its current status (active / core /
-graduated / retired), and the SHA-256 of its prompt and judge. This is the
-answer to "did you cherry-pick the tasks that make your point?" — the full
-lineage is on the record, append-only, in `TASKS.md`.
+`TASKS.md` records task lineage and status events. Edition manifests describe
+their own panels; Edition 2 lists only `orgsync/v1`, not every previously scored
+task. Neither supplies an independently witnessed pre-result commitment (C11).
 
 ---
 
@@ -805,41 +803,42 @@ Every edition — and every individual run, in `stamp.json` — carries:
 
 ## 7. Standing caveats (published with every edition)
 
-- **Single machine, single operator, default configs.** Not a datacenter-scale
-  evaluation.
+- **Single machine, single operator, recorded configuration policies.** Each
+  edition is scoped to its tested environment; effort is not always observable.
 - **Token totals are not comparable across tools without the dollar column.**
   Tokenizers, system prompts, and caching behavior differ per tool; comparing
   raw token counts across vendors is meaningless.
 - **List-rate pricing** — see §4.3. Not anyone's actual invoice.
 - **Wall-clock is not comparable** between headless and interactive runs, and is
   never scored.
-- **Small N.** N=3 detects gross reliability differences, not small ones. No
-  statistical significance is claimed, and none is implied by ordering. Be
-  concrete about how weak this is: a cell's pass-rate has only four possible
-  values, so a genuinely 70%-reliable model and a 90%-reliable one are not
-  distinguishable at all. Runs within a cell are also correlated — a model
-  either read the spec correctly or it didn't — so a 21-run panel carries
-  materially less information than 21 independent trials. Tables sort by cost;
-  **ordering is presentation, not ranking**, and adjacent rows should be read as
-  indistinguishable unless their intervals plainly separate.
+- **Model plus tool.** Each result describes a model inside its tested CLI,
+  including permissions, effort observations, caching and billing route.
+  A difference between vendor configurations does not isolate the model's
+  contribution. Model attribution requires a common-harness contrast with
+  predeclared, controlled or explicitly qualified effort, permissions, cache
+  conditions, billing route and verified capture; the published editions do
+  not supply that contrast.
+- **Small N.** Editions 1 and 2 report three runs per cell. Acceptance fractions,
+  means, ranges and dispersion describe those observations; they do not
+  establish general reliability, equivalence or a stable cost ranking.
+  Shared provider cache state (C09):
+  “runs were not independent; the dispersion figures may misstate run-to-run variance, and the direction was not measured.”
+  No statistical significance is claimed or implied by sorting.
+  Non-overlapping observed ranges are not a significance test (§4.1).
 - **Rates are ours to get wrong.** Spend is *derived*: tokens are measured, and
   dollars are tokens times a rate table we maintain. Each row cites its vendor
   price page. A rate correction re-derives the dollar column from unchanged
   token evidence — it is not an edit to the measurement.
 - **Models are moving targets.** An edition measures the models on its stated
   date, at their stated versions. It is a snapshot, not a standing claim.
-- **Price is not capability, and we do not assume it is.** Nothing here treats a
-  cheaper model as a weaker one. Our own record contains a model that is
-  simultaneously the cheapest we run and among the most capable. Because every
-  edition runs the full roster on every active task, an **inversion** — a dearer
-  model failing work a cheaper model completed — is detected automatically
-  rather than assumed away. An inversion is reported as a **headline finding**,
-  not a footnote: it is the clearest single demonstration that spend and yield
-  are different quantities, which is the premise of this entire report.
+- **Price is not capability.** A lower observed list-rate cost is not evidence
+  of weaker or stronger general capability. Report observed acceptance and
+  cost differences with their task, configuration, exposure and small-sample
+  limits; do not infer a general capability ordering from them.
 
 ---
 
-## 7a. The TIER score in reports — LOCKED (Steven Job, 2026-07-23)
+## 7a. The TIER score in reports — LOCKED (the operator, 2026-07-23)
 
 **Every published report table carries the TIER score.** A report that publishes
 only `E[$/accepted]` has published the *reciprocal* of the metric this
@@ -873,6 +872,12 @@ event with a changelog entry, never a quiet edit.
 
 Scores remain **per task** (§1). No combined TIER score across tasks, ever.
 
+**Dated footnote — 2026-10-15 (claims amendment 1.6).** The locked benchmark
+“TIER” column is accepted task runs × declared task weight per $1,000 of
+captured list-rate usage; it differs from the product's TIER score over merged
+pull requests and does not measure production quality or the product's
+quality adjustments.
+
 ## 8. Publication rules
 
 - Editions are **dated**, published at `/reports/<yyyy-mm>`, and never
@@ -895,26 +900,31 @@ Scores remain **per task** (§1). No combined TIER score across tasks, ever.
   The redaction keeps the usage counters, the model, the message or session
   identity, and the timestamps — nothing else — on an **allowlist**, so a new
   transcript field in a future CLI version cannot silently begin flowing
-  through. Verifiability is unaffected because the cost arithmetic never
-  depended on anything else: the verifier re-derives every published number
-  from the redacted form, and a control arm asserts the published tree contains
+  through. The verifier checks captured usage/cost derivations and implemented
+  numeric table comparisons, not every narrative fact or complete capture (C10).
+  A control arm asserts the published tree contains
   no home-directory path, no vendor prompt, and no transcript content — and
   fails on an unredacted log, so it is a real check rather than a rubber stamp.
 
   What a reader gives up, stated plainly: without holding the original they
   cannot confirm it hashes to what we published. They can still confirm that
-  our numbers follow from the evidence we shipped, that the evidence is
-  internally consistent, and that we did not retype it. That is the claim this
-  section makes, and it survives intact.
-- **The reproducibility claim is re-verification, not re-execution.** Model runs
-  are non-reproducible in principle: sampling is stochastic, CLIs auto-update,
-  and models retire. What *is* checkable, offline and indefinitely, is the
-  arithmetic: given these session logs and this rate table, this cost is
-  correct; given this code, this judge returns this verdict. A stdlib-only
-  verifier ships with the evidence so any reader can re-derive every published
-  number without trusting us. Re-running the harness checks the procedure; it
-  will not reproduce the snapshot, and we do not claim it will.
-- The harness and every revealed task and judge are open source.
+  the checked numbers follow from the shipped evidence. Internal consistency
+  does not establish the original logs' custody, completeness or historical
+  commitment timing (C10, C11).
+- **Verification is limited to the evidence and checks actually executed (C10).**
+  The shipped verifier re-derives costs from captured logs and pinned rates;
+  it does not establish complete capture or reproduce vendor model executions.
+  Default verification does not execute submissions. The opt-in `--rejudge`
+  path executes revealed acceptance tests against archived submissions, not
+  the models, and does not validate the tests themselves. Missing artifacts
+  or unavailable judges can produce SKIP with exit code zero; a zero exit
+  alone is not an all-submissions rejudge receipt.
+- The current public export includes verification code and revealed judges,
+  but omits the vendor-CLI execution harness, its README and some referenced
+  task/control artifacts. Public kit restoration and the public network-less
+  rejudge workflow remain after-launch work. No third-party clean-rejudge
+  receipt has been established. These historical case studies and their
+  errata do not establish a public “reproduce the Model Report yourself” claim.
 - Intenteon properties **link** the report; they do not restate its numbers.
   A summary that drifts from the source is how neutral measurement dies.
 
@@ -929,11 +939,12 @@ change is listed here, dated, and attributed to the edition it took effect in.
 
 | version | date | edition it took effect | change |
 |---|---|---|---|
+| 1.6 (claims only) | 2026-10-15 | Current interpretation and prospective presentation; no new scored edition | Narrows claims to observed task/configuration results; corrects capture, sampling, exposure and public-kit statements; adds the benchmark/product footnote outside the unchanged §7a lock. Kit-dependent work and Edition 3 process/enforcement remain deferred. Original wording retained below; Editions 1–2 and their stamps remain unchanged. |
 | 1.5 | 2026-10-13 | Edition 2 only; GLM 5.3 Flash late admission | **R-2026-10-13-1** admits GLM 5.3 Flash after the original 27 runs, with three reps on orgsync/v1 at v13, preserving the original v11 run pins. Edition 2's cap becomes 10; SATURATED requires ≥9/10 models to pass every run and OVER-HARD requires ≤4/10 to produce any passing run. This is the declared exception to fixing the roster before any scored run; every cell is N=3 together with R-2026-10-12-24. |
 | 1.4 | 2026-10-12 | Edition 2 at N=3; Sonnet 5.5 report-table correction | First-hand operator rulings: **R-2026-10-12-24** (“let's run it three times really quickly.. run them in parallel if you can”) supersedes R-2026-10-12-21 — reps 2–3 ran for all nine models in four parallel per-tool lanes (each lane sequential, so no two runs of one CLI share capture paths), and the report prints run-to-run range and dispersion. **R-2026-10-12-25** re-prices `claude-sonnet-5-5` cache reads to 0.05× (Anthropic pricing page read 2026-10-12, footnote 2) as an operator-ruled exception to §4.3's frozen table, made after the last run and before publication: `prices.yaml` v12 is the edition's report table (MANIFEST `report_rate_table`; TIER_PIN retains the v11 run pin); every bundle keeps its v11 snapshot as evidence and `verify.py` checks both. **R-2026-10-12-26** places this work in PR #14. |
-| 1.3 | 2026-10-12 | Edition 2 only; superseding N=1 ruling retains valid rep1 | First-hand operator ruling after decision panels: **R-CAP A** raises the cap to 9 only for Edition 2 (SATURATED ≥8/9 perfect; OVER-HARD ≤4/9 with any pass); **R-LADDER B** keeps only Haiku 5.5 / gpt-6-luna as floors, admits non-floors to new tasks only after a floor fails, and runs Edition 2 anchors under the logged ALLOW_EXPENSIVE override; **R-EFFORT D** uses each CLI's shipped default under clean Codex/OpenCode configs and guarded operator-home Claude/Muse configs, stamps observed effort/source or not observable, voids inherited settings, declares Edition 1 effort unrecorded and defaults-unchanged release-note limits on comparisons, and pre-declares a separate default-vs-high study after a cost pilot; **R-PRICE A** retains announced Sol $2/$10 and 0.05× reads, labels promotional claims third-party/unverified (if true, understated cost), confirms Haiku via Anthropic, removes OpenAI write multipliers under Y3, adds every roster row's URL/as-of, and pre-declares the 2026-11-21 price re-check and dated re-derivation note without altering the edition table. **R-2026-10-12-18**, “Yes, 3 runs each”, proposed N=3 for range/dispersion comparable with Edition 1, but is **superseded by R-2026-10-12-21**, first-hand quote “If you did not run the multiple runs yet. Then yes, let's just do one run each.” Edition 2 retains **N=1 anchors; non-PASS or missing rep1 expands to N=3**. No multiple paid runs were launched by the fix pass. The report publishes without run-to-run range/dispersion and explicitly says so; existing valid rep1 counts and any existing result is skipped. Anchors-only orgsync/v1 at N=1 with failure expansion, frozen task hashes, native capture and four-leg isolation are declared in the manifest/README. Ratified by Steven Job, 2026-10-12. |
-| 1.2 | 2026-07-29 | Edition 1 (retroactive to publication) | Corrects §3.4.1's first-use ruling, which asserted that both the prompt and judge SHAs were committed to `TASKS.md` before any model saw `orgsync`. True of the prompt hash; **false of the judge hash**, which reached the ledger 4m34s AFTER `haiku/orgsync/rep1`'s verdict. Condition 4 of §3.4 was therefore not met for that one run. The judge itself did not change — rep1's stamp records the final `judge_sha256` and the file still hashes to it — so the failure is of the ORDERING that lets a stranger check that without trusting our stamps, not of the panel's integrity. rep2 and rep3 are clean. Disclosed rather than reworded, because the timeline is recoverable from this repository's own git log. Ratified by Steven Job after an internal audit measured the gap. |
-| 1.1 | 2026-07-23 | Edition 1 (retroactive to publication) | Adds §7a: every published report table must carry the TIER score, not only its reciprocal `E[$/accepted]`, with column directions marked. Locks the benchmark difficulty->weight mapping (easy 1.0/s, medium 3.0/m, integration 5.0/l) as a **declaration** that must be printed in every report publishing a score, because the locked weight scale is defined over merged PRs and a benchmark task is not one. Ratified by Steven Job after a published launch artifact was found to contain no TIER score. |
+| 1.3 | 2026-10-12 | Edition 2 only; superseding N=1 ruling retains valid rep1 | First-hand operator ruling after decision panels: **R-CAP A** raises the cap to 9 only for Edition 2 (SATURATED ≥8/9 perfect; OVER-HARD ≤4/9 with any pass); **R-LADDER B** keeps only Haiku 5.5 / gpt-6-luna as floors, admits non-floors to new tasks only after a floor fails, and runs Edition 2 anchors under the logged ALLOW_EXPENSIVE override; **R-EFFORT D** uses each CLI's shipped default under clean Codex/OpenCode configs and guarded operator-home Claude/Muse configs, stamps observed effort/source or not observable, voids inherited settings, declares Edition 1 effort unrecorded and defaults-unchanged release-note limits on comparisons, and pre-declares a separate default-vs-high study after a cost pilot; **R-PRICE A** retains announced Sol $2/$10 and 0.05× reads, labels promotional claims third-party/unverified (if true, understated cost), confirms Haiku via Anthropic, removes OpenAI write multipliers under Y3, adds every roster row's URL/as-of, and pre-declares the 2026-11-21 price re-check and dated re-derivation note without altering the edition table. **R-2026-10-12-18**, “Yes, 3 runs each”, proposed N=3 for range/dispersion comparable with Edition 1, but is **superseded by R-2026-10-12-21**, first-hand quote “If you did not run the multiple runs yet. Then yes, let's just do one run each.” Edition 2 retains **N=1 anchors; non-PASS or missing rep1 expands to N=3**. No multiple paid runs were launched by the fix pass. The report publishes without run-to-run range/dispersion and explicitly says so; existing valid rep1 counts and any existing result is skipped. Anchors-only orgsync/v1 at N=1 with failure expansion, frozen task hashes, native capture and four-leg isolation are declared in the manifest/README. Ratified by the operator, 2026-10-12. |
+| 1.2 | 2026-07-29 | Edition 1 (retroactive to publication) | Corrects §3.4.1's first-use ruling, which asserted that both the prompt and judge SHAs were committed to `TASKS.md` before any model saw `orgsync`. True of the prompt hash; **false of the judge hash**, which reached the ledger 4m34s AFTER `haiku/orgsync/rep1`'s verdict. Condition 4 of §3.4 was therefore not met for that one run. The judge itself did not change — rep1's stamp records the final `judge_sha256` and the file still hashes to it — so the failure is of the ORDERING that lets a stranger check that without trusting our stamps, not of the panel's integrity. rep2 and rep3 are clean. Disclosed rather than reworded, because the timeline is recoverable from this repository's own git log. Ratified by the operator after an internal audit measured the gap. |
+| 1.1 | 2026-07-23 | Edition 1 (retroactive to publication) | Adds §7a: every published report table must carry the TIER score, not only its reciprocal `E[$/accepted]`, with column directions marked. Locks the benchmark difficulty->weight mapping (easy 1.0/s, medium 3.0/m, integration 5.0/l) as a **declaration** that must be printed in every report publishing a score, because the locked weight scale is defined over merged PRs and a benchmark task is not one. Ratified by the operator after a published launch artifact was found to contain no TIER score. |
 | 1.0 | 2026-07-22 | Edition 1 | Initial publication. Codifies practice from Edition 0 plus: the weakest-first calibration ladder (§3.4); reported cost dispersion (§2, §4.1); replication spent on cheap models, N=1 for top-tier confirmation (§4.1); redaction of published session logs to the cost-bearing fields (§8); N=3 with no optional stopping; expected cost per accepted outcome as the headline metric; model-unit saturation and over-hard triggers against a pre-declared roster; the like-for-like panel rule for longitudinal claims; the saturate-into-anchor cascade with the Anchor Set; the public task archive with judges sealed until graduation; bundle versioning with append-only status; escrow of the next edition's task hash; re-verification (not re-execution) as the reproducibility claim; and the full outcome enum with published counts. |
 
 ### Edition 2 build declaration — see the dated v1.4 ruling above
@@ -952,8 +963,10 @@ R-2026-10-13-1 adds GLM 5.3 Flash through `zai-coding-plan` for three reps on
 Reports price every run from the v13 report table. GLM 5.3 Highspeed is excluded.
 All ten requested models are retained: this is an
 Edition 2 exception to §3.3's eight-model cap, not a retroactive Edition 1 change.
-The active EASY floor and unresolved cronspec graduation are not counted as
-anchors. The sealed frontier escrow remains outside this fast panel; its
+The active EASY floor remains outside the Anchor Set; `TASKS.md` records
+`cronspec/v2` graduating on 2026-10-13, making the Anchor Set {`orgsync/v1`,
+`cronspec/v2`}, while Edition 2 ran only `orgsync/v1`.
+The sealed frontier escrow remains outside this fast panel; its
 limitations in `TASKS.md` are not resolved by this harness build.
 
 Every new run must supply an edition name. Edition 2 has a separate bundle root
@@ -961,3 +974,215 @@ and rate pin. Native-store capture, token invariants, sandbox/permission posture
 redaction, and remaining pricing questions are documented in `README.md`.
 This fix pass makes no new scored execution or capability/capture-parity claim;
 fixture tests establish parser behavior, not a real-model measurement.
+
+
+### Superseded wording retained — claims amendment 1.6, 2026-10-15
+
+The following quotations preserve the original wording for the record. The
+amended text above supersedes these claims; these are not current assertions.
+
+<details>
+<summary>Original claims, identified by section</summary>
+
+**Original §1 — measurement:**
+
+> The TIER Model Report measures **cost per passing outcome**: the money a model
+> spends to produce work that an independent judge accepts.
+
+**Original §1 — capture:**
+
+> 1. **Capture parity is proven before publication.** Every vendor in an edition
+>    is captured by a mechanism whose containment invariants have been verified
+>    (§4.3). A vendor whose spend cannot be captured honestly is *excluded and
+>    named as excluded* — never estimated. The inclusion bar is published, and a
+>    capture parser for an excluded vendor is accepted by pull request, so
+>    inclusion is a test anyone can make pass rather than an editorial favour.
+
+**Original §1 — frontier:**
+
+> Results are reported as a per-tier efficiency frontier: the set of models not
+> dominated on both cost and reliability. Ranking across difficulty tiers is
+> unsupported by construction. Any single number blending cost with reliability —
+> or blending tiers — is prohibited outright, because a composite is where hidden
+> editorial weighting lives: it is an overall winner wearing a lab coat.
+>
+> What the reader gets instead is a decision: *for work that looks like this,
+> these are the efficient choices, at this expected cost per accepted outcome.*
+> Rankings **within** a tier on a **stated** axis are legitimate; any number that
+> collapses axes or tiers is not.
+
+**Original §2 — cell:**
+
+> One **cell** = one (model × task) pair.
+
+**Original §2 — measurements:**
+
+> A run produces exactly four measured facts:
+
+**Original §2 — outcome:**
+
+> independent hidden judge: PASS / FAIL (binary)
+
+**Original §3.3 — anchors:**
+
+> Its job is to price identical accepted work across
+> models and across time.
+
+**Original §4.1 — Edition 2 sampling:**
+
+> **Edition 2 ruling (R-2026-10-12-21, 2026-10-12): “If you did not run the
+> multiple runs yet. Then yes, let's just do one run each.”** This supersedes
+> R-2026-10-12-18 (“Yes, 3 runs each”) before any multiple paid runs were launched
+> by the fix pass. Edition 2 keeps the anchor rule: one run per model, expanding
+> a non-PASS or missing rep1 result to N=3. Its report publishes without run-to-run
+> range/dispersion and explicitly discloses that limitation; N=1 cells provide
+> point estimates. Existing valid rep1 bundles count; `batch.sh` skips any rep
+> with a `result.json` and never overwrites it. The sole declaration remains
+> `editions/2026-10/MANIFEST.json`; the temporary root amendment is removed.
+
+**Original §4.1 — dispersion:**
+
+> **Cost dispersion is reported alongside every cell figure** — the within-cell
+> variation across replicates. It is never scored, but it is not decoration: it is
+> the error bar on the number this report publishes, and at N=1 it cannot be
+> computed at all. It also behaves as a leading indicator of the failure edge. In
+> Edition 1, mean within-cell variation was 4.0% on the EASY task and 8.4% on the
+> MEDIUM one — but one cell (haiku on `cronspec`) ran 22.5% while every other
+> model on that task sat between 2% and 10%. That model passed the task 3/3, and
+> failed the next task up 3/3. A model near the limit of its competence thrashes
+> before it fails, and the thrash is visible in the cost of work it is still
+> completing.
+
+**Original §4.2 — execution kit:**
+
+> Runs are executed **headless** and non-interactively. Exact commands and
+> network/sandbox postures for all four legs are in `README.md`; `DRY_RUN=1`
+> prints their actual argv and clean-config environment without invoking a CLI.
+> Codex retains `workspace-write` and session logging (never `--ephemeral`).
+
+**Original §4.2 — effort:**
+
+> **Effort (R-EFFORT D, v1.3): each model runs at its CLI's shipped default under
+> guarded configuration.**
+
+**Original §4.2 — effort comparison:**
+
+> Every Edition 2 results table carries: **“effort scales differ by vendor; each
+> model ran at its CLI's shipped default (stamped)”**. Edition 1 effort was
+> **unrecorded**; cross-edition comparisons hold only where defaults are unchanged,
+> with each vendor's dated release notes cited: [Claude Code changelog](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md),
+> [Codex releases](https://github.com/openai/codex/releases),
+> [OpenCode releases](https://github.com/anomalyco/opencode/releases), and [Muse Code changelog](https://dev.meta.ai/docs/muse-code/changelog)
+> (release entries must be obtained and dated before a longitudinal claim).
+> The dated CLI versions in stamps are the join keys; these links are not proof
+> that defaults stayed unchanged. No cross-edition effort equivalence is claimed
+> by this build. A **default-vs-high sensitivity study** is pre-declared as a
+> **separate later study**, scoped by a cost pilot first, outside this edition.
+
+**Original §4.5 — judge:**
+
+> Each task has one hidden acceptance suite (`acceptance_<task>.py`) that the
+> model never sees. It tests **only prompt-stated behavior**.
+
+**Original §5.2–5.3 — capability language:**
+
+> A task saturating means the models got better at that work. That is a
+> **capability finding and it is published as a headline**, in the edition where
+> it happened, with the pass-rate that triggered it.
+>
+> ### 5.3 Language rule
+>
+> The report says **"the failure edge moved"**. It does not say "we made it
+> harder." The distinction is not cosmetic: the first describes the models, which
+> is what the report is about; the second describes us, and invites the suspicion
+> that difficulty is tuned to produce a desired ranking.
+
+**Original §5.4 — exposure:**
+
+> **Publication is the contamination channel, and we say so.** A published task
+> enters the next generation's training data, with repetition and an answer
+> attached. We accept that cost deliberately in exchange for falsifiability, and
+> we manage it two ways: the active frontier judge stays sealed until its task
+> graduates, and each scored task is paired with an **unpublished variant** —
+> identical in structure, differing in constants — so the instrument keeps
+> measuring capability after the public member is absorbed. A partial publication
+> delay is explicitly rejected: editions fire every few weeks while training
+> cutoffs move in 6–12 month steps, so a short embargo protects nothing while
+> costing transparency now.
+>
+> **Anchor pass-rates carry a contamination caveat** from their third edition
+> onward. This is disclosed rather than defended: a task that is almost certainly
+> in a model's training data no longer cleanly measures capability. Two things
+> survive it — the **cost** anchor (a memorized task is a *cheaper* task, and
+> "familiarity reduced the price of this work by X%" is itself a legitimate
+> finding) and the **tripwire** (a model failing work it has almost certainly
+> seen is a louder alarm, not a quieter one).
+
+**Original §7 — configuration:**
+
+> **Single machine, single operator, default configs.** Not a datacenter-scale
+>   evaluation.
+
+**Original §7 — sample size:**
+
+> - **Small N.** N=3 detects gross reliability differences, not small ones. No
+>   statistical significance is claimed, and none is implied by ordering. Be
+>   concrete about how weak this is: a cell's pass-rate has only four possible
+>   values, so a genuinely 70%-reliable model and a 90%-reliable one are not
+>   distinguishable at all. Runs within a cell are also correlated — a model
+>   either read the spec correctly or it didn't — so a 21-run panel carries
+>   materially less information than 21 independent trials. Tables sort by cost;
+>   **ordering is presentation, not ranking**, and adjacent rows should be read as
+>   indistinguishable unless their intervals plainly separate.
+
+**Original §7 — price and capability:**
+
+> - **Price is not capability, and we do not assume it is.** Nothing here treats a
+>   cheaper model as a weaker one. Our own record contains a model that is
+>   simultaneously the cheapest we run and among the most capable. Because every
+>   edition runs the full roster on every active task, an **inversion** — a dearer
+>   model failing work a cheaper model completed — is detected automatically
+>   rather than assumed away. An inversion is reported as a **headline finding**,
+>   not a footnote: it is the clearest single demonstration that spend and yield
+>   are different quantities, which is the premise of this entire report.
+
+**Original §8 — reproducibility:**
+
+> - **The reproducibility claim is re-verification, not re-execution.** Model runs
+>   are non-reproducible in principle: sampling is stochastic, CLIs auto-update,
+>   and models retire. What *is* checkable, offline and indefinitely, is the
+>   arithmetic: given these session logs and this rate table, this cost is
+>   correct; given this code, this judge returns this verdict. A stdlib-only
+>   verifier ships with the evidence so any reader can re-derive every published
+>   number without trusting us. Re-running the harness checks the procedure; it
+>   will not reproduce the snapshot, and we do not claim it will.
+> - The harness and every revealed task and judge are open source.
+
+**Original §4.1 — hybrid replication and no post-result additions:**
+
+> **Replication is spent where it buys something.** Cheap models are replicated;
+> expensive models are not, unless a result demands it. The reasoning is that
+> replication buys two things — a pass-*rate* and a cost *error bar* — and both
+> are worth most exactly where a model is near its limit, which is where cheap
+> models live. Confirming that a flagship can do work a mid-tier model already
+> does reliably is the lowest-information run available, and the most expensive.
+>
+> So: a model in the **floor and mid tiers runs N=3**; a model in the **top tier
+> runs N=1** on a task the tier below has already passed. A top-tier model is
+> replicated to N=3 only when its single run FAILS, or when it is the only model
+> that passes — in both cases the third run is where the information is. Any cell
+> published at N=1 is labelled as such, and an edition mixing N is honest about it
+> rather than averaging over the difference.
+>
+> Anchor Set tasks run at **N=1 per edition** (§5.1): they are saturated by
+> definition, so replicating them buys no reliability information — they are
+> there to price the same work over time and to trip if a model ever fails work
+> its predecessors passed. Any anchor failure escalates that cell to N=3
+> immediately. Calibration (§3.4) is fixed at N=3 per rung. There is no optional
+> stopping anywhere in this protocol. Cherry-picking a
+> "representative" run is prohibited. N is **fixed and declared before the runs**:
+> we never add replicates after seeing a result. Adding runs to a cell that looks
+> unsettled is optional stopping — it biases the pass-rate and invites the fair
+> accusation that we ran until the number looked right.
+
+</details>

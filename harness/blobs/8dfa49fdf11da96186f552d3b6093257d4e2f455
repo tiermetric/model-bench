@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# Sequential panel: roster and rates fixed before any run. No paid build tests.
+set -uo pipefail
+BENCH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$BENCH_DIR"
+source "$BENCH_DIR/edition.sh"
+export EDITION
+REPS="${REPS:-$DEFAULT_REPS}"
+TASKS="${TASKS:-$DEFAULT_TASKS}"
+export AGENT_TIMEOUT="${AGENT_TIMEOUT:-1800}"
+# Edition 2 is the operator's anchors-only panel. Changing roster/tasks/N needs
+# a new declaration, never an in-flight environment override.
+if [ "$EDITION" = 2026-10 ] && { [ "$TASKS" != orgsync ] || [ "$REPS" != 1 ]; }; then
+  echo "FATAL: Edition 2 is fixed at orgsync N=1, failures expand to N=3" >&2; exit 2
+fi
+# Fail closed BEFORE any leg: dry-run is the only bypass for a paid batch.
+if [ "${DRY_RUN:-0}" != 1 ]; then
+  python3 "$BENCH_DIR/preflight_check.py" require --root "$BENCH_DIR" || exit 4
+fi
+total=0; ok=0; bad=0
+start=$(date +%s)
+leg() {
+  local tool="$1" m="$2" task="$3" r="$4"
+  total=$((total+1))
+  echo "###### [$total] $EDITION/$tool/$m/$task rep$r ######"
+  if PREFLIGHT=0 ./run.sh "$tool" "$m" "$task" "$r"; then ok=$((ok+1)); else
+    bad=$((bad+1)); echo "###### leg returned non-zero (recorded, continuing) ######"
+  fi
+  [ "${DRY_RUN:-0}" = 1 ] || sleep 2
+}
+for task in $TASKS; do
+  for tool in claude-code codex opencode muse; do
+    case "$tool" in
+      claude-code)
+        models="$CLAUDE_MODELS"
+        [ "$EDITION" != 2026-07 ] || models="fable opus sonnet haiku"
+        ;;
+      codex) models="$CODEX_MODELS" ;;
+      opencode) models="$OPENCODE_MODELS" ;;
+      muse) models="$MUSE_MODELS" ;;
+    esac
+    for m in $models; do
+      for r in $(seq 1 "$REPS"); do leg "$tool" "$m" "$task" "$r"; done
+      if [ "$EDITION" = 2026-10 ] && [ "${DRY_RUN:-0}" != 1 ]; then
+        result="$EDITION_ROOT/$tool/$m/$task/rep1/result.json"
+        if ! python3 - "$result" <<'PY'
+import json,sys
+raise SystemExit(0 if json.load(open(sys.argv[1])).get('outcome') == 'PASS' else 1)
+PY
+        then
+          echo "###### anchor failure: confirming this cell at N=3 ######"
+          leg "$tool" "$m" "$task" 2
+          leg "$tool" "$m" "$task" 3
+        fi
+      fi
+    done
+  done
+done
+echo "###### BATCH COMPLETE: $total legs, $ok clean exits, $bad non-zero exits, $(( ($(date +%s)-start)/60 ))m ######"
+[ "$bad" = 0 ]

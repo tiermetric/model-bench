@@ -1,0 +1,178 @@
+{
+  "date": "2026-10-16",
+  "scope": "Maintainer bare-host receipt inside an exported --edition all kit on macOS, with local review repairs. No OS network isolation was available for the bare-host measurement; the Docker launcher measurement is recorded in docker_launcher_receipt. This is not a third-party receipt.",
+  "source_base_commit": "72a226e872715225df93424c802f09baa2bf4b17",
+  "verifier_sha256": "59867f85b58cc27842996e67e4e4b8d00f64e06914d75ab0cf4d1687ddb63be3",
+  "checks": [
+    {
+      "edition": "2026-07",
+      "command": [
+        "python3",
+        "-B",
+        "verify.py",
+        "editions/2026-07",
+        "--require-no-skips",
+        "--rejudge"
+      ],
+      "exit_code": 0,
+      "rejudge_summary": "RE-JUDGE 63 bundles · PASS 63 · FAIL 0 · SKIP 0",
+      "recorded_outcomes": {
+        "PASS": 60,
+        "FAIL": 3
+      },
+      "original_manifest_sha256": "6c6526497a0fab5d988c465ddab92303adcf52734abc007f148a5afa60e0de7f",
+      "verification_command": [
+        "python3",
+        "-B",
+        "verify.py",
+        "editions/2026-07",
+        "--require-no-skips"
+      ],
+      "verification_exit_code": 0
+    },
+    {
+      "edition": "2026-10",
+      "command": [
+        "python3",
+        "-B",
+        "verify.py",
+        "editions/2026-10",
+        "--require-no-skips",
+        "--rejudge"
+      ],
+      "exit_code": 0,
+      "rejudge_summary": "RE-JUDGE 30 bundles · PASS 30 · FAIL 0 · SKIP 0",
+      "recorded_outcomes": {
+        "PASS": 30
+      },
+      "original_manifest_sha256": "34bc3cc22996fda9c80a9f7748b5940aeea1967e4ee0f6298c1482f168f2197d",
+      "verification_command": [
+        "python3",
+        "-B",
+        "verify.py",
+        "editions/2026-10",
+        "--require-no-skips"
+      ],
+      "verification_exit_code": 0
+    }
+  ],
+  "limitation": "No third-party clean-rejudge receipt has been established",
+  "command_path_notation": "Interpreter and verifier paths are rendered as python3 and kit-relative verify.py; every argument and its order match rejudge_workflow.py. Commands ran from the exported kit root.",
+  "workflow_command": [
+    "python3",
+    "-B",
+    "rejudge_workflow.py"
+  ],
+  "workflow_exit_code": 0,
+  "flipped_verdict_control": "Detected recorded FAIL, re-judged PASS; required control exit 1.",
+  "docker_launcher_receipt": {
+    "date": "2026-10-16",
+    "scope": "Maintainer Docker launcher receipt from an exported --edition all kit on the stated host platform; not a third-party receipt.",
+    "host_platform": {
+      "os": "macOS 26.6.2",
+      "arch": "arm64",
+      "docker_desktop_version": "4.95.0",
+      "engine_platform": "linux/arm64",
+      "docker_engine_version": "29.8.2",
+      "docker_client_version": "29.8.2"
+    },
+    "kit_source_commit": "8b495e4b853ecfad0e4ed4b4f66cce557e85f9be",
+    "kit_source_commit_role": "Master at run time, the merge of PR #33.",
+    "kit_export_command": ["python3", "export.py", "--edition", "all"],
+    "source_tree_note": "This PR's base is 981ffca0a016244c65d00018876aa7528c9b437b; it differs from the kit source only in README.md, which the run does not read.",
+    "command": ["bash", "./rejudge-networkless.sh"],
+    "working_directory": "exported kit root",
+    "started_at": "2026-10-16T21:06:20Z",
+    "ended_at": "2026-10-16T21:10:42Z",
+    "exit_code": 0,
+    "image_reference": "python@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1",
+    "image_preparation": "Pulled before the run; the launcher used --pull never.",
+    "file_sha256": {
+      "rejudge-networkless.sh": "3591aebe838082ca208fe3f1bedceb521bc505c241e8c5634c590028aa48fabf",
+      "rejudge_workflow.py": "baf393cd0ce1c80037d438da0ea0449b0aa3fb9b4259ea1bd18cc9b1fbc6005c",
+      "verify.py": "59867f85b58cc27842996e67e4e4b8d00f64e06914d75ab0cf4d1687ddb63be3",
+      "score.py": "64fb4702294e87e25fefdda999e8af14a5610d7c9c43f201211e0369b86234f1",
+      "token_evidence.py": "8e658ff3108a13882f78ab3cd45212394af95f9c877c9e3b4c189e4ddd88a81c",
+      "errata.py": "2302b245bc279390f80a36ff7bb14ee291dc4542af1789cdec41ea00a2ddb62c",
+      "redact.py": "5e9414670476daf8084151b7888f2b15fc186f366c3a7520574bfaa01ccde803",
+      "acceptance_test.py": "f07718acdcc279b349e7393144a79cbf7f1e62a88f089c10288cfe05e84e5b53"
+    },
+    "checks": [
+      {
+        "edition": "2026-07",
+        "rejudge_summary": "RE-JUDGE 63 bundles · PASS 63 · FAIL 0 · SKIP 0",
+        "original_manifest_sha256": "6c6526497a0fab5d988c465ddab92303adcf52734abc007f148a5afa60e0de7f"
+      },
+      {
+        "edition": "2026-10",
+        "rejudge_summary": "RE-JUDGE 30 bundles · PASS 30 · FAIL 0 · SKIP 0",
+        "original_manifest_sha256": "34bc3cc22996fda9c80a9f7748b5940aeea1967e4ee0f6298c1482f168f2197d"
+      }
+    ],
+    "workflow_summary": "REJUDGE WORKFLOW PASS: 93 outcomes; zero SKIPs; flipped verdict detected.",
+    "controls": {
+      "execution": "Controls ran from the kit root with the same pinned image and docker run flags as rejudge-networkless.sh, except without the kit bind mount (--mount) or kit working directory (-w).",
+      "network": {
+        "socket_connect_result": "NO NETWORK: OSError [Errno 101] Network is unreachable",
+        "interfaces_observed": "lo, gre0, tunl0, sit0, ip6tnl0, ip_vti0, ip6_vti0, ip6gre0, gretap0, erspan0; also the sysfs file bonding_masters.",
+        "command": [
+          "docker",
+          "run",
+          "--rm",
+          "--pull",
+          "never",
+          "--network",
+          "none",
+          "--read-only",
+          "--user",
+          "501:20",
+          "--pids-limit",
+          "256",
+          "--memory",
+          "2g",
+          "--tmpfs",
+          "/tmp:rw,nosuid,nodev,size=512m",
+          "--cap-drop",
+          "ALL",
+          "--security-opt",
+          "no-new-privileges",
+          "python@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1",
+          "python3",
+          "-c",
+          "import os\nimport socket\ns = socket.socket()\ns.settimeout(3)\ntry:\n    s.connect((\"1.1.1.1\", 443))\n    print(\"CONNECTED\")\nexcept OSError as e:\n    print(\"NO NETWORK:\", type(e).__name__, str(e))\nfinally:\n    s.close()\nprint(os.listdir(\"/sys/class/net\"))"
+        ]
+      },
+      "identity_and_filesystem": {
+        "uid": 501,
+        "non_root": true,
+        "touch_on_root_result": "Read-only file system",
+        "command": [
+          "docker",
+          "run",
+          "--rm",
+          "--pull",
+          "never",
+          "--network",
+          "none",
+          "--read-only",
+          "--user",
+          "501:20",
+          "--pids-limit",
+          "256",
+          "--memory",
+          "2g",
+          "--tmpfs",
+          "/tmp:rw,nosuid,nodev,size=512m",
+          "--cap-drop",
+          "ALL",
+          "--security-opt",
+          "no-new-privileges",
+          "python@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1",
+          "sh",
+          "-c",
+          "id; touch /kit-test"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,1 @@
+note: run copied from tier/codex-tier (the operator's interactive 2026-07-22 session; log referenced in result.json)

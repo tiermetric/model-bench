@@ -1,0 +1,34 @@
+PRICING GAP: no row for 'gpt-5.6-terra' in [home]/gitrepos/tier/internal/store/prices.yaml — row emitted UNPRICED
+{
+  "tool": "codex",
+  "label": "gpt-5.6-terra",
+  "model_key": "gpt-5.6-terra",
+  "model_ids_seen": [
+    "gpt-5.6-terra"
+  ],
+  "log": "[home]/.codex/sessions/2026/07/22/rollout-2026-07-22T14-55-30-019f8b2e-d802-7070-bb91-fdcc42a9fdd5.jsonl",
+  "own_tests": "PASS",
+  "acceptance": "PASS",
+  "edge_failures": "0f+0e",
+  "tokens": {
+    "api_calls": null,
+    "model_ids": [
+      "gpt-5.6-terra"
+    ],
+    "input_uncached": 7444,
+    "cache_read": 55296,
+    "cache_write": 0,
+    "cache_w5m": 0,
+    "cache_w1h": 0,
+    "output": 2436,
+    "reasoning": 638,
+    "input_total": 62740
+  },
+  "cache_read_pct": 88.14,
+  "cost_list_usd": null,
+  "cache_read_mult_used": null,
+  "wall_seconds": 53,
+  "priced": false,
+  "prices_yaml": "[home]/gitrepos/tier/internal/store/prices.yaml",
+  "prices_yaml_version": 7
+}

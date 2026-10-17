@@ -1,0 +1,6 @@
+# Edition 2 instrument pin; one immutable rate table for this panel.
+tier_version: v0.1.0
+tier_public_repo: github.com/tiermetric/tier
+prices_yaml_version: 11
+prices_yaml_sha256: b3aa945f75af6573c29a3f47610f6f3460afa0665188b679dd2ea261265c9a15
+pinned_utc: 2026-10-12T00:00:00Z

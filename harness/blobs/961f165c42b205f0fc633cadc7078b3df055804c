@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Shared, explicit edition identity and frozen rosters. Sourced by run/batch.
+: "${EDITION:?Set EDITION=2026-10 (Edition 2) or EDITION=2026-07 (July reproduction)}"
+case "$EDITION" in
+  2026-07)
+    CLAUDE_MODELS="claude-fable-5 claude-opus-4-8 claude-sonnet-5 claude-haiku-4-5"
+    CODEX_MODELS="gpt-5.6-sol gpt-5.6-terra gpt-5.6-luna"
+    OPENCODE_MODELS=""; MUSE_MODELS=""
+    CLAUDE_FLOOR=claude-haiku-4-5; CODEX_FLOOR=gpt-5.6-luna
+    EDITION_ROOT="$BENCH_DIR"
+    PIN_FILE="$BENCH_DIR/TIER_PIN"
+    # July's v8 bytes remain content-addressed, never rewritten by new rates.
+    PRICES_FILE="$BENCH_DIR/evidence/prices/9ab9cba3fca5fef0b8e9eb7f62fe0496c7498a74a94e81e441a52ee66fd53eb0.yaml"
+    DEFAULT_TASKS="baseline cronspec"; DEFAULT_REPS=3; DEFAULT_PROMPT=baseline
+    ;;
+  2026-10)
+    CLAUDE_MODELS="claude-fable-5-1 claude-opus-5-5 claude-sonnet-5-5 claude-haiku-5-5"
+    CODEX_MODELS="gpt-6.1-sol gpt-6-astra gpt-6-luna"
+    OPENCODE_MODELS="glm-5.3 glm-5.3-flash"; MUSE_MODELS="muse-spark-1.3"
+    CLAUDE_FLOOR=claude-haiku-5-5; CODEX_FLOOR=gpt-6-luna
+    EDITION_ROOT="$BENCH_DIR/editions/$EDITION"
+    PIN_FILE="$EDITION_ROOT/TIER_PIN"; PRICES_FILE="$BENCH_DIR/prices.yaml"
+    DEFAULT_TASKS=orgsync; DEFAULT_REPS=1; DEFAULT_PROMPT=orgsync
+    ;;
+  *) echo "FATAL: unknown edition '$EDITION'" >&2; exit 2 ;;
+esac
+# GLM and Muse are never floors (operator R-LADDER, 2026-10-12).
+FLOOR_MODELS=" $CLAUDE_FLOOR $CODEX_FLOOR "

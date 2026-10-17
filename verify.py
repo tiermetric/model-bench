@@ -5,7 +5,7 @@ Standard library only. No network. No vendor CLIs. No TIER install. Point it at
 an archived edition and it recomputes the arithmetic from the raw artifacts and
 tells you where the published figures disagree.
 
-    python3 verify.py [root] [--rejudge]
+    python3 verify.py [root] [--rejudge] [--require-no-skips] [--expect edition=N:sha256]
 
 This is the reproducibility claim in PROTOCOL.md §8, made executable.
 Re-EXECUTION is impossible in principle -- models are stochastic and get
@@ -23,6 +23,8 @@ and per cell, that the headline metric is what the protocol defines it to be.
 
 Exit code 0 = every check passed. Non-zero = at least one FAIL; the report says
 which. A check that cannot run (missing artifact) is SKIP, never a silent pass.
+With --require-no-skips, every SKIP row, including skipped rejudge checks,
+is reported as FAIL and causes a non-zero exit.
 """
 import hashlib
 import json
@@ -40,6 +42,7 @@ from pathlib import Path
 from collections import defaultdict
 from token_evidence import sum_native_jsonl, records
 from score import price_native, sum_claude_jsonl, sum_codex_jsonl, price as score_price
+from errata import load_errata
 
 ANTHROPIC_W5M = 1.25
 ANTHROPIC_W1H = 2.0
@@ -362,9 +365,12 @@ class Report:
     def add(self, status, what, detail=""):
         self.rows.append((status, what, detail))
 
-    def emit(self):
+    def emit(self, require_no_skips=False):
         counts = defaultdict(int)
         for st, what, detail in self.rows:
+            if require_no_skips and st == "SKIP":
+                st = "FAIL"
+                detail = "--require-no-skips: check would be SKIP" + (f"; {detail}" if detail else "")
             counts[st] += 1
             if st != "PASS" or what.startswith("report "):
                 print(f"  [{st}] {what}" + (f" -- {detail}" if detail else ""))
@@ -860,11 +866,46 @@ def verify_manifest(paths, r, root):
         r.add("FAIL", "Edition 1 manifest unreadable or inconsistent", str(exc))
 
 
+def errata_pin(value):
+    match = re.fullmatch(r'([A-Za-z0-9][A-Za-z0-9._-]*)=(0|[1-9][0-9]*):([0-9a-f]{64})', value)
+    if not match:
+        raise argparse.ArgumentTypeError('invalid errata pin; expected edition=N:sha256')
+    return match[1], (int(match[2]), match[3])
+
+
+def verify_errata(edition_dir, report, expected=()):
+    root = Path(edition_dir).resolve()
+    try:
+        # Announce the retained tip even if validation subsequently fails.
+        manifests = [(0, root / 'MANIFEST.json')]
+        for path in root.glob('MANIFEST.v*.json'):
+            match = re.fullmatch(r'MANIFEST\.v([1-9][0-9]*)\.json', path.name)
+            if match:
+                manifests.append((int(match[1]), path))
+        revision, newest = max(manifests, key=lambda pair: pair[0])
+        newest_hash = sha256_file(newest)
+        print(f'{root.name}: errata revision {revision}, newest manifest sha256 {newest_hash}')
+        files, entries = load_errata(root)
+        if files:
+            report.add('PASS', 'report errata integrity',
+                       f'{len(files) // 2} revisions, {len(entries)} entries; hashes and schema match')
+        for pin in expected:
+            matches = pin == (revision, newest_hash)
+            report.add('PASS' if matches else 'FAIL', f'report errata pin ({root.name})',
+                       f'expected {pin[0]}:{pin[1]}, retained {revision}:{newest_hash}')
+    except (OSError, ValueError) as exc:
+        report.add('FAIL', 'report errata integrity', str(exc))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("root", nargs="?", default=os.path.dirname(os.path.abspath(__file__)))
     ap.add_argument("--rejudge", action="store_true",
                     help="execute revealed judges on temporary submission copies")
+    ap.add_argument("--require-no-skips", action="store_true",
+                    help="fail on every SKIP row, including skipped rejudge checks")
+    ap.add_argument('--expect', type=errata_pin, action='append', default=[],
+                    help='pin edition=N:sha256 to its published errata tip (repeatable)')
     args = ap.parse_args()
     root = args.root
     # July's edition URL carries a mirror; its metrics retain legacy paths.
@@ -872,12 +913,31 @@ def main():
     july_redirect = july.name == '2026-07' and july.parent.name == 'editions'
     if july_redirect:
         root = str(july.parent.parent)
+    r = Report()
+    if july_redirect:
+        errata_dirs = [july]
+    elif (Path(root) / 'editions').is_dir():
+        errata_dirs = sorted(path for path in (Path(root) / 'editions').iterdir() if path.is_dir())
+    else:
+        edition = Path(root).resolve()
+        # Generic run-bundle roots are also supported; they are not editions.
+        errata_dirs = ([edition] if edition.parent.name == 'editions'
+                       or (edition / 'MANIFEST.json').exists()
+                       or any(edition.glob('MANIFEST.v*.json'))
+                       or any(edition.glob('ERRATA.v*.json')) else [])
+    checked_editions = set()
+    for edition in errata_dirs:
+        checked_editions.add(edition.name)
+        verify_errata(edition, r, [pin for name, pin in args.expect if name == edition.name])
+    for name, pin in args.expect:
+        if name not in checked_editions:
+            r.add('FAIL', f'report errata pin ({name})', 'requested edition was not checked')
     paths = sorted(glob.glob(os.path.join(root, "*/*/*/rep*/result.json")))
     if not paths:
         print(f"no run bundles under {root}", file=sys.stderr)
+        r.emit(require_no_skips=args.require_no_skips)
         return 2
     print(f"verifying {len(paths)} run bundles under {root}\n")
-    r = Report()
     if july_redirect:
         originals = {p.relative_to(root).as_posix(): p
                      for result in paths for p in Path(result).parent.rglob('*') if p.is_file()}
@@ -912,16 +972,24 @@ def main():
             rejudge_run(os.path.dirname(p), judged, os.path.dirname(os.path.abspath(__file__)))
         counts = {status: sum(row[0] == status for row in judged.rows)
                   for status in ("PASS", "FAIL", "SKIP")}
+        if args.require_no_skips:
+            counts["FAIL"] += counts["SKIP"]
+            counts["SKIP"] = 0
         print(f"RE-JUDGE {len(paths)} bundles · PASS {counts['PASS']} · "
               f"FAIL {counts['FAIL']} · SKIP {counts['SKIP']}")
         r.rows.extend(judged.rows)
-    fails = r.emit()
-    if fails:
-        print(f"\n{fails} CHECK(S) FAILED — published figures do not follow from the evidence.")
-    elif any(row[0] == "SKIP" for row in r.rows):
-        print("\nVERIFIED — all executed checks passed; SKIPs remain unverified.")
-    else:
-        print("\nVERIFIED — every published number re-derives from the shipped evidence.")
+    evidence_fails = sum(row[0] == "FAIL" for row in r.rows)
+    converted_skips = sum(row[0] == "SKIP" for row in r.rows) if args.require_no_skips else 0
+    fails = r.emit(require_no_skips=args.require_no_skips)
+    if evidence_fails:
+        print(f"\n{evidence_fails} CHECK(S) FAILED — published figures do not follow from the evidence.")
+    if converted_skips:
+        print(f"\n{converted_skips} CHECK(S) FAILED — --require-no-skips requires every check to execute.")
+    if not fails:
+        if any(row[0] == "SKIP" for row in r.rows):
+            print("\nVERIFIED — all executed checks passed; SKIPs remain unverified.")
+        else:
+            print("\nVERIFIED — every published number re-derives from the shipped evidence.")
     return 1 if fails else 0
 
 

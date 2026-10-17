@@ -1,0 +1,11 @@
+{
+  "date_utc": "2026-07-22T18:56:22Z",
+  "tier_version": "commit-6e8d80b-dirty",
+  "prices_yaml_sha256": "0acdc014936bd25af3a49e20ccf872b75128889491800ba258eada4c110abd38",
+  "prompt": "baseline",
+  "prompt_file_sha256": "6927e499c8ee25996cc6669f432bec98ab3f3d747d41bb6b0142101e058649ec",
+  "tool": "codex",
+  "tool_version": "codex-cli 0.145.0",
+  "model_flag": "gpt-5.6-terra",
+  "machine": "Darwin 25.5.0 arm64 / Apple M5 Max"
+}
