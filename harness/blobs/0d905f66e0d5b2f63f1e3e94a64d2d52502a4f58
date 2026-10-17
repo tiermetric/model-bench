@@ -1,0 +1,595 @@
+#!/usr/bin/env python3
+"""Re-derive every published number in an edition from its shipped evidence.
+
+Standard library only. No network. No vendor CLIs. No TIER install. Point it at
+an archived edition and it recomputes the arithmetic from the raw artifacts and
+tells you where the published figures disagree.
+
+    python3 verify.py [root] [--rejudge]
+
+This is the reproducibility claim in PROTOCOL.md §8, made executable.
+Re-EXECUTION is impossible in principle -- models are stochastic and get
+retired, CLIs auto-update -- so what a reader is owed is not "run it again and
+get the same thing" but "check that what we published follows from the evidence
+we shipped". Specifically, per run:
+
+  * the session log's own hash matches what was recorded  (evidence unaltered)
+  * the token totals re-derive from the session log       (nobody retyped them)
+  * the cost re-derives from those tokens and the rate table SNAPSHOTTED
+    at scoring time                                        (arithmetic is right)
+  * the judge hash in the stamp matches the judge on disk  (commit-reveal holds)
+
+and per cell, that the headline metric is what the protocol defines it to be.
+
+Exit code 0 = every check passed. Non-zero = at least one FAIL; the report says
+which. A check that cannot run (missing artifact) is SKIP, never a silent pass.
+"""
+import hashlib
+import json
+import os
+import sys
+import glob
+import argparse
+import re
+import shutil
+import subprocess
+import tempfile
+from pathlib import Path
+from collections import defaultdict
+from token_evidence import sum_native_jsonl
+from score import price_native, sum_claude_jsonl, price as score_price
+
+ANTHROPIC_W5M = 1.25
+ANTHROPIC_W1H = 2.0
+
+
+def sha256_file(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+# ── rate table (minimal YAML reader: the snapshot is a flat models: mapping) ──
+def load_prices(path):
+    """Parse the price table without PyYAML -- a third-party dependency would
+    defeat the point of a verifier that must still run years from now.
+
+    Rows are inline flow mappings:
+        claude-opus-4-8: { input_per_m: 5.00, output_per_m: 25.00, provider: anthropic }
+    Anthropic rows usually omit cache_read_mult and take the documented 0.10;
+    the gpt-5.x rows state it explicitly. Defaults are per-provider and applied
+    only when the row is silent, never overriding a stated value.
+    """
+    default_read_mult = {"anthropic": 0.10, "openai": 0.10}
+    rows, in_models = {}, False
+    for raw in open(path):
+        line = raw.split("#", 1)[0].rstrip()
+        if not line.strip():
+            continue
+        indent = len(line) - len(line.lstrip())
+        s = line.strip()
+        if indent == 0:
+            in_models = s.startswith("models:")
+            continue
+        if not in_models or "{" not in s:
+            continue
+        name, _, body = s.partition(":")
+        name = name.strip().strip('"\'')
+        body = body.strip().strip("{}").strip()
+        row = {}
+        for field in body.split(","):
+            if ":" not in field:
+                continue
+            k, _, v = field.partition(":")
+            v = v.strip().strip('"\'')
+            try:
+                row[k.strip()] = float(v)
+            except ValueError:
+                row[k.strip()] = v
+        if "input_per_m" not in row:
+            continue
+        row.setdefault("cache_read_mult",
+                       default_read_mult.get(row.get("provider"), 0.10))
+        rows[name] = row
+    return rows
+
+
+def sum_claude(path):
+    tot = {"input": 0, "output": 0, "cache_read": 0, "w5m": 0, "w1h": 0}
+    seen = {}
+    for line in open(path):
+        try:
+            o = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        m = o.get("message")
+        if not isinstance(m, dict):
+            continue
+        u = m.get("usage")
+        if not isinstance(u, dict):
+            continue
+        # Claude Code emits one assistant entry per streaming chunk plus a final
+        # post-stream entry, all sharing message.id; the chunks carry partial
+        # counts. Largest-total wins, exactly as the scorer does.
+        mid = m.get("id")
+        total = (u.get("input_tokens", 0) + u.get("output_tokens", 0)
+                 + u.get("cache_read_input_tokens", 0))
+        if mid is not None:
+            if mid in seen and seen[mid][0] >= total:
+                continue
+            seen[mid] = (total, u)
+        else:
+            seen[len(seen)] = (total, u)
+    for _, u in seen.values():
+        tot["input"] += u.get("input_tokens", 0)
+        tot["output"] += u.get("output_tokens", 0)
+        tot["cache_read"] += u.get("cache_read_input_tokens", 0)
+        cc = u.get("cache_creation")
+        if isinstance(cc, dict):
+            tot["w5m"] += cc.get("ephemeral_5m_input_tokens", 0)
+            tot["w1h"] += cc.get("ephemeral_1h_input_tokens", 0)
+        else:
+            tot["w5m"] += u.get("cache_creation_input_tokens", 0)
+    return tot
+
+
+def sum_codex(path):
+    last = None
+    for line in open(path):
+        if '"token_count"' not in line:
+            continue
+        try:
+            o = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        info = (o.get("payload") or {}).get("info")
+        if isinstance(info, dict) and isinstance(info.get("total_token_usage"), dict):
+            last = info["total_token_usage"]
+    if last is None:
+        return None
+    inp = last.get("input_tokens", 0)
+    cached = last.get("cached_input_tokens", 0)
+    return {"input": inp - cached, "output": last.get("output_tokens", 0),
+            "cache_read": cached, "w5m": 0,
+            "w1h": last.get("cache_write_input_tokens", 0) and 0 or 0,
+            "_cache_write": last.get("cache_write_input_tokens", 0),
+            "_raw_input": inp, "_reasoning": last.get("reasoning_output_tokens", 0),
+            "_total": last.get("total_tokens", 0)}
+
+
+def price(tokens, row, fmt):
+    inr = row["input_per_m"] / 1e6
+    outr = row["output_per_m"] / 1e6
+    mult = row.get("cache_read_mult", 0.1)
+    cost = tokens["input"] * inr + tokens["cache_read"] * inr * mult
+    cost += tokens["output"] * outr
+    if fmt == "claude":
+        cost += tokens["w5m"] * inr * ANTHROPIC_W5M
+        cost += tokens["w1h"] * inr * ANTHROPIC_W1H
+    else:
+        cost += tokens.get("_cache_write", 0) * inr
+    return cost
+
+
+class Report:
+    def __init__(self):
+        self.rows = []
+
+    def add(self, status, what, detail=""):
+        self.rows.append((status, what, detail))
+
+    def emit(self):
+        counts = defaultdict(int)
+        for st, what, detail in self.rows:
+            counts[st] += 1
+            if st != "PASS":
+                print(f"  [{st}] {what}" + (f" -- {detail}" if detail else ""))
+        print(f"\n  PASS {counts['PASS']} · FAIL {counts['FAIL']} · SKIP {counts['SKIP']}")
+        return counts["FAIL"]
+
+
+def sealed_paths(root):
+    """Read the public-export boundary; a missing judge is also a loud SKIP."""
+    path = Path(root) / ".export-exclude"
+    if not path.is_file():
+        return []
+    return [line.split("#", 1)[0].strip().rstrip("/")
+            for line in path.read_text().splitlines()
+            if line.split("#", 1)[0].strip()]
+
+
+def is_sealed(name, paths, root=None):
+    root = Path(root or ".").resolve()
+    name = str((root / name).resolve()).casefold()
+    return any(name == p or name.startswith(p + os.sep)
+               for p in (str((root / p).resolve()).casefold() for p in paths))
+
+
+ORGSYNC_ARCHIVED_FILES = (
+    "config.json", "submission/test_orgsync.py",
+    "orgsync/__init__.py", "orgsync/__main__.py", "orgsync/config.py",
+    "orgsync/http_client.py", "orgsync/models.py", "orgsync/sync.py",
+    "tests/existing/test_cli.py", "tests/existing/test_config.py",
+    "tests/existing/test_http_client.py", "tests/existing/test_models.py",
+)
+
+
+def rejudge_run(d, r, judge_root):
+    """Execute the stamped, revealed judge on a disposable submission copy."""
+    d, judge_root = Path(d), Path(judge_root)
+    label = f"{os.path.relpath(d)}: re-judge"
+    try:
+        res = json.loads((d / "result.json").read_text())
+        stamp = json.loads((d / "stamp.json").read_text())
+        name, digest = stamp.get("judge"), stamp.get("judge_sha256")
+        if not name or not digest:
+            raise ValueError("stamp carries no judge name/hash")
+        # Resolve only inside the kit: no absolute/parent path can execute code
+        # from outside the archive's declared judge boundary.
+        judge = judge_root / name
+        if Path(name).is_absolute() or ".." in Path(name).parts:
+            raise ValueError("judge path escapes the archive")
+        if is_sealed(name, sealed_paths(judge_root), judge_root) or not judge.is_file():
+            r.add("SKIP", label, f"judge {name} sealed or absent; NOT re-judged")
+            return
+        if sha256_file(judge) != digest:
+            raise ValueError("judge SHA-256 differs from the bundle stamp; refusing execution")
+        submission = d / "submission"
+        if not submission.is_dir():
+            r.add("SKIP", label, "missing archived path: submission/; NOT re-judged")
+            return
+        archived = [submission]
+        if name == "acceptance_orgsync.py":
+            # Reconstruct the original RUN_DIR layout from THIS bundle only:
+            # da2561f:run.sh:176-205 lays down orgsync/, tests/existing/ and
+            # config.json; :321 judges RUN_DIR, while :390-391 archives only
+            # root *.py in submission/. da2561f:score.py:337 only records ACC.
+            # Restore submission/ at target root plus those adjacent archives;
+            # never fill a missing file from the live skeleton or another run.
+            missing = [p for p in ORGSYNC_ARCHIVED_FILES if not (d / p).is_file()]
+            if missing:
+                r.add("SKIP", label, "missing archived path(s): " + ", ".join(missing)
+                      + "; NOT re-judged")
+                return
+            archived.extend(d / p for p in ("orgsync", "config.json", "tests/existing"))
+        for source in archived:
+            for p in [source, *source.rglob("*")] if source.is_dir() else [source]:
+                if p.is_symlink():
+                    r.add("SKIP", label, f"archived path is a symlink: {p.relative_to(d)}; "
+                          "refusing to pull files outside this bundle; NOT re-judged")
+                    return
+        with tempfile.TemporaryDirectory(prefix="model-bench-rejudge-") as tmp:
+            target = Path(tmp) / "submission"
+            shutil.copytree(submission, target)
+            for source in archived[1:]:
+                destination = target / source.relative_to(d)
+                if source.is_dir():
+                    shutil.copytree(source, destination, dirs_exist_ok=True)
+                else:
+                    shutil.copyfile(source, destination)
+            env = {k: os.environ.get(k, default) for k, default in
+                   (("PATH", os.defpath), ("LANG", "C.UTF-8"), ("LC_ALL", "C.UTF-8"))}
+            env.update(TARGET_DIR=str(target), PYTHONDONTWRITEBYTECODE="1", HOME=tmp)
+            judged = subprocess.run([sys.executable, str(judge.resolve())],
+                                    cwd=tmp, env=env, capture_output=True,
+                                    text=True, timeout=900)
+        # Exit 0 alone proves nothing. Require exactly one machine verdict,
+        # with an executed assertion budget, then compare the scored outcome.
+        lines = re.findall(
+            r"^ACCEPTANCE_RESULT pass=(True|False) failures=(\d+) errors=(\d+) tests=(\d+)$",
+            judged.stdout, re.MULTILINE)
+        if len(lines) != 1:
+            raise ValueError("judge emitted no unique ACCEPTANCE_RESULT verdict line")
+        passed, failures, errors, tests = lines[0]
+        verdict = "PASS" if passed == "True" else "FAIL"
+        if verdict == "PASS" and int(tests) == 0:
+            raise ValueError("judge executed zero tests: " + lines[0].__repr__())
+        if ((verdict == "PASS") != (judged.returncode == 0)
+                or (verdict == "PASS" and (int(failures) or int(errors)))):
+            raise ValueError("judge verdict line and exit/assertion counts disagree")
+        recorded = res.get("outcome")
+        if recorded not in ("PASS", "FAIL"):
+            raise ValueError(f"recorded verdict is not PASS/FAIL: {recorded!r}")
+        if verdict == recorded == "FAIL" and res.get("edge_failures") != f"{int(failures)}f+{int(errors)}e":
+            raise ValueError(f"failure/error counts differ: recorded {res.get('edge_failures')!r}, "
+                             f"re-judged {failures}f+{errors}e")
+        r.add("PASS" if verdict == recorded else "FAIL", label,
+              f"recorded {recorded}, re-judged {verdict}")
+    except Exception as exc:
+        r.add("FAIL", label, str(exc))
+
+
+def verify_run(d, rep, r):
+    """Re-derive one run from its own bundle."""
+    label = os.path.relpath(d)
+    result_p = os.path.join(d, "result.json")
+    res = json.load(open(result_p))
+    stamp_p = os.path.join(d, "stamp.json")
+    stamp = json.load(open(stamp_p)) if os.path.exists(stamp_p) else {}
+
+    # (1) evidence integrity: the session log is what was recorded
+    sess = os.path.join(d, "session.jsonl")
+    sha_p = sess + ".sha256"
+    if os.path.exists(sess) and os.path.exists(sha_p):
+        want = open(sha_p).read().strip()
+        got = sha256_file(sess)
+        r.add("PASS" if want == got else "FAIL", f"{label}: session log integrity",
+              "" if want == got else f"recorded {want[:12]}, file hashes {got[:12]}")
+    elif res.get("capture") not in (None, "OK"):
+        r.add("SKIP", f"{label}: no session log", f"capture={res.get('capture')}")
+        return
+    else:
+        r.add("SKIP", f"{label}: session log or hash absent")
+        return
+
+    # (2) commit-reveal: the judge that graded this run is the judge on disk
+    jsha = stamp.get("judge_sha256")
+    jname = stamp.get("judge")
+    if jsha and jname:
+        jp = os.path.join(os.path.dirname(os.path.abspath(__file__)), jname)
+        if os.path.exists(jp):
+            got = sha256_file(jp)
+            r.add("PASS" if got == jsha else "FAIL", f"{label}: judge hash",
+                  "" if got == jsha else f"stamp {jsha[:12]}, disk {got[:12]}")
+        else:
+            r.add("SKIP", f"{label}: judge {jname} not present (sealed?)")
+    else:
+        r.add("FAIL", f"{label}: stamp carries no judge_sha256",
+              "commit-reveal unverifiable for this run")
+
+    if res.get("capture") not in (None, "OK"):
+        r.add("PASS" if res.get("cost_list_usd") is None else "FAIL",
+              f"{label}: capture failure recorded", f"capture={res.get('capture')}; no cost derivable")
+        return
+
+    # (3) the cost re-derives from the log and the SNAPSHOTTED rate table
+    prices_p = os.path.join(d, "prices.snapshot.yaml")
+    if not os.path.exists(prices_p):
+        r.add("SKIP", f"{label}: no rate-table snapshot")
+        return
+    fmt = "claude" if res.get("tool") == "claude-code" else res.get("tool", "codex")
+    if fmt in ("opencode", "muse"):
+        toks = sum_native_jsonl(sess, fmt)
+        r.add("PASS" if toks == res.get("tokens") else "FAIL",
+              f"{label}: native token counts re-derive")
+    else:
+        toks = sum_claude(sess) if fmt == "claude" else sum_codex(sess)
+    if toks is None:
+        r.add("SKIP", f"{label}: no usage events in session log")
+        return
+    rows = load_prices(prices_p)
+    key = res.get("model_key") or stamp.get("model_flag")
+    if key not in rows:
+        r.add("FAIL", f"{label}: model {key} absent from snapshotted rate table")
+        return
+    want = res.get("cost_list_usd")
+    if want is None:
+        r.add("SKIP", f"{label}: no published cost to check")
+        return
+    if fmt == 'claude' and rows[key].get('context_threshold'):
+        got = score_price(sum_claude_jsonl(sess), rows[key], fmt)[0]
+    else:
+        got = price_native(toks, rows, fmt) if fmt in ("opencode", "muse") else price(toks, rows[key], fmt)
+    # Tolerance covers float formatting only, not real disagreement.
+    ok = abs(got - want) <= max(1e-6, abs(want) * 1e-4)
+    r.add("PASS" if ok else "FAIL", f"{label}: cost re-derives",
+          "" if ok else f"published ${want:.6f}, re-derived ${got:.6f}")
+
+
+def verify_cells(runs, r):
+    """The headline metric must be what PROTOCOL 4.1 says it is.
+
+    EVERY add() here compares something. An earlier version emitted PASS on every
+    path with no comparison at all -- 21 of 210 checks that could not fail, which
+    is a rubber stamp wearing a checkmark. The invariants below are real:
+
+      * a zero-pass cell must have SPENT money and still produce NO figure. That
+        is the NO SCORE rule (PROTOCOL 4.1): cost without an accepted outcome is
+        an absence of the thing measured, not inefficiency. A cell that spent
+        nothing is a run that never happened and is a different fault.
+      * E[$/accepted] = (cost over ALL runs) / (accepted runs) must be >= the
+        naive mean over only the passing runs, because the numerator includes the
+        cost of failures. Equality holds exactly when nothing failed. A cell where
+        the naive figure is HIGHER means the headline is understating cost, which
+        is the survivorship bug this metric exists to prevent -- and it is now a
+        FAIL rather than a note.
+    """
+    cells = defaultdict(list)
+    for res in runs:
+        cells[(res.get("tool"), res.get("label"), res.get("task"))].append(res)
+    for (tool, model, task), rs in sorted(cells.items()):
+        costs = [x.get("cost_list_usd") for x in rs if x.get("cost_list_usd") is not None]
+        npass = sum(1 for x in rs if x.get("outcome") == "PASS")
+        name = f"{tool}/{model}/{task}"
+        total = sum(costs)
+        if len(costs) != len(rs):
+            r.add("FAIL", f"{name}: unknown run cost — NO SCORE",
+                  "every run's spend is required; never drop an unpriced run")
+            continue
+        if not npass:
+            # Asserted, not announced: real spend, and no figure derivable.
+            if total > 0:
+                r.add("PASS", f"{name}: NO SCORE with ${total:.4f} spent -> no figure derivable (correct)")
+            else:
+                r.add("FAIL", f"{name}: zero passes AND zero cost",
+                      "a cell that spent nothing did not run; NO SCORE requires real spend")
+            continue
+        expected = total / npass
+        if not (expected > 0 and expected == expected and expected != float("inf")):
+            r.add("FAIL", f"{name}: E[$/accepted] is not a finite positive number", f"got {expected!r}")
+            continue
+        pc = [x["cost_list_usd"] for x in rs
+              if x.get("outcome") == "PASS" and x.get("cost_list_usd") is not None]
+        naive = (sum(pc) / len(pc)) if pc else None
+        if naive is None:
+            r.add("FAIL", f"{name}: {npass} passes but no per-run cost on any of them",
+                  "cannot cross-check the headline against the naive mean")
+            continue
+        if expected + 1e-12 < naive:
+            r.add("FAIL", f"{name}: headline UNDERSTATES cost",
+                  f"E[$/accepted]=${expected:.4f} < mean-over-passing ${naive:.4f} "
+                  f"-- the survivorship bug PROTOCOL 4.1 forbids")
+            continue
+        if npass == len(rs):
+            r.add("PASS", f"{name}: E[$/accepted]=${expected:.4f} == mean-over-passing "
+                          f"(no failures, so they must agree)")
+        else:
+            r.add("PASS", f"{name}: E[$/accepted]=${expected:.4f} >= mean-over-passing "
+                          f"${naive:.4f} over {npass}/{len(rs)} (failure cost retained)")
+
+
+# Weights are the PROTOCOL 7a DECLARATION. Kept here so the report differ can
+# recompute the TIER column rather than trusting the number printed in the table.
+TASK_WEIGHT = {"baseline": 1.0, "cronspec": 3.0, "orgsync": 5.0}
+
+
+def verify_report(runs, r, root):
+    """Diff the PUBLISHED report's tables against the bundles.
+
+    This closes the gap that let three documents disagree about Edition 1's scope
+    with nothing failing: verify.py globbed run bundles and never opened a
+    published document, so every table value, total and run count could be edited
+    arbitrarily and it would still exit 0. The report claimed the tool
+    "re-derives every number in this report". It did not.
+    """
+    path = os.path.join(root, "editions", "2026-07", "REPORT.md")
+    if not os.path.exists(path):
+        r.add("SKIP", "no editions/2026-07/REPORT.md to check")
+        return
+    text = open(path, encoding="utf-8").read()
+
+    # Totals first: run count, spend, and the accepted/not split.
+    n_runs = len(runs)
+    total = sum(x["cost_list_usd"] for x in runs if x.get("cost_list_usd") is not None)
+    n_pass = sum(1 for x in runs if x.get("outcome") == "PASS")
+    n_fail = n_runs - n_pass
+    for label, needle in (
+        ("run count", f"**{n_runs}**"),
+        ("total spend", f"${total:.4f}"),
+        ("accepted count", str(n_pass)),
+        ("not-accepted count", str(n_fail)),
+    ):
+        if needle in text:
+            r.add("PASS", f"report states the {label} the bundles show ({needle})")
+        else:
+            r.add("FAIL", f"report does not state the {label} the bundles show",
+                  f"expected to find {needle!r} in editions/2026-07/REPORT.md")
+
+    # Then every per-cell E[$/accepted] and TIER the report prints.
+    cells = defaultdict(list)
+    for res in runs:
+        cells[(res.get("label"), res.get("task"))].append(res)
+    checked = 0
+    for (model, task), rs in sorted(cells.items()):
+        if task not in TASK_WEIGHT:
+            continue
+        npass = sum(1 for x in rs if x.get("outcome") == "PASS")
+        costs = [x["cost_list_usd"] for x in rs if x.get("cost_list_usd") is not None]
+        if not npass or len(costs) != len(rs):
+            continue  # NO SCORE cells print no figure to diff
+        e = sum(costs) / npass
+        tier = (TASK_WEIGHT[task] * npass) / (sum(costs) / 1000.0)
+        if f"${e:.4f}" not in text:
+            r.add("FAIL", f"report is missing E[$/accepted] for {model}/{task}",
+                  f"bundles give ${e:.4f}")
+            continue
+        if f"{tier:,.0f}" not in text:
+            r.add("FAIL", f"report is missing the TIER score for {model}/{task}",
+                  f"bundles give {tier:,.0f} (weight {TASK_WEIGHT[task]})")
+            continue
+        checked += 1
+    if checked:
+        r.add("PASS", f"report's E[$/accepted] and TIER figures match the bundles in {checked} cells")
+    else:
+        r.add("FAIL", "diffed ZERO report cells",
+              "the table shape changed and this check has gone vacuous")
+
+
+def verify_manifest(paths, r, root):
+    """Edition 1's declaration must match every archived stamp, not one sample."""
+    editions = {json.loads(Path(p).read_text()).get("edition") or
+                json.loads(Path(p).with_name("stamp.json").read_text()).get("edition") or "2026-07"
+                for p in paths}
+    if editions != {"2026-07"}:
+        return
+    path = Path(root) / "editions/2026-07/MANIFEST.json"
+    if not path.is_file():
+        status = "FAIL" if path.with_name("REPORT.md").is_file() else "SKIP"
+        r.add(status, "Edition 1 manifest absent")
+        return
+    try:
+        manifest = json.loads(path.read_text())
+        panel = defaultdict(set)
+        for p in paths:
+            p = Path(p)
+            res = json.loads(p.read_text())
+            stamp = json.loads(p.with_name("stamp.json").read_text())
+            task = manifest["tasks"][res["task"]]
+            expected = (task["prompt_sha256"], task["judge_sha256"],
+                        manifest["prices_yaml_sha256"])
+            recorded = tuple(stamp.get(k) for k in
+                             ("prompt_file_sha256", "judge_sha256", "prices_yaml_sha256"))
+            r.add("PASS" if expected == recorded else "FAIL",
+                  f"{os.path.relpath(p.parent)}: manifest hashes equal bundle stamp",
+                  "" if expected == recorded else f"manifest {expected}, stamp {recorded}")
+            panel[(res["tool"], res["model_key"], res["task"])].add(res["rep"])
+            if res.get("prices_yaml_version") != manifest["prices_yaml_version"]:
+                raise ValueError(f"{p}: prices version differs from manifest")
+        declared = {(tool, model, task): set(range(1, spec["reps"] + 1))
+                    for tool, models in manifest["roster"].items() for model in models
+                    for task, spec in manifest["tasks"].items()}
+        ok = (manifest["edition"] == "2026-07" and dict(panel) == declared
+              and len(paths) == sum(len(reps) for reps in declared.values())
+              and manifest["scored_models"] == sum(map(len, manifest["roster"].values())))
+        r.add("PASS" if ok else "FAIL", "Edition 1 manifest roster/tasks/reps equal archived panel")
+    except Exception as exc:
+        r.add("FAIL", "Edition 1 manifest unreadable or inconsistent", str(exc))
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("root", nargs="?", default=os.path.dirname(os.path.abspath(__file__)))
+    ap.add_argument("--rejudge", action="store_true",
+                    help="execute revealed judges on temporary submission copies")
+    args = ap.parse_args()
+    root = args.root
+    paths = sorted(glob.glob(os.path.join(root, "*/*/*/rep*/result.json")))
+    if not paths:
+        print(f"no run bundles under {root}", file=sys.stderr)
+        return 2
+    print(f"verifying {len(paths)} run bundles under {root}\n")
+    r = Report()
+    runs = []
+    for p in paths:
+        d = os.path.dirname(p)
+        try:
+            runs.append(json.load(open(p)))
+            verify_run(d, os.path.basename(d), r)
+        except Exception as exc:                      # noqa: BLE001
+            r.add("FAIL", f"{os.path.relpath(d)}: unreadable bundle", str(exc))
+    verify_cells(runs, r)
+    verify_report(runs, r, root)
+    verify_manifest(paths, r, root)
+    if args.rejudge:
+        judged = Report()
+        for p in paths:
+            rejudge_run(os.path.dirname(p), judged, os.path.dirname(os.path.abspath(__file__)))
+        counts = {status: sum(row[0] == status for row in judged.rows)
+                  for status in ("PASS", "FAIL", "SKIP")}
+        print(f"RE-JUDGE {len(paths)} bundles · PASS {counts['PASS']} · "
+              f"FAIL {counts['FAIL']} · SKIP {counts['SKIP']}")
+        r.rows.extend(judged.rows)
+    fails = r.emit()
+    if fails:
+        print(f"\n{fails} CHECK(S) FAILED — published figures do not follow from the evidence.")
+    elif any(row[0] == "SKIP" for row in r.rows):
+        print("\nVERIFIED — all executed checks passed; SKIPs remain unverified.")
+    else:
+        print("\nVERIFIED — every published number re-derives from the shipped evidence.")
+    return 1 if fails else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

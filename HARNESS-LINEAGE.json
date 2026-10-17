@@ -1,0 +1,3950 @@
+{
+  "allowlist": [
+    "TIER_PIN",
+    "acceptance_cronspec.py",
+    "acceptance_orgsync.py",
+    "acceptance_test.py",
+    "aggregate.py",
+    "batch.sh",
+    "calibration/orgsync.cleared",
+    "check-calibration-gate.sh",
+    "control/test_harness.py",
+    "design/orgsync/CONTROLS.md",
+    "design/orgsync/FIXTURES.md",
+    "design/orgsync/JUDGE_SPEC.md",
+    "design/orgsync/README-REVEALED.md",
+    "design/orgsync/controls/control_check.py",
+    "design/orgsync/controls/g_writes_nothing.py",
+    "design/orgsync/controls/w1_naive_read.py",
+    "design/orgsync/controls/w2_non_idempotent.py",
+    "design/orgsync/controls/w3_confident_finisher.py",
+    "design/orgsync/controls/w3_test_orgsync.py",
+    "design/orgsync/reference/orgsync_reference.py",
+    "edition.sh",
+    "edition_report.py",
+    "editions/2026-10/MANIFEST.json",
+    "editions/2026-10/TIER_PIN",
+    "errata.py",
+    "evidence.py",
+    "export.py",
+    "fixtures/orgsync/server.py",
+    "master_table.py",
+    "preflight.sh",
+    "preflight_check.py",
+    "preflight_http.py",
+    "prices.yaml",
+    "prompts/baseline.md",
+    "prompts/cronspec.md",
+    "prompts/orgsync.md",
+    "redact.py",
+    "run.sh",
+    "run_audit.py",
+    "score.py",
+    "tasks/orgsync-skeleton/.gitignore",
+    "tasks/orgsync-skeleton/README.md",
+    "tasks/orgsync-skeleton/config.json",
+    "tasks/orgsync-skeleton/orgsync/__init__.py",
+    "tasks/orgsync-skeleton/orgsync/__main__.py",
+    "tasks/orgsync-skeleton/orgsync/config.py",
+    "tasks/orgsync-skeleton/orgsync/http_client.py",
+    "tasks/orgsync-skeleton/orgsync/models.py",
+    "tasks/orgsync-skeleton/orgsync/sync.py",
+    "tasks/orgsync-skeleton/tests/existing/test_cli.py",
+    "tasks/orgsync-skeleton/tests/existing/test_config.py",
+    "tasks/orgsync-skeleton/tests/existing/test_http_client.py",
+    "tasks/orgsync-skeleton/tests/existing/test_models.py",
+    "token_evidence.py",
+    "verify.py"
+  ],
+  "bundles": [
+    {
+      "bundle": "claude-code/fable/baseline/rep1",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "9b744f786a998c0d68c8a2501b9a92cef6ef32b40b808c89641d332e7103ae6a",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/fable/baseline/rep2",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "a0022671d3085975caf248ec2b9bd47e64b4d77e650d90c5e597fbb5d0d25ebb",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/fable/baseline/rep3",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "929b47b6e92558fd67135ff442fb473d50abaf09f387d155fe8977092d26a546",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/fable/cronspec/rep1",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "a595539c5acd4454dcb3fa153f66c0a480e8fbfce2cb16627c972a1b97da5259",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/fable/cronspec/rep2",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "51e5b8a95a56e666aa3eb83b1efb862b146b2fd4d8eda8f491cc2d3f69df2878",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/fable/cronspec/rep3",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "be96f73d7a6e4fabeea0be2227059bb7a61a0aea71854ac6c0415fe0ccc1fcdc",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/fable/orgsync/rep1",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "c72e15efef033d02a6a82fc4397c8d576bdf3aad704be9be71b7d03ecd1e8b87",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/fable/orgsync/rep2",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "c2d75903fba24c10d2b28662aa4f4cd6fed6cd9a61d517b7e57b6805b6bbdac8",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/fable/orgsync/rep3",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "6a1dfe567bc9ad71d4101d2a783ebd5fea881576afdc187927310f6bf5436a85",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/haiku/baseline/rep1",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "8c3021aa7a023ae3248cc4036d0ae2be9574ffed7d782bdfa641d0006b8cb88e",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/haiku/baseline/rep2",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "48bd3c81d5bcdee255ec0161157a2756278645c89436a74e47e1fb38547bd732",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/haiku/baseline/rep3",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "dd05b989a06a6b37373ee8a92a38d944ce495d270032727a79894d69574c8f34",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/haiku/cronspec/rep1",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "59d727dcc8d3ac5b43d259c2bc970267d231846cb661ad187f63f82d868f66a2",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/haiku/cronspec/rep2",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "ac4f86002a89072e01f5240a115e0a6674480a47f51ae2a7741490f9ac1ef394",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/haiku/cronspec/rep3",
+      "revision": "5508c75b7603db3ddf2c501e7999c8fd9f6f1281",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "77bcd13ae3d622efdd8baae1f97d0c3e999ba12f",
+      "stamp_sha256": "62dc45465bc8214ca39e4e74541445d4b3d86b051f00817509b15c2e26799df9",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/haiku/orgsync/rep1",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "bfe81b2941a51f769d36ed1415d6d4bff6ba72acc9eab7092df7b1a52b101b31",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/haiku/orgsync/rep2",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "943ccb7877099deafb4c8466f542fa179650044d654f40ccc018c14084966ed5",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/haiku/orgsync/rep3",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "f56647fd7c15a7953332194f5c05add92a8868bbfe94a73c16e7fb5f4f77b45e",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/opus/baseline/rep1",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "cb5b73d05ae80358984202d6e28a35b3825e056dd9ffa3a6b2039de8dffc746e",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/opus/baseline/rep2",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "da85c0c12695707d42826f268ca443908194b71de6a198bc6d3a345a43c2f897",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/opus/baseline/rep3",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "11db1f844bc41b2b972823bd4a36794d09b2227f2de113c63e8fc30606a3bf7b",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/opus/cronspec/rep1",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "760221a461e81aa47f5f29945bd27ecd51d25b9d2efebdede306027d53141d96",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/opus/cronspec/rep2",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "d4def95d442c26b9e3a168ef3c12f7271065ff06a8ddaf35569c37fb9257f1cb",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/opus/cronspec/rep3",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "4a58880674b515521e04cad9cc83c22cf7792cf47d3e9df3868b157f46202422",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/opus/orgsync/rep1",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "4a31089f94647bfcd1aeafafc2bd2f29646e130b18c77574459fa50848a0ce4e",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/opus/orgsync/rep2",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "1c60d4d541db0a8f9e74674938e241743bbfcdba5396be51e4f3af32208c7ded",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/opus/orgsync/rep3",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "c0e5a9c43029145ed79b1fa65f6b7eda18e1e492d4b267580f5297170a7638cd",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/sonnet/baseline/rep1",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "18c3d4db6642aaad0858f383ba2339c05987c4e398568697c1a1590e0b784096",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/sonnet/baseline/rep2",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "5a2b57deef9e8a7b6c44188e54a7dff2ebcc13419f9960bf3bed7ff819b4e279",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/sonnet/baseline/rep3",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "f4ecfa6c826e316a6658991bc1a47e1d27616b837a88922a513cc65cd4ff1aa2",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/sonnet/cronspec/rep1",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "faa5fe9964a7f4116a1657096d27ed14aa178856b50563473583b2c4a63791da",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/sonnet/cronspec/rep2",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "419d69b0ec45d6e3b5ecac494577da0ad96c8c20e7bfebe6de71228b3bc8c2ae",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/sonnet/cronspec/rep3",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "8d2b28fade6c5d31e47aea6179c93e8a4be050369b6f9759cdc13cedbbd1e4c4",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/sonnet/orgsync/rep1",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "a75eee964a317be77b29bb668962b4bfc4faf7db909cea38583bcd2a4499bbe5",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/sonnet/orgsync/rep2",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "c2e16ebae5de29a3f87235d648ad782b7195e4042a2ccb5ac6dc0648eec11832",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "claude-code/sonnet/orgsync/rep3",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "40e2046130d1a826a1ea59e77427933a3f2c75ab91fad54fb17479b9265a8cdf",
+      "tool_version": "2.1.218 (Claude Code)"
+    },
+    {
+      "bundle": "codex/gpt-5.6-luna/baseline/rep1",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "66129a65b01ece01e5747aba33deec1c316159c00df4034ef5c6e42524347866",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-luna/baseline/rep2",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "19c46783caae7f7462ccf75c308e5ab3ff5c75ed2255937c0795637051024941",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-luna/baseline/rep3",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "4d8b020c87833a9f48a557d5fad7827102b006c474f3487fab49785ae7781ee5",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-luna/cronspec/rep1",
+      "revision": "5508c75b7603db3ddf2c501e7999c8fd9f6f1281",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "77bcd13ae3d622efdd8baae1f97d0c3e999ba12f",
+      "stamp_sha256": "bf2e6d301f35eeb32b923a1cd1ded3cbf9cc8818f7a67a85452af582b1a11142",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-luna/cronspec/rep2",
+      "revision": "5508c75b7603db3ddf2c501e7999c8fd9f6f1281",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "77bcd13ae3d622efdd8baae1f97d0c3e999ba12f",
+      "stamp_sha256": "2676c0097e95f7fbabd81c8f7c3f64c492d6150d8adf891f8927acf32c96e459",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-luna/cronspec/rep3",
+      "revision": "5508c75b7603db3ddf2c501e7999c8fd9f6f1281",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "77bcd13ae3d622efdd8baae1f97d0c3e999ba12f",
+      "stamp_sha256": "b34a8b424147481fb4aaf668bcaf45ddb4b7728c60e1703771ebbaea8ef5559b",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-luna/orgsync/rep1",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "ac266d1b89fd8bcd7f06d0fda594e4dbe599f329f07b9b5d1e3b42d92681776d",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-luna/orgsync/rep2",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "60dd6c831dfb1f6ad2fb57c56cd603f8a2635030776bf957152fc360a007c28c",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-luna/orgsync/rep3",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "eefcf18fdadb5c50e30649544cafc9fa0d3641d369ee4c820657f2e7e36abc16",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-sol/baseline/rep1",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "927f400f490e81cecb2a865f6d3bf8ab9eb33ed807cdbbd2f2a9f424c03346ff",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-sol/baseline/rep2",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "17d40c0fbab2a61837a8bf8adf6f4a53bad9c1e4de5946fc54cac87cbf4ab3a7",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-sol/baseline/rep3",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "422635e44b8d42a70087e152de9952f7457b094361caad43f8b954f04fb8e312",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-sol/cronspec/rep1",
+      "revision": "5508c75b7603db3ddf2c501e7999c8fd9f6f1281",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "77bcd13ae3d622efdd8baae1f97d0c3e999ba12f",
+      "stamp_sha256": "835eb9735d13d24ad2d31afcca5a5bcf9835e3f55448f0d003b05edbb928e83b",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-sol/cronspec/rep2",
+      "revision": "5508c75b7603db3ddf2c501e7999c8fd9f6f1281",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "77bcd13ae3d622efdd8baae1f97d0c3e999ba12f",
+      "stamp_sha256": "8f26c6c6f90a54e63849970cf8fdd141b0664ca145478c96198cbdd55f19cecf",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-sol/cronspec/rep3",
+      "revision": "5508c75b7603db3ddf2c501e7999c8fd9f6f1281",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "77bcd13ae3d622efdd8baae1f97d0c3e999ba12f",
+      "stamp_sha256": "3cdb2d7651c43af157a26c309c9cd59cb3fa917c4ead9d79969bcb9d1db72865",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-sol/orgsync/rep1",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "a7baa12d1051a36844e93b8ae5ec6c434c3a8c738833f6613d7572cf462b628f",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-sol/orgsync/rep2",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "0b1fdda410d4d8fd86c14a52ae9f8687f7dcf4bc61cf12e4656e6c2bdf2d050a",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-sol/orgsync/rep3",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "5c625b875b9ef171ce8171184fae26e95a039210f846d698ddd53ccc8dd6dd0e",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-terra/baseline/rep1",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "939061440517bb2f3acd09c8d0a4b1f623770cbf29afc1bf9a5ae1b20dfa3455",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-terra/baseline/rep2",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "9a86cb89bbff462a7f61ae8ca4ad881379defaba98c8d40d8d90e9470a9b961f",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-terra/baseline/rep3",
+      "revision": "8fce6350c86786c2e68979cf498b8b99e2d96bd4",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+      "stamp_sha256": "ae4121129d84cbee035895f3016393e1cee1108d1826c83bb94dc7e125a964d1",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-terra/cronspec/rep1",
+      "revision": "5508c75b7603db3ddf2c501e7999c8fd9f6f1281",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "77bcd13ae3d622efdd8baae1f97d0c3e999ba12f",
+      "stamp_sha256": "4c324ba89afd073ee822b9e53a1a17439f9ed3f26ff081373cae6f04ea6c8710",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-terra/cronspec/rep2",
+      "revision": "5508c75b7603db3ddf2c501e7999c8fd9f6f1281",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "77bcd13ae3d622efdd8baae1f97d0c3e999ba12f",
+      "stamp_sha256": "97a2b7b5325fc9bdc9a1291a75f843d386846384b517db29c6e28ade7d25d966",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-terra/cronspec/rep3",
+      "revision": "5508c75b7603db3ddf2c501e7999c8fd9f6f1281",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "77bcd13ae3d622efdd8baae1f97d0c3e999ba12f",
+      "stamp_sha256": "74ac4309ba49873289e2405587b012b9d87874be7a17b2fe4e2db57be6adc236",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-terra/orgsync/rep1",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "44d9dd8a0a88495d81a6ae4a5fb2e5f7b85cb59190cde573e1757b7537f0b06a",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-terra/orgsync/rep2",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "db01769cd73784c563b4daba0feea42f30b4bc98e19a7b104127e1af817e6768",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "codex/gpt-5.6-terra/orgsync/rep3",
+      "revision": "da2561f0f228467d0914cba9e2d8b2624d93cca1",
+      "revision_source": "last committed run.sh before the run's stamp time; the working tree was not captured",
+      "run_sh_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+      "stamp_sha256": "89e860b6e8018526f54fe50691593314c166983e92efd0ef12821cae78203726",
+      "tool_version": "codex-cli 0.145.0"
+    },
+    {
+      "bundle": "editions/2026-10/claude-code/claude-fable-5-1/orgsync/rep1",
+      "revision": "14f21dce0b8db594001ea368ad7ce3fe2edd6090",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "8768731a1a37efb4e0fc76e27bf52f1ad3f22ae8",
+      "stamp_sha256": "53858c7506c989f725898733ccddbf88629cf3c602862ec44d170f3589f1f799",
+      "tool_version": "2.1.296 (Claude Code)"
+    },
+    {
+      "bundle": "editions/2026-10/claude-code/claude-fable-5-1/orgsync/rep2",
+      "revision": "849c8cc561919c57b23cccc14e92985ba490d9d8",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+      "stamp_sha256": "bbac9686c1db3546a21f12dce67d0b5362079eb2cca92dd6eacf40939a92f751",
+      "tool_version": "2.1.296 (Claude Code)"
+    },
+    {
+      "bundle": "editions/2026-10/claude-code/claude-fable-5-1/orgsync/rep3",
+      "revision": "849c8cc561919c57b23cccc14e92985ba490d9d8",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+      "stamp_sha256": "67bfc86a2d5b7178433241a146514e093ce6896ff568dbb048b8765cfa8ec8a0",
+      "tool_version": "2.1.296 (Claude Code)"
+    },
+    {
+      "bundle": "editions/2026-10/claude-code/claude-haiku-5-5/orgsync/rep1",
+      "revision": "14f21dce0b8db594001ea368ad7ce3fe2edd6090",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "8768731a1a37efb4e0fc76e27bf52f1ad3f22ae8",
+      "stamp_sha256": "e4e69b2cf82f59cd64f8d24a72571b182b7677ff6e94fbad4c137bb512cab5b5",
+      "tool_version": "2.1.296 (Claude Code)"
+    },
+    {
+      "bundle": "editions/2026-10/claude-code/claude-haiku-5-5/orgsync/rep2",
+      "revision": "849c8cc561919c57b23cccc14e92985ba490d9d8",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+      "stamp_sha256": "43d036357bffad990923510a14ff0ca50f9cd75116701cc24723ff0ea3e9ebab",
+      "tool_version": "2.1.296 (Claude Code)"
+    },
+    {
+      "bundle": "editions/2026-10/claude-code/claude-haiku-5-5/orgsync/rep3",
+      "revision": "849c8cc561919c57b23cccc14e92985ba490d9d8",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+      "stamp_sha256": "c45e2aa794cc997b994a7e0d6616d720f9f93aaa017d7bb60a70d49e77cd8ee2",
+      "tool_version": "2.1.296 (Claude Code)"
+    },
+    {
+      "bundle": "editions/2026-10/claude-code/claude-opus-5-5/orgsync/rep1",
+      "revision": "14f21dce0b8db594001ea368ad7ce3fe2edd6090",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "8768731a1a37efb4e0fc76e27bf52f1ad3f22ae8",
+      "stamp_sha256": "fe0486c3bb339d67b73bf3c38e94ad259587d196dd603fb8f878ea7b4483cc33",
+      "tool_version": "2.1.296 (Claude Code)"
+    },
+    {
+      "bundle": "editions/2026-10/claude-code/claude-opus-5-5/orgsync/rep2",
+      "revision": "849c8cc561919c57b23cccc14e92985ba490d9d8",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+      "stamp_sha256": "fbb41a27b0d5924ebf8a93d27da9522242d7abf8298e59f427f9e4f1ea694f7f",
+      "tool_version": "2.1.296 (Claude Code)"
+    },
+    {
+      "bundle": "editions/2026-10/claude-code/claude-opus-5-5/orgsync/rep3",
+      "revision": "849c8cc561919c57b23cccc14e92985ba490d9d8",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+      "stamp_sha256": "63f9d4e894c0261014e883540e5d61a0fbbbc6833fcb1b501d5d4474c14f1833",
+      "tool_version": "2.1.296 (Claude Code)"
+    },
+    {
+      "bundle": "editions/2026-10/claude-code/claude-sonnet-5-5/orgsync/rep1",
+      "revision": "14f21dce0b8db594001ea368ad7ce3fe2edd6090",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "8768731a1a37efb4e0fc76e27bf52f1ad3f22ae8",
+      "stamp_sha256": "1133ca9032fb289495f2fcf67f204ef50bbfa0d3617265c9fa4220af6ef2df2e",
+      "tool_version": "2.1.296 (Claude Code)"
+    },
+    {
+      "bundle": "editions/2026-10/claude-code/claude-sonnet-5-5/orgsync/rep2",
+      "revision": "849c8cc561919c57b23cccc14e92985ba490d9d8",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+      "stamp_sha256": "50dc4f94c6e207399d5076b549b848d98ffbeb0bdb9b82325263e2deee199a0d",
+      "tool_version": "2.1.296 (Claude Code)"
+    },
+    {
+      "bundle": "editions/2026-10/claude-code/claude-sonnet-5-5/orgsync/rep3",
+      "revision": "849c8cc561919c57b23cccc14e92985ba490d9d8",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+      "stamp_sha256": "83625df138dc64e749afc1c012edcfc8395cd69a304789360d707baf622fbde2",
+      "tool_version": "2.1.296 (Claude Code)"
+    },
+    {
+      "bundle": "editions/2026-10/codex/gpt-6-astra/orgsync/rep1",
+      "revision": "ec9574f7de40d07e81d093d6fd4eabc99f79cf93",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "4294038ce47cf3e2ed17e65c8d9119e56bf30319",
+      "stamp_sha256": "f4a6985d440db34ab71bea2a09edef110aa34418ffac962967ebb989eddec2fe",
+      "tool_version": "codex-cli 0.160.0"
+    },
+    {
+      "bundle": "editions/2026-10/codex/gpt-6-astra/orgsync/rep2",
+      "revision": "849c8cc561919c57b23cccc14e92985ba490d9d8",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+      "stamp_sha256": "aec058b29f5c0d2315b9136f9c0e65474721ca0ac691affec4e2713ca1e3b227",
+      "tool_version": "codex-cli 0.160.0"
+    },
+    {
+      "bundle": "editions/2026-10/codex/gpt-6-astra/orgsync/rep3",
+      "revision": "849c8cc561919c57b23cccc14e92985ba490d9d8",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+      "stamp_sha256": "ecbe27cb48722a68477e8335ad50cc367e393db7a1f032bf119baab4661cdf2d",
+      "tool_version": "codex-cli 0.160.0"
+    },
+    {
+      "bundle": "editions/2026-10/codex/gpt-6-luna/orgsync/rep1",
+      "revision": "ec9574f7de40d07e81d093d6fd4eabc99f79cf93",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "4294038ce47cf3e2ed17e65c8d9119e56bf30319",
+      "stamp_sha256": "1d947f0f35d8c7f53e736d7cf5a1ff84d9a3a91dca2ca3aca7765ad37af107cd",
+      "tool_version": "codex-cli 0.160.0"
+    },
+    {
+      "bundle": "editions/2026-10/codex/gpt-6-luna/orgsync/rep2",
+      "revision": "849c8cc561919c57b23cccc14e92985ba490d9d8",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+      "stamp_sha256": "c27566ca6b4a66e03ca8f76c0a6738c2298c80f3903bc367290f3df49bbfc490",
+      "tool_version": "codex-cli 0.160.0"
+    },
+    {
+      "bundle": "editions/2026-10/codex/gpt-6-luna/orgsync/rep3",
+      "revision": "849c8cc561919c57b23cccc14e92985ba490d9d8",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+      "stamp_sha256": "ea241504f72ffdf7aa1debb6356b4cf644d070718dde8169667b2d3a30b62a18",
+      "tool_version": "codex-cli 0.160.0"
+    },
+    {
+      "bundle": "editions/2026-10/codex/gpt-6.1-sol/orgsync/rep1",
+      "revision": "ec9574f7de40d07e81d093d6fd4eabc99f79cf93",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "4294038ce47cf3e2ed17e65c8d9119e56bf30319",
+      "stamp_sha256": "b55122db717dfe636f1dfe207e7fabdbf51629ab774b98ba50ee2059d2436870",
+      "tool_version": "codex-cli 0.160.0"
+    },
+    {
+      "bundle": "editions/2026-10/codex/gpt-6.1-sol/orgsync/rep2",
+      "revision": "849c8cc561919c57b23cccc14e92985ba490d9d8",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+      "stamp_sha256": "e0fccda7e4559754378d8c848c6a976753edad738cb9273218139c9e5d2d4df3",
+      "tool_version": "codex-cli 0.160.0"
+    },
+    {
+      "bundle": "editions/2026-10/codex/gpt-6.1-sol/orgsync/rep3",
+      "revision": "849c8cc561919c57b23cccc14e92985ba490d9d8",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+      "stamp_sha256": "e056471baec9db325a27b679833a0412b5cf19973895418b0e604131243f7788",
+      "tool_version": "codex-cli 0.160.0"
+    },
+    {
+      "bundle": "editions/2026-10/muse/muse-spark-1.3/orgsync/rep1",
+      "revision": "ec9574f7de40d07e81d093d6fd4eabc99f79cf93",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "4294038ce47cf3e2ed17e65c8d9119e56bf30319",
+      "stamp_sha256": "2bdf9d23c35f30ce14194a73e86549f38e72c2b6a52eebb271fe2fd2081115a1",
+      "tool_version": "Muse Code 1.4.6 (1.4.6-R6000.1)"
+    },
+    {
+      "bundle": "editions/2026-10/muse/muse-spark-1.3/orgsync/rep2",
+      "revision": "849c8cc561919c57b23cccc14e92985ba490d9d8",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+      "stamp_sha256": "ca5c93aa6f2748c8692f459cebde42e6509b4e9d087f548381fe9c9231d56b0c",
+      "tool_version": "Muse Code 1.4.6 (1.4.6-R6000.1)"
+    },
+    {
+      "bundle": "editions/2026-10/muse/muse-spark-1.3/orgsync/rep3",
+      "revision": "849c8cc561919c57b23cccc14e92985ba490d9d8",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+      "stamp_sha256": "3d0fadb4686e60a7d86371a694c62e025d5a56bb32bbfdc9d1d966cf383ee195",
+      "tool_version": "Muse Code 1.4.6 (1.4.6-R6000.1)"
+    },
+    {
+      "bundle": "editions/2026-10/opencode/glm-5.3-flash/orgsync/rep1",
+      "revision": "66bd8ecc5e0af404121c8f4f68a895de43cc0728",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "501ed64e1bbba98d825f4fb40dd467751d3d7a22",
+      "stamp_sha256": "f1f7bd2e96f693514f22f7db7cfe37cc0d373f076c5459a147f6cfd5bea8ee5a",
+      "tool_version": "1.18.34"
+    },
+    {
+      "bundle": "editions/2026-10/opencode/glm-5.3-flash/orgsync/rep2",
+      "revision": "66bd8ecc5e0af404121c8f4f68a895de43cc0728",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "501ed64e1bbba98d825f4fb40dd467751d3d7a22",
+      "stamp_sha256": "9bb3b452470218ab6e06f6d6acdbcd1918019e7f5363b37e71ff5696a707dcb6",
+      "tool_version": "1.18.34"
+    },
+    {
+      "bundle": "editions/2026-10/opencode/glm-5.3-flash/orgsync/rep3",
+      "revision": "66bd8ecc5e0af404121c8f4f68a895de43cc0728",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "501ed64e1bbba98d825f4fb40dd467751d3d7a22",
+      "stamp_sha256": "01c1d9dd1a19361ec6df9b72c50cc0844d5168d799fde861d2c2513c0f6ac2d0",
+      "tool_version": "1.18.34"
+    },
+    {
+      "bundle": "editions/2026-10/opencode/glm-5.3/orgsync/rep1",
+      "revision": "ec9574f7de40d07e81d093d6fd4eabc99f79cf93",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "4294038ce47cf3e2ed17e65c8d9119e56bf30319",
+      "stamp_sha256": "7636871ba6cea8f8d85347fd225bfbf7c68adfd66179c2d5725651410cc4ee12",
+      "tool_version": "1.18.34"
+    },
+    {
+      "bundle": "editions/2026-10/opencode/glm-5.3/orgsync/rep2",
+      "revision": "849c8cc561919c57b23cccc14e92985ba490d9d8",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+      "stamp_sha256": "9a2b9c96b0fe19bf72fe4ca79bcbe4b4f3fb3799a85ae18390886242a956ccbe",
+      "tool_version": "1.18.34"
+    },
+    {
+      "bundle": "editions/2026-10/opencode/glm-5.3/orgsync/rep3",
+      "revision": "849c8cc561919c57b23cccc14e92985ba490d9d8",
+      "revision_source": "editions/2026-10/REPORT.md, Runs and harness heads; commit not captured in stamp",
+      "run_sh_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+      "stamp_sha256": "5559deeff4442cf93f3533d80ee7db7db43116164342167a6fa2a03c9f1434d3",
+      "tool_version": "1.18.34"
+    }
+  ],
+  "revisions": {
+    "14f21dce0b8db594001ea368ad7ce3fe2edd6090": {
+      "absent": [
+        "edition_report.py",
+        "errata.py",
+        "preflight_http.py"
+      ],
+      "aliases": [
+        "14f21dc",
+        "14f21dce0b8db594001ea368ad7ce3fe2edd6090"
+      ],
+      "files": {
+        "TIER_PIN": {
+          "blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "sha256": "b14a1094090aaa739adb43e32f6cfc04df15bbfac95aea879b3862c5dbbf06cd",
+          "source_blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "transforms": []
+        },
+        "acceptance_cronspec.py": {
+          "blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "sha256": "a847b421cf8234cd953aaefe264ed72745ef123f4c43abaa24decca746e2e5a7",
+          "source_blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "transforms": []
+        },
+        "acceptance_orgsync.py": {
+          "blob": "dac5bb517e3495f3cdf1fa43a566d24acb2a893f",
+          "sha256": "b948f904bfd72ffcd8fedd30230182df3133d27a9972c6fc2c6af35ca5196a74",
+          "source_blob": "dac5bb517e3495f3cdf1fa43a566d24acb2a893f",
+          "transforms": []
+        },
+        "acceptance_test.py": {
+          "blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "sha256": "f07718acdcc279b349e7393144a79cbf7f1e62a88f089c10288cfe05e84e5b53",
+          "source_blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "transforms": []
+        },
+        "aggregate.py": {
+          "blob": "1d6aaace7e111b0599009f5e1735105ad2f3b602",
+          "sha256": "c17b0c14797247fcd6038cb23fca46e91d33776e850429e7739cbb81147e1786",
+          "source_blob": "1d6aaace7e111b0599009f5e1735105ad2f3b602",
+          "transforms": []
+        },
+        "batch.sh": {
+          "blob": "8dfa49fdf11da96186f552d3b6093257d4e2f455",
+          "sha256": "2612c9b22b35e0e681e97a94f4fae9c9b14bb09d7530a38929d53a09bb0e122e",
+          "source_blob": "8dfa49fdf11da96186f552d3b6093257d4e2f455",
+          "transforms": []
+        },
+        "calibration/orgsync.cleared": {
+          "blob": "7b6a9d197fe2d6702a18af910ce09eea2e919910",
+          "sha256": "9750bb104337aa7b541c5516b3b5695de2e7d73fe58e7034e2a4f0b842ef279d",
+          "source_blob": "7b6a9d197fe2d6702a18af910ce09eea2e919910",
+          "transforms": []
+        },
+        "check-calibration-gate.sh": {
+          "blob": "3cc32ee0b980a088371b3147ff4ab2e8caa223c7",
+          "sha256": "75dad133b2ed838112fe968bfddfbee86e740724ec8572ccec7a62ab46cebb26",
+          "source_blob": "3cc32ee0b980a088371b3147ff4ab2e8caa223c7",
+          "transforms": []
+        },
+        "control/test_harness.py": {
+          "blob": "6289e82de0cf164b7b0f8609a58043af538b99c7",
+          "sha256": "6bd78d7f8a205421021ca13043721b8f9fe9d318b7a182b8e2bef09046453ae1",
+          "source_blob": "6289e82de0cf164b7b0f8609a58043af538b99c7",
+          "transforms": []
+        },
+        "design/orgsync/CONTROLS.md": {
+          "blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "sha256": "d4206322e35c11b83b1c56900a70abd5607911cb60a6573ec5121387967e9f7b",
+          "source_blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "transforms": []
+        },
+        "design/orgsync/FIXTURES.md": {
+          "blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "sha256": "c03595a92ec80b36c972523b9faffa7fab065517899161a6513caa9756b0b911",
+          "source_blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "transforms": []
+        },
+        "design/orgsync/JUDGE_SPEC.md": {
+          "blob": "4f0cb4beb04480d787f5d1bcc3c60c6608c9621a",
+          "sha256": "a03c23f610cb18750eb09f90a01414dcbda35d3d27fd63f1923b9e18fddddc5b",
+          "source_blob": "4f0cb4beb04480d787f5d1bcc3c60c6608c9621a",
+          "transforms": []
+        },
+        "design/orgsync/README-REVEALED.md": {
+          "blob": "0540efcea5eebaae84277640ca00146bf46ec506",
+          "sha256": "eb92afbcf48648a8803f3d1080cd965fe1bc31e250ea9f363b97b20a9026a53a",
+          "source_blob": "0540efcea5eebaae84277640ca00146bf46ec506",
+          "transforms": []
+        },
+        "design/orgsync/controls/control_check.py": {
+          "blob": "ab882fce9dfb22ec358682d9ce47c96d592883f1",
+          "sha256": "784ab0592e0c012fcfcccfd57b981fa8d31080d9dfb43913aefb1425be4b6b97",
+          "source_blob": "ab882fce9dfb22ec358682d9ce47c96d592883f1",
+          "transforms": []
+        },
+        "design/orgsync/controls/g_writes_nothing.py": {
+          "blob": "aeaacf7a19170328421dc4d77836eb2ef873dea0",
+          "sha256": "1e4987e33713fd9f3a7436f57f01e0d48230706f388e1025c0954dc9a7f8648f",
+          "source_blob": "aeaacf7a19170328421dc4d77836eb2ef873dea0",
+          "transforms": []
+        },
+        "design/orgsync/controls/w1_naive_read.py": {
+          "blob": "20c0e09703e641a4715c1c10b437627de3ff9b2d",
+          "sha256": "8d9ec0a0c10b5f86f13a9928aa7ee7cac7dc858dd741d686738b59de50e25ec9",
+          "source_blob": "20c0e09703e641a4715c1c10b437627de3ff9b2d",
+          "transforms": []
+        },
+        "design/orgsync/controls/w2_non_idempotent.py": {
+          "blob": "3fdf7a1b4473338f04d7adb1bded2cee720457fb",
+          "sha256": "1e58444cd797e6b12817ac872ab31fe68ac1725b5657ea77422ff9a7768b6f33",
+          "source_blob": "3fdf7a1b4473338f04d7adb1bded2cee720457fb",
+          "transforms": []
+        },
+        "design/orgsync/controls/w3_confident_finisher.py": {
+          "blob": "38ce448117c0638a29df304960b5c30128f12d8e",
+          "sha256": "cc1e163ce3300b262732a438cc0c7f1c7431d22cb1fadf76d70163fc2d06c692",
+          "source_blob": "38ce448117c0638a29df304960b5c30128f12d8e",
+          "transforms": []
+        },
+        "design/orgsync/controls/w3_test_orgsync.py": {
+          "blob": "a38880e4174862d36e0dd1250dae229a6001e6d2",
+          "sha256": "3ad91e24268c1f47a9e4251c9e2d529ca81a8da16d2f43dc18df1f38cc5bda59",
+          "source_blob": "a38880e4174862d36e0dd1250dae229a6001e6d2",
+          "transforms": []
+        },
+        "design/orgsync/reference/orgsync_reference.py": {
+          "blob": "ddec31aa9e5b8010cf67269111a3c30ce54afa00",
+          "sha256": "fd87f7ba5c1c56273a11b23ba59a2947ccab743dd4948a3cd6c3063d03fecd09",
+          "source_blob": "ddec31aa9e5b8010cf67269111a3c30ce54afa00",
+          "transforms": []
+        },
+        "edition.sh": {
+          "blob": "7bacc368ac14e092dbda2b81cb116c01c95d70c9",
+          "sha256": "ea2965f0470eed1d6d92a9762240a54e8cb9c80872f695d31b97e211cf0a9751",
+          "source_blob": "7bacc368ac14e092dbda2b81cb116c01c95d70c9",
+          "transforms": []
+        },
+        "editions/2026-10/MANIFEST.json": {
+          "blob": "bf30a15aa112869e60455a88733c337eacf37657",
+          "sha256": "963ed12f74f911a07d6dc9563457484c5c855d3f3152fc1e83a6c86474e30de3",
+          "source_blob": "bf30a15aa112869e60455a88733c337eacf37657",
+          "transforms": []
+        },
+        "editions/2026-10/TIER_PIN": {
+          "blob": "25a6b9f27d9b63e7b8adfb1710c2354d2ed4b390",
+          "sha256": "d058073c035a98984adcd0be9ff04c6ef07569d14e8300247e451c5c9b2c09ae",
+          "source_blob": "25a6b9f27d9b63e7b8adfb1710c2354d2ed4b390",
+          "transforms": []
+        },
+        "evidence.py": {
+          "blob": "8b8ef5e22d2f6d1a5ef566f9f395427fd8450cb4",
+          "sha256": "1a6cb457e1160e48959005f66a5d5139be38ca8206e4ee66c05800cb3226ac08",
+          "source_blob": "8b8ef5e22d2f6d1a5ef566f9f395427fd8450cb4",
+          "transforms": []
+        },
+        "export.py": {
+          "blob": "e669e9239fa84633bc48a3f91ad69db17f7a1190",
+          "sha256": "0980a72cd8e9a3a24c75fb8652caa83cfa2d548c1382f2e3a1b25d804d016d3a",
+          "source_blob": "e669e9239fa84633bc48a3f91ad69db17f7a1190",
+          "transforms": []
+        },
+        "fixtures/orgsync/server.py": {
+          "blob": "93a8b7629b3671d9f12f2da6451709aca220ba3a",
+          "sha256": "8d23417f6160db7055ce835f06833a9cc5bee4235151790afa08389ea2eebfec",
+          "source_blob": "93a8b7629b3671d9f12f2da6451709aca220ba3a",
+          "transforms": []
+        },
+        "master_table.py": {
+          "blob": "45bceda6c8f85d6a44bd7da9cfbce07ad5768358",
+          "sha256": "96709e9f5c79958b3959cd8afc6be9688a5690e9894c9fb5deda8283764c50c2",
+          "transforms": [
+            "sanitize-archive-v1"
+          ]
+        },
+        "preflight.sh": {
+          "blob": "9191982c5df5b031d312a0e92ae4d963383efbbd",
+          "sha256": "7cc5c7ebeea76710881818f6a28909acf6294308e34fd8b3d748e1c4410d1fb4",
+          "source_blob": "9191982c5df5b031d312a0e92ae4d963383efbbd",
+          "transforms": []
+        },
+        "preflight_check.py": {
+          "blob": "e150c1153a1255263d1b2a1f039b6b4d783ab013",
+          "sha256": "4e6c93672b8aedc459d5462040e4ff977d453eefc97688faeebf8761cbede932",
+          "source_blob": "e150c1153a1255263d1b2a1f039b6b4d783ab013",
+          "transforms": []
+        },
+        "prices.yaml": {
+          "blob": "e0e09f708c4077d558d266e167acbabf2df60645",
+          "sha256": "b3aa945f75af6573c29a3f47610f6f3460afa0665188b679dd2ea261265c9a15",
+          "source_blob": "e0e09f708c4077d558d266e167acbabf2df60645",
+          "transforms": []
+        },
+        "prompts/baseline.md": {
+          "blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "sha256": "6927e499c8ee25996cc6669f432bec98ab3f3d747d41bb6b0142101e058649ec",
+          "source_blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "transforms": []
+        },
+        "prompts/cronspec.md": {
+          "blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "sha256": "d6b188dca51a2842e99f35b373c414372dc2d3f75fea60d20e1863a4b4a32274",
+          "source_blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "transforms": []
+        },
+        "prompts/orgsync.md": {
+          "blob": "37b91d71a2e2bc3445831a5d2204dde310abf74a",
+          "sha256": "94950b00fd82cc86a8c98a0793149b5f9c13e205dedd1ea533470387110ba408",
+          "source_blob": "37b91d71a2e2bc3445831a5d2204dde310abf74a",
+          "transforms": []
+        },
+        "redact.py": {
+          "blob": "8d0814fc08a717acbbcc7346dd3de390a8c79c10",
+          "sha256": "2bd08374ab85cae077de3947aa202b57c147de0c6bb117a7a6a33634b94ab4f2",
+          "transforms": [
+            "split-scan-markers-v1"
+          ]
+        },
+        "run.sh": {
+          "blob": "8768731a1a37efb4e0fc76e27bf52f1ad3f22ae8",
+          "sha256": "278522d63b1c9b94c65029f37668782e66fc394c1c42a67fed2c9b6ceb5416d3",
+          "source_blob": "8768731a1a37efb4e0fc76e27bf52f1ad3f22ae8",
+          "transforms": []
+        },
+        "run_audit.py": {
+          "blob": "fc2437ab08ff68e7daa4382453e8fed74aa12c1c",
+          "sha256": "b930c5417c44943c6f1f0726d0a624606e6a2d390202a18b0be650b0aecb2892",
+          "transforms": [
+            "split-scan-markers-v1"
+          ]
+        },
+        "score.py": {
+          "blob": "ea60b6552b3eadad2608698061824f7ad2d07d36",
+          "sha256": "768f41e53261c62bc8df34fcfc7034b15cb897d39989b0ba7f4ec505be5931d6",
+          "transforms": [
+            "sanitize-home-v1"
+          ]
+        },
+        "tasks/orgsync-skeleton/.gitignore": {
+          "blob": "7a60b85e148f80966a550e5ab6a762a907c69ca6",
+          "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+          "source_blob": "7a60b85e148f80966a550e5ab6a762a907c69ca6",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/README.md": {
+          "blob": "71ed60104db9de6f096e9b87db2719c8186e2afd",
+          "sha256": "5fabfc6c6f2f186e1dee9be989bec9b08269762cd570a13c3dd68a3bab1682c2",
+          "source_blob": "71ed60104db9de6f096e9b87db2719c8186e2afd",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/config.json": {
+          "blob": "4fbb0a7c349bfb511e6116c6fd603cad5c180aee",
+          "sha256": "3ef54bc49fd7181720d830a6479a80fe6cc52e84e113ff4f3517ac6a33eca802",
+          "source_blob": "4fbb0a7c349bfb511e6116c6fd603cad5c180aee",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/__init__.py": {
+          "blob": "035e2d57fe2e92b04a47d6ccd6d504e57149a00a",
+          "sha256": "eaf1a86caebfece9683a2caab0ea1cd1d2f54f29f06a0bc01581b9847f7cf8cc",
+          "source_blob": "035e2d57fe2e92b04a47d6ccd6d504e57149a00a",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/__main__.py": {
+          "blob": "433cafae2fcaf9a495f87ca674738774bc3beee0",
+          "sha256": "8c6ae1d5e4da8ba10506a9510944e22373df98e3df7446ecbf0500816aea78fd",
+          "source_blob": "433cafae2fcaf9a495f87ca674738774bc3beee0",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/config.py": {
+          "blob": "2e2329f7a9e4a303aa00c3e2d789c7a28b21e7eb",
+          "sha256": "dd2627e00c6fd9034b065a799180a17ecfe4eac9f377e210167e44361ca864c7",
+          "source_blob": "2e2329f7a9e4a303aa00c3e2d789c7a28b21e7eb",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/http_client.py": {
+          "blob": "cb37781a7a1da2a04de0f4564f70a958f45f1988",
+          "sha256": "d04cde8c96849104ad82d9ed11ba4c2e7dc9a4072b3df90fede78e30429f1b99",
+          "source_blob": "cb37781a7a1da2a04de0f4564f70a958f45f1988",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/models.py": {
+          "blob": "6e73fbc37a7b86112cfd1fc3e4861f8dc9fd996f",
+          "sha256": "8640c933738468f40985ac6dadecf0da570f763cc6298f55f98e94078633ca60",
+          "source_blob": "6e73fbc37a7b86112cfd1fc3e4861f8dc9fd996f",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/sync.py": {
+          "blob": "985bffa3a9e539d518467dca3380b7983309f018",
+          "sha256": "7a81e701849a4224d29e48560c8bcb1324a2afbf9e90e13724990f9bc2d41ce9",
+          "source_blob": "985bffa3a9e539d518467dca3380b7983309f018",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_cli.py": {
+          "blob": "28a3f35ac6808b5c8ab5bc33926afeee69821d8a",
+          "sha256": "448ddcbd63fe6906e6b11ea40dca952e8cfdfb162e60377ec46b988966c47f62",
+          "source_blob": "28a3f35ac6808b5c8ab5bc33926afeee69821d8a",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_config.py": {
+          "blob": "738eace565b89e4006c619a3580f883219babe69",
+          "sha256": "a5b6a81763d88ebd810a3f210eedc1eed2169bda9e0e34c5a118c043b59e341d",
+          "source_blob": "738eace565b89e4006c619a3580f883219babe69",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_http_client.py": {
+          "blob": "900ac0968e5ce970119983e1608a3395b01fdb45",
+          "sha256": "0ca33a24aa61aa763ede5af6eb0fe32abb4aff6c87c063459919ec252dd6aafd",
+          "source_blob": "900ac0968e5ce970119983e1608a3395b01fdb45",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_models.py": {
+          "blob": "6f033024df3c551275a3b0756c2330dd7f553ffa",
+          "sha256": "ad04dd555f7367a9de5a02820467b34850dc9d2a8040ac639567755ec4d5d453",
+          "source_blob": "6f033024df3c551275a3b0756c2330dd7f553ffa",
+          "transforms": []
+        },
+        "token_evidence.py": {
+          "blob": "efbb198ca1ebc9552d821a943ab65073b36c85a9",
+          "sha256": "8e658ff3108a13882f78ab3cd45212394af95f9c877c9e3b4c189e4ddd88a81c",
+          "source_blob": "efbb198ca1ebc9552d821a943ab65073b36c85a9",
+          "transforms": []
+        },
+        "verify.py": {
+          "blob": "a33e35ad910ee989960887e5085eb5c7288ecee4",
+          "sha256": "4bca9a8fdcf08de7d16ee796d69fc310864201bf30b28e9bd7f335f92a75cd0c",
+          "source_blob": "a33e35ad910ee989960887e5085eb5c7288ecee4",
+          "transforms": []
+        }
+      }
+    },
+    "1ad7ea8196a619fb60124986ede05af557fb3a18": {
+      "absent": [
+        "errata.py"
+      ],
+      "aliases": [
+        "1ad7ea8196a619fb60124986ede05af557fb3a18"
+      ],
+      "files": {
+        "TIER_PIN": {
+          "blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "sha256": "b14a1094090aaa739adb43e32f6cfc04df15bbfac95aea879b3862c5dbbf06cd",
+          "source_blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "transforms": []
+        },
+        "acceptance_cronspec.py": {
+          "blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "sha256": "a847b421cf8234cd953aaefe264ed72745ef123f4c43abaa24decca746e2e5a7",
+          "source_blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "transforms": []
+        },
+        "acceptance_orgsync.py": {
+          "blob": "dac5bb517e3495f3cdf1fa43a566d24acb2a893f",
+          "sha256": "b948f904bfd72ffcd8fedd30230182df3133d27a9972c6fc2c6af35ca5196a74",
+          "source_blob": "dac5bb517e3495f3cdf1fa43a566d24acb2a893f",
+          "transforms": []
+        },
+        "acceptance_test.py": {
+          "blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "sha256": "f07718acdcc279b349e7393144a79cbf7f1e62a88f089c10288cfe05e84e5b53",
+          "source_blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "transforms": []
+        },
+        "aggregate.py": {
+          "blob": "1d6aaace7e111b0599009f5e1735105ad2f3b602",
+          "sha256": "c17b0c14797247fcd6038cb23fca46e91d33776e850429e7739cbb81147e1786",
+          "source_blob": "1d6aaace7e111b0599009f5e1735105ad2f3b602",
+          "transforms": []
+        },
+        "batch.sh": {
+          "blob": "5795aaa4a8fc1e01fbd59a60ec4230b450ad0b59",
+          "sha256": "25af0b35c699e82f37852dee19e75d0383781d3ebdb05503b7837efd9cfefcdd",
+          "source_blob": "5795aaa4a8fc1e01fbd59a60ec4230b450ad0b59",
+          "transforms": []
+        },
+        "calibration/orgsync.cleared": {
+          "blob": "7b6a9d197fe2d6702a18af910ce09eea2e919910",
+          "sha256": "9750bb104337aa7b541c5516b3b5695de2e7d73fe58e7034e2a4f0b842ef279d",
+          "source_blob": "7b6a9d197fe2d6702a18af910ce09eea2e919910",
+          "transforms": []
+        },
+        "check-calibration-gate.sh": {
+          "blob": "10c9443f105d72a5df21a9cfa60265adb16e17e4",
+          "sha256": "a9ab3ff00d13a3ad11290320313b337c1297b5797c23c40d011995f332ce7419",
+          "source_blob": "10c9443f105d72a5df21a9cfa60265adb16e17e4",
+          "transforms": []
+        },
+        "control/test_harness.py": {
+          "blob": "98d106aa33c7207a00dd9a9665c059563640fcff",
+          "sha256": "29c979e99b87eef6975d315d1c1c2d9138fa31afe04a98a1fb733e51a6625cd8",
+          "source_blob": "98d106aa33c7207a00dd9a9665c059563640fcff",
+          "transforms": []
+        },
+        "design/orgsync/CONTROLS.md": {
+          "blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "sha256": "d4206322e35c11b83b1c56900a70abd5607911cb60a6573ec5121387967e9f7b",
+          "source_blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "transforms": []
+        },
+        "design/orgsync/FIXTURES.md": {
+          "blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "sha256": "c03595a92ec80b36c972523b9faffa7fab065517899161a6513caa9756b0b911",
+          "source_blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "transforms": []
+        },
+        "design/orgsync/JUDGE_SPEC.md": {
+          "blob": "4f0cb4beb04480d787f5d1bcc3c60c6608c9621a",
+          "sha256": "a03c23f610cb18750eb09f90a01414dcbda35d3d27fd63f1923b9e18fddddc5b",
+          "source_blob": "4f0cb4beb04480d787f5d1bcc3c60c6608c9621a",
+          "transforms": []
+        },
+        "design/orgsync/README-REVEALED.md": {
+          "blob": "0540efcea5eebaae84277640ca00146bf46ec506",
+          "sha256": "eb92afbcf48648a8803f3d1080cd965fe1bc31e250ea9f363b97b20a9026a53a",
+          "source_blob": "0540efcea5eebaae84277640ca00146bf46ec506",
+          "transforms": []
+        },
+        "design/orgsync/controls/control_check.py": {
+          "blob": "ab882fce9dfb22ec358682d9ce47c96d592883f1",
+          "sha256": "784ab0592e0c012fcfcccfd57b981fa8d31080d9dfb43913aefb1425be4b6b97",
+          "source_blob": "ab882fce9dfb22ec358682d9ce47c96d592883f1",
+          "transforms": []
+        },
+        "design/orgsync/controls/g_writes_nothing.py": {
+          "blob": "aeaacf7a19170328421dc4d77836eb2ef873dea0",
+          "sha256": "1e4987e33713fd9f3a7436f57f01e0d48230706f388e1025c0954dc9a7f8648f",
+          "source_blob": "aeaacf7a19170328421dc4d77836eb2ef873dea0",
+          "transforms": []
+        },
+        "design/orgsync/controls/w1_naive_read.py": {
+          "blob": "20c0e09703e641a4715c1c10b437627de3ff9b2d",
+          "sha256": "8d9ec0a0c10b5f86f13a9928aa7ee7cac7dc858dd741d686738b59de50e25ec9",
+          "source_blob": "20c0e09703e641a4715c1c10b437627de3ff9b2d",
+          "transforms": []
+        },
+        "design/orgsync/controls/w2_non_idempotent.py": {
+          "blob": "3fdf7a1b4473338f04d7adb1bded2cee720457fb",
+          "sha256": "1e58444cd797e6b12817ac872ab31fe68ac1725b5657ea77422ff9a7768b6f33",
+          "source_blob": "3fdf7a1b4473338f04d7adb1bded2cee720457fb",
+          "transforms": []
+        },
+        "design/orgsync/controls/w3_confident_finisher.py": {
+          "blob": "38ce448117c0638a29df304960b5c30128f12d8e",
+          "sha256": "cc1e163ce3300b262732a438cc0c7f1c7431d22cb1fadf76d70163fc2d06c692",
+          "source_blob": "38ce448117c0638a29df304960b5c30128f12d8e",
+          "transforms": []
+        },
+        "design/orgsync/controls/w3_test_orgsync.py": {
+          "blob": "a38880e4174862d36e0dd1250dae229a6001e6d2",
+          "sha256": "3ad91e24268c1f47a9e4251c9e2d529ca81a8da16d2f43dc18df1f38cc5bda59",
+          "source_blob": "a38880e4174862d36e0dd1250dae229a6001e6d2",
+          "transforms": []
+        },
+        "design/orgsync/reference/orgsync_reference.py": {
+          "blob": "ddec31aa9e5b8010cf67269111a3c30ce54afa00",
+          "sha256": "fd87f7ba5c1c56273a11b23ba59a2947ccab743dd4948a3cd6c3063d03fecd09",
+          "source_blob": "ddec31aa9e5b8010cf67269111a3c30ce54afa00",
+          "transforms": []
+        },
+        "edition.sh": {
+          "blob": "961f165c42b205f0fc633cadc7078b3df055804c",
+          "sha256": "06a82a9ad9bda8a635324d540d3b8c4c07cc543d00223872efba94f1309485ab",
+          "source_blob": "961f165c42b205f0fc633cadc7078b3df055804c",
+          "transforms": []
+        },
+        "edition_report.py": {
+          "blob": "fd236a46cf6cc0cb74f05a35a046774533428a71",
+          "sha256": "8112d8180b5306148eced2009fad481c885104a2beb8f4cf1a541f4d60b77bc6",
+          "source_blob": "fd236a46cf6cc0cb74f05a35a046774533428a71",
+          "transforms": []
+        },
+        "editions/2026-10/MANIFEST.json": {
+          "blob": "cf3bcb419e8b59248208467a3f6fc7918c2be340",
+          "sha256": "34bc3cc22996fda9c80a9f7748b5940aeea1967e4ee0f6298c1482f168f2197d",
+          "source_blob": "cf3bcb419e8b59248208467a3f6fc7918c2be340",
+          "transforms": []
+        },
+        "editions/2026-10/TIER_PIN": {
+          "blob": "62e62defe7da9078a354be3aac654a8074225fbd",
+          "sha256": "0112101582337d65b5b0b229ffd6d7cdf961933898280001422945b7a3286cb7",
+          "source_blob": "62e62defe7da9078a354be3aac654a8074225fbd",
+          "transforms": []
+        },
+        "evidence.py": {
+          "blob": "8b8ef5e22d2f6d1a5ef566f9f395427fd8450cb4",
+          "sha256": "1a6cb457e1160e48959005f66a5d5139be38ca8206e4ee66c05800cb3226ac08",
+          "source_blob": "8b8ef5e22d2f6d1a5ef566f9f395427fd8450cb4",
+          "transforms": []
+        },
+        "export.py": {
+          "blob": "e669e9239fa84633bc48a3f91ad69db17f7a1190",
+          "sha256": "0980a72cd8e9a3a24c75fb8652caa83cfa2d548c1382f2e3a1b25d804d016d3a",
+          "source_blob": "e669e9239fa84633bc48a3f91ad69db17f7a1190",
+          "transforms": []
+        },
+        "fixtures/orgsync/server.py": {
+          "blob": "93a8b7629b3671d9f12f2da6451709aca220ba3a",
+          "sha256": "8d23417f6160db7055ce835f06833a9cc5bee4235151790afa08389ea2eebfec",
+          "source_blob": "93a8b7629b3671d9f12f2da6451709aca220ba3a",
+          "transforms": []
+        },
+        "master_table.py": {
+          "blob": "45bceda6c8f85d6a44bd7da9cfbce07ad5768358",
+          "sha256": "96709e9f5c79958b3959cd8afc6be9688a5690e9894c9fb5deda8283764c50c2",
+          "transforms": [
+            "sanitize-archive-v1"
+          ]
+        },
+        "preflight.sh": {
+          "blob": "0db68b1b0ea3c3f5ec0fccd3f6e11f90c930514f",
+          "sha256": "6550e80d9563f6197ac52da2b997cfe971938d52cf131f48e073971ba6bb41e2",
+          "source_blob": "0db68b1b0ea3c3f5ec0fccd3f6e11f90c930514f",
+          "transforms": []
+        },
+        "preflight_check.py": {
+          "blob": "49bb1d008a870b9551690e25f6f070b1df754393",
+          "sha256": "dfac8572aa5a361d7c2a8db7f49456310e022dd1c01df5a36d1872e9f8f3d7df",
+          "source_blob": "49bb1d008a870b9551690e25f6f070b1df754393",
+          "transforms": []
+        },
+        "preflight_http.py": {
+          "blob": "4f3b3573d641934254e563dca507d968194b0e78",
+          "sha256": "ec98ad06075627e1fabe11d7d04a117626a42ada48579514eecc80ae10c5ccb9",
+          "source_blob": "4f3b3573d641934254e563dca507d968194b0e78",
+          "transforms": []
+        },
+        "prices.yaml": {
+          "blob": "c191fcc8465247768abc25eade84cf4ee5f8bcf6",
+          "sha256": "41000ebf0545b934a0f6ac3541b909e49b4265ff9d0dee12ffd5dd557d4472c6",
+          "source_blob": "c191fcc8465247768abc25eade84cf4ee5f8bcf6",
+          "transforms": []
+        },
+        "prompts/baseline.md": {
+          "blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "sha256": "6927e499c8ee25996cc6669f432bec98ab3f3d747d41bb6b0142101e058649ec",
+          "source_blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "transforms": []
+        },
+        "prompts/cronspec.md": {
+          "blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "sha256": "d6b188dca51a2842e99f35b373c414372dc2d3f75fea60d20e1863a4b4a32274",
+          "source_blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "transforms": []
+        },
+        "prompts/orgsync.md": {
+          "blob": "37b91d71a2e2bc3445831a5d2204dde310abf74a",
+          "sha256": "94950b00fd82cc86a8c98a0793149b5f9c13e205dedd1ea533470387110ba408",
+          "source_blob": "37b91d71a2e2bc3445831a5d2204dde310abf74a",
+          "transforms": []
+        },
+        "redact.py": {
+          "blob": "8d0814fc08a717acbbcc7346dd3de390a8c79c10",
+          "sha256": "2bd08374ab85cae077de3947aa202b57c147de0c6bb117a7a6a33634b94ab4f2",
+          "transforms": [
+            "split-scan-markers-v1"
+          ]
+        },
+        "run.sh": {
+          "blob": "501ed64e1bbba98d825f4fb40dd467751d3d7a22",
+          "sha256": "f559cb61a03a3c7319cbefec1c3f3d9fe6d24624aa89b6dc5d8f28283bd9ef6a",
+          "source_blob": "501ed64e1bbba98d825f4fb40dd467751d3d7a22",
+          "transforms": []
+        },
+        "run_audit.py": {
+          "blob": "b50b7a41cb5022c82a0ef7e77c603d86ca7b8c5a",
+          "sha256": "65cad8b63260a39c30d7c6380edcd3569c0b6b3f29747f6bb1220462505e9c7d",
+          "transforms": [
+            "split-scan-markers-v1"
+          ]
+        },
+        "score.py": {
+          "blob": "ea60b6552b3eadad2608698061824f7ad2d07d36",
+          "sha256": "768f41e53261c62bc8df34fcfc7034b15cb897d39989b0ba7f4ec505be5931d6",
+          "transforms": [
+            "sanitize-home-v1"
+          ]
+        },
+        "tasks/orgsync-skeleton/.gitignore": {
+          "blob": "7a60b85e148f80966a550e5ab6a762a907c69ca6",
+          "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+          "source_blob": "7a60b85e148f80966a550e5ab6a762a907c69ca6",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/README.md": {
+          "blob": "71ed60104db9de6f096e9b87db2719c8186e2afd",
+          "sha256": "5fabfc6c6f2f186e1dee9be989bec9b08269762cd570a13c3dd68a3bab1682c2",
+          "source_blob": "71ed60104db9de6f096e9b87db2719c8186e2afd",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/config.json": {
+          "blob": "4fbb0a7c349bfb511e6116c6fd603cad5c180aee",
+          "sha256": "3ef54bc49fd7181720d830a6479a80fe6cc52e84e113ff4f3517ac6a33eca802",
+          "source_blob": "4fbb0a7c349bfb511e6116c6fd603cad5c180aee",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/__init__.py": {
+          "blob": "035e2d57fe2e92b04a47d6ccd6d504e57149a00a",
+          "sha256": "eaf1a86caebfece9683a2caab0ea1cd1d2f54f29f06a0bc01581b9847f7cf8cc",
+          "source_blob": "035e2d57fe2e92b04a47d6ccd6d504e57149a00a",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/__main__.py": {
+          "blob": "433cafae2fcaf9a495f87ca674738774bc3beee0",
+          "sha256": "8c6ae1d5e4da8ba10506a9510944e22373df98e3df7446ecbf0500816aea78fd",
+          "source_blob": "433cafae2fcaf9a495f87ca674738774bc3beee0",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/config.py": {
+          "blob": "2e2329f7a9e4a303aa00c3e2d789c7a28b21e7eb",
+          "sha256": "dd2627e00c6fd9034b065a799180a17ecfe4eac9f377e210167e44361ca864c7",
+          "source_blob": "2e2329f7a9e4a303aa00c3e2d789c7a28b21e7eb",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/http_client.py": {
+          "blob": "cb37781a7a1da2a04de0f4564f70a958f45f1988",
+          "sha256": "d04cde8c96849104ad82d9ed11ba4c2e7dc9a4072b3df90fede78e30429f1b99",
+          "source_blob": "cb37781a7a1da2a04de0f4564f70a958f45f1988",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/models.py": {
+          "blob": "6e73fbc37a7b86112cfd1fc3e4861f8dc9fd996f",
+          "sha256": "8640c933738468f40985ac6dadecf0da570f763cc6298f55f98e94078633ca60",
+          "source_blob": "6e73fbc37a7b86112cfd1fc3e4861f8dc9fd996f",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/sync.py": {
+          "blob": "985bffa3a9e539d518467dca3380b7983309f018",
+          "sha256": "7a81e701849a4224d29e48560c8bcb1324a2afbf9e90e13724990f9bc2d41ce9",
+          "source_blob": "985bffa3a9e539d518467dca3380b7983309f018",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_cli.py": {
+          "blob": "28a3f35ac6808b5c8ab5bc33926afeee69821d8a",
+          "sha256": "448ddcbd63fe6906e6b11ea40dca952e8cfdfb162e60377ec46b988966c47f62",
+          "source_blob": "28a3f35ac6808b5c8ab5bc33926afeee69821d8a",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_config.py": {
+          "blob": "738eace565b89e4006c619a3580f883219babe69",
+          "sha256": "a5b6a81763d88ebd810a3f210eedc1eed2169bda9e0e34c5a118c043b59e341d",
+          "source_blob": "738eace565b89e4006c619a3580f883219babe69",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_http_client.py": {
+          "blob": "900ac0968e5ce970119983e1608a3395b01fdb45",
+          "sha256": "0ca33a24aa61aa763ede5af6eb0fe32abb4aff6c87c063459919ec252dd6aafd",
+          "source_blob": "900ac0968e5ce970119983e1608a3395b01fdb45",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_models.py": {
+          "blob": "6f033024df3c551275a3b0756c2330dd7f553ffa",
+          "sha256": "ad04dd555f7367a9de5a02820467b34850dc9d2a8040ac639567755ec4d5d453",
+          "source_blob": "6f033024df3c551275a3b0756c2330dd7f553ffa",
+          "transforms": []
+        },
+        "token_evidence.py": {
+          "blob": "efbb198ca1ebc9552d821a943ab65073b36c85a9",
+          "sha256": "8e658ff3108a13882f78ab3cd45212394af95f9c877c9e3b4c189e4ddd88a81c",
+          "source_blob": "efbb198ca1ebc9552d821a943ab65073b36c85a9",
+          "transforms": []
+        },
+        "verify.py": {
+          "blob": "f80987288a29790d74209f6fb44344fa81b8fc42",
+          "sha256": "3b3a93f8a1b0ef8e9fc77469eecd41b2b306c4a0e2e8c78e392f29cb61741b4e",
+          "source_blob": "f80987288a29790d74209f6fb44344fa81b8fc42",
+          "transforms": []
+        }
+      }
+    },
+    "2d1a87b2217b65fd219b3139ba0fc68a2b8a7d1a": {
+      "absent": [
+        "edition_report.py",
+        "errata.py"
+      ],
+      "aliases": [
+        "2d1a87b2217b65fd219b3139ba0fc68a2b8a7d1a"
+      ],
+      "files": {
+        "TIER_PIN": {
+          "blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "sha256": "b14a1094090aaa739adb43e32f6cfc04df15bbfac95aea879b3862c5dbbf06cd",
+          "source_blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "transforms": []
+        },
+        "acceptance_cronspec.py": {
+          "blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "sha256": "a847b421cf8234cd953aaefe264ed72745ef123f4c43abaa24decca746e2e5a7",
+          "source_blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "transforms": []
+        },
+        "acceptance_orgsync.py": {
+          "blob": "dac5bb517e3495f3cdf1fa43a566d24acb2a893f",
+          "sha256": "b948f904bfd72ffcd8fedd30230182df3133d27a9972c6fc2c6af35ca5196a74",
+          "source_blob": "dac5bb517e3495f3cdf1fa43a566d24acb2a893f",
+          "transforms": []
+        },
+        "acceptance_test.py": {
+          "blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "sha256": "f07718acdcc279b349e7393144a79cbf7f1e62a88f089c10288cfe05e84e5b53",
+          "source_blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "transforms": []
+        },
+        "aggregate.py": {
+          "blob": "1d6aaace7e111b0599009f5e1735105ad2f3b602",
+          "sha256": "c17b0c14797247fcd6038cb23fca46e91d33776e850429e7739cbb81147e1786",
+          "source_blob": "1d6aaace7e111b0599009f5e1735105ad2f3b602",
+          "transforms": []
+        },
+        "batch.sh": {
+          "blob": "d96e9f80cb6862d74fc1076ce4b9248149bbb338",
+          "sha256": "3f6dd6cb0e230c8ce089a5b485738b053b653f4f227b3be4986de78b3be1f047",
+          "source_blob": "d96e9f80cb6862d74fc1076ce4b9248149bbb338",
+          "transforms": []
+        },
+        "calibration/orgsync.cleared": {
+          "blob": "7b6a9d197fe2d6702a18af910ce09eea2e919910",
+          "sha256": "9750bb104337aa7b541c5516b3b5695de2e7d73fe58e7034e2a4f0b842ef279d",
+          "source_blob": "7b6a9d197fe2d6702a18af910ce09eea2e919910",
+          "transforms": []
+        },
+        "check-calibration-gate.sh": {
+          "blob": "3cc32ee0b980a088371b3147ff4ab2e8caa223c7",
+          "sha256": "75dad133b2ed838112fe968bfddfbee86e740724ec8572ccec7a62ab46cebb26",
+          "source_blob": "3cc32ee0b980a088371b3147ff4ab2e8caa223c7",
+          "transforms": []
+        },
+        "control/test_harness.py": {
+          "blob": "285657737901302035681c12490f0e83ebe98ddc",
+          "sha256": "79a85bdb6357abb3db124aae661d932a014958af02a5493e62843a3b31a21a6c",
+          "source_blob": "285657737901302035681c12490f0e83ebe98ddc",
+          "transforms": []
+        },
+        "design/orgsync/CONTROLS.md": {
+          "blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "sha256": "d4206322e35c11b83b1c56900a70abd5607911cb60a6573ec5121387967e9f7b",
+          "source_blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "transforms": []
+        },
+        "design/orgsync/FIXTURES.md": {
+          "blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "sha256": "c03595a92ec80b36c972523b9faffa7fab065517899161a6513caa9756b0b911",
+          "source_blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "transforms": []
+        },
+        "design/orgsync/JUDGE_SPEC.md": {
+          "blob": "4f0cb4beb04480d787f5d1bcc3c60c6608c9621a",
+          "sha256": "a03c23f610cb18750eb09f90a01414dcbda35d3d27fd63f1923b9e18fddddc5b",
+          "source_blob": "4f0cb4beb04480d787f5d1bcc3c60c6608c9621a",
+          "transforms": []
+        },
+        "design/orgsync/README-REVEALED.md": {
+          "blob": "0540efcea5eebaae84277640ca00146bf46ec506",
+          "sha256": "eb92afbcf48648a8803f3d1080cd965fe1bc31e250ea9f363b97b20a9026a53a",
+          "source_blob": "0540efcea5eebaae84277640ca00146bf46ec506",
+          "transforms": []
+        },
+        "design/orgsync/controls/control_check.py": {
+          "blob": "ab882fce9dfb22ec358682d9ce47c96d592883f1",
+          "sha256": "784ab0592e0c012fcfcccfd57b981fa8d31080d9dfb43913aefb1425be4b6b97",
+          "source_blob": "ab882fce9dfb22ec358682d9ce47c96d592883f1",
+          "transforms": []
+        },
+        "design/orgsync/controls/g_writes_nothing.py": {
+          "blob": "aeaacf7a19170328421dc4d77836eb2ef873dea0",
+          "sha256": "1e4987e33713fd9f3a7436f57f01e0d48230706f388e1025c0954dc9a7f8648f",
+          "source_blob": "aeaacf7a19170328421dc4d77836eb2ef873dea0",
+          "transforms": []
+        },
+        "design/orgsync/controls/w1_naive_read.py": {
+          "blob": "20c0e09703e641a4715c1c10b437627de3ff9b2d",
+          "sha256": "8d9ec0a0c10b5f86f13a9928aa7ee7cac7dc858dd741d686738b59de50e25ec9",
+          "source_blob": "20c0e09703e641a4715c1c10b437627de3ff9b2d",
+          "transforms": []
+        },
+        "design/orgsync/controls/w2_non_idempotent.py": {
+          "blob": "3fdf7a1b4473338f04d7adb1bded2cee720457fb",
+          "sha256": "1e58444cd797e6b12817ac872ab31fe68ac1725b5657ea77422ff9a7768b6f33",
+          "source_blob": "3fdf7a1b4473338f04d7adb1bded2cee720457fb",
+          "transforms": []
+        },
+        "design/orgsync/controls/w3_confident_finisher.py": {
+          "blob": "38ce448117c0638a29df304960b5c30128f12d8e",
+          "sha256": "cc1e163ce3300b262732a438cc0c7f1c7431d22cb1fadf76d70163fc2d06c692",
+          "source_blob": "38ce448117c0638a29df304960b5c30128f12d8e",
+          "transforms": []
+        },
+        "design/orgsync/controls/w3_test_orgsync.py": {
+          "blob": "a38880e4174862d36e0dd1250dae229a6001e6d2",
+          "sha256": "3ad91e24268c1f47a9e4251c9e2d529ca81a8da16d2f43dc18df1f38cc5bda59",
+          "source_blob": "a38880e4174862d36e0dd1250dae229a6001e6d2",
+          "transforms": []
+        },
+        "design/orgsync/reference/orgsync_reference.py": {
+          "blob": "ddec31aa9e5b8010cf67269111a3c30ce54afa00",
+          "sha256": "fd87f7ba5c1c56273a11b23ba59a2947ccab743dd4948a3cd6c3063d03fecd09",
+          "source_blob": "ddec31aa9e5b8010cf67269111a3c30ce54afa00",
+          "transforms": []
+        },
+        "edition.sh": {
+          "blob": "7bacc368ac14e092dbda2b81cb116c01c95d70c9",
+          "sha256": "ea2965f0470eed1d6d92a9762240a54e8cb9c80872f695d31b97e211cf0a9751",
+          "source_blob": "7bacc368ac14e092dbda2b81cb116c01c95d70c9",
+          "transforms": []
+        },
+        "editions/2026-10/MANIFEST.json": {
+          "blob": "bf30a15aa112869e60455a88733c337eacf37657",
+          "sha256": "963ed12f74f911a07d6dc9563457484c5c855d3f3152fc1e83a6c86474e30de3",
+          "source_blob": "bf30a15aa112869e60455a88733c337eacf37657",
+          "transforms": []
+        },
+        "editions/2026-10/TIER_PIN": {
+          "blob": "25a6b9f27d9b63e7b8adfb1710c2354d2ed4b390",
+          "sha256": "d058073c035a98984adcd0be9ff04c6ef07569d14e8300247e451c5c9b2c09ae",
+          "source_blob": "25a6b9f27d9b63e7b8adfb1710c2354d2ed4b390",
+          "transforms": []
+        },
+        "evidence.py": {
+          "blob": "8b8ef5e22d2f6d1a5ef566f9f395427fd8450cb4",
+          "sha256": "1a6cb457e1160e48959005f66a5d5139be38ca8206e4ee66c05800cb3226ac08",
+          "source_blob": "8b8ef5e22d2f6d1a5ef566f9f395427fd8450cb4",
+          "transforms": []
+        },
+        "export.py": {
+          "blob": "6edf9287788fc9ebbfe6b6209ad0c71529ab7ac0",
+          "sha256": "4e07a6e981461d600f78fe4f7332ceaa3ec6ff16693a8e4bfc34bf7d2d9e613c",
+          "source_blob": "6edf9287788fc9ebbfe6b6209ad0c71529ab7ac0",
+          "transforms": []
+        },
+        "fixtures/orgsync/server.py": {
+          "blob": "93a8b7629b3671d9f12f2da6451709aca220ba3a",
+          "sha256": "8d23417f6160db7055ce835f06833a9cc5bee4235151790afa08389ea2eebfec",
+          "source_blob": "93a8b7629b3671d9f12f2da6451709aca220ba3a",
+          "transforms": []
+        },
+        "master_table.py": {
+          "blob": "45bceda6c8f85d6a44bd7da9cfbce07ad5768358",
+          "sha256": "96709e9f5c79958b3959cd8afc6be9688a5690e9894c9fb5deda8283764c50c2",
+          "transforms": [
+            "sanitize-archive-v1"
+          ]
+        },
+        "preflight.sh": {
+          "blob": "ea0028bba21d9c77d279c93ae713c4e54d5901a9",
+          "sha256": "0cfbbba79cf57ded9473053868de59f606e2cc2ab129fa0309ca70e5b72114de",
+          "source_blob": "ea0028bba21d9c77d279c93ae713c4e54d5901a9",
+          "transforms": []
+        },
+        "preflight_check.py": {
+          "blob": "110d16a37a82487f47f7cfee78d99bd77cf9856b",
+          "sha256": "d2a889c00eb680f5751824f5be8be0189a810b52d110167f57c2a2158448fe75",
+          "source_blob": "110d16a37a82487f47f7cfee78d99bd77cf9856b",
+          "transforms": []
+        },
+        "preflight_http.py": {
+          "blob": "4f3b3573d641934254e563dca507d968194b0e78",
+          "sha256": "ec98ad06075627e1fabe11d7d04a117626a42ada48579514eecc80ae10c5ccb9",
+          "source_blob": "4f3b3573d641934254e563dca507d968194b0e78",
+          "transforms": []
+        },
+        "prices.yaml": {
+          "blob": "e0e09f708c4077d558d266e167acbabf2df60645",
+          "sha256": "b3aa945f75af6573c29a3f47610f6f3460afa0665188b679dd2ea261265c9a15",
+          "source_blob": "e0e09f708c4077d558d266e167acbabf2df60645",
+          "transforms": []
+        },
+        "prompts/baseline.md": {
+          "blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "sha256": "6927e499c8ee25996cc6669f432bec98ab3f3d747d41bb6b0142101e058649ec",
+          "source_blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "transforms": []
+        },
+        "prompts/cronspec.md": {
+          "blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "sha256": "d6b188dca51a2842e99f35b373c414372dc2d3f75fea60d20e1863a4b4a32274",
+          "source_blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "transforms": []
+        },
+        "prompts/orgsync.md": {
+          "blob": "37b91d71a2e2bc3445831a5d2204dde310abf74a",
+          "sha256": "94950b00fd82cc86a8c98a0793149b5f9c13e205dedd1ea533470387110ba408",
+          "source_blob": "37b91d71a2e2bc3445831a5d2204dde310abf74a",
+          "transforms": []
+        },
+        "redact.py": {
+          "blob": "8d0814fc08a717acbbcc7346dd3de390a8c79c10",
+          "sha256": "2bd08374ab85cae077de3947aa202b57c147de0c6bb117a7a6a33634b94ab4f2",
+          "transforms": [
+            "split-scan-markers-v1"
+          ]
+        },
+        "run.sh": {
+          "blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+          "sha256": "68926914182c01bd78bd87dd9a3ffc052626e4aff158c2ebf25e455a058a3bbf",
+          "source_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+          "transforms": []
+        },
+        "run_audit.py": {
+          "blob": "b50b7a41cb5022c82a0ef7e77c603d86ca7b8c5a",
+          "sha256": "65cad8b63260a39c30d7c6380edcd3569c0b6b3f29747f6bb1220462505e9c7d",
+          "transforms": [
+            "split-scan-markers-v1"
+          ]
+        },
+        "score.py": {
+          "blob": "94094d3aac5c8be229e314d48eb4abc3705b64e7",
+          "sha256": "64fb4702294e87e25fefdda999e8af14a5610d7c9c43f201211e0369b86234f1",
+          "source_blob": "94094d3aac5c8be229e314d48eb4abc3705b64e7",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/.gitignore": {
+          "blob": "7a60b85e148f80966a550e5ab6a762a907c69ca6",
+          "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+          "source_blob": "7a60b85e148f80966a550e5ab6a762a907c69ca6",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/README.md": {
+          "blob": "71ed60104db9de6f096e9b87db2719c8186e2afd",
+          "sha256": "5fabfc6c6f2f186e1dee9be989bec9b08269762cd570a13c3dd68a3bab1682c2",
+          "source_blob": "71ed60104db9de6f096e9b87db2719c8186e2afd",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/config.json": {
+          "blob": "4fbb0a7c349bfb511e6116c6fd603cad5c180aee",
+          "sha256": "3ef54bc49fd7181720d830a6479a80fe6cc52e84e113ff4f3517ac6a33eca802",
+          "source_blob": "4fbb0a7c349bfb511e6116c6fd603cad5c180aee",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/__init__.py": {
+          "blob": "035e2d57fe2e92b04a47d6ccd6d504e57149a00a",
+          "sha256": "eaf1a86caebfece9683a2caab0ea1cd1d2f54f29f06a0bc01581b9847f7cf8cc",
+          "source_blob": "035e2d57fe2e92b04a47d6ccd6d504e57149a00a",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/__main__.py": {
+          "blob": "433cafae2fcaf9a495f87ca674738774bc3beee0",
+          "sha256": "8c6ae1d5e4da8ba10506a9510944e22373df98e3df7446ecbf0500816aea78fd",
+          "source_blob": "433cafae2fcaf9a495f87ca674738774bc3beee0",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/config.py": {
+          "blob": "2e2329f7a9e4a303aa00c3e2d789c7a28b21e7eb",
+          "sha256": "dd2627e00c6fd9034b065a799180a17ecfe4eac9f377e210167e44361ca864c7",
+          "source_blob": "2e2329f7a9e4a303aa00c3e2d789c7a28b21e7eb",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/http_client.py": {
+          "blob": "cb37781a7a1da2a04de0f4564f70a958f45f1988",
+          "sha256": "d04cde8c96849104ad82d9ed11ba4c2e7dc9a4072b3df90fede78e30429f1b99",
+          "source_blob": "cb37781a7a1da2a04de0f4564f70a958f45f1988",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/models.py": {
+          "blob": "6e73fbc37a7b86112cfd1fc3e4861f8dc9fd996f",
+          "sha256": "8640c933738468f40985ac6dadecf0da570f763cc6298f55f98e94078633ca60",
+          "source_blob": "6e73fbc37a7b86112cfd1fc3e4861f8dc9fd996f",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/sync.py": {
+          "blob": "985bffa3a9e539d518467dca3380b7983309f018",
+          "sha256": "7a81e701849a4224d29e48560c8bcb1324a2afbf9e90e13724990f9bc2d41ce9",
+          "source_blob": "985bffa3a9e539d518467dca3380b7983309f018",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_cli.py": {
+          "blob": "28a3f35ac6808b5c8ab5bc33926afeee69821d8a",
+          "sha256": "448ddcbd63fe6906e6b11ea40dca952e8cfdfb162e60377ec46b988966c47f62",
+          "source_blob": "28a3f35ac6808b5c8ab5bc33926afeee69821d8a",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_config.py": {
+          "blob": "738eace565b89e4006c619a3580f883219babe69",
+          "sha256": "a5b6a81763d88ebd810a3f210eedc1eed2169bda9e0e34c5a118c043b59e341d",
+          "source_blob": "738eace565b89e4006c619a3580f883219babe69",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_http_client.py": {
+          "blob": "900ac0968e5ce970119983e1608a3395b01fdb45",
+          "sha256": "0ca33a24aa61aa763ede5af6eb0fe32abb4aff6c87c063459919ec252dd6aafd",
+          "source_blob": "900ac0968e5ce970119983e1608a3395b01fdb45",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_models.py": {
+          "blob": "6f033024df3c551275a3b0756c2330dd7f553ffa",
+          "sha256": "ad04dd555f7367a9de5a02820467b34850dc9d2a8040ac639567755ec4d5d453",
+          "source_blob": "6f033024df3c551275a3b0756c2330dd7f553ffa",
+          "transforms": []
+        },
+        "token_evidence.py": {
+          "blob": "efbb198ca1ebc9552d821a943ab65073b36c85a9",
+          "sha256": "8e658ff3108a13882f78ab3cd45212394af95f9c877c9e3b4c189e4ddd88a81c",
+          "source_blob": "efbb198ca1ebc9552d821a943ab65073b36c85a9",
+          "transforms": []
+        },
+        "verify.py": {
+          "blob": "0d905f66e0d5b2f63f1e3e94a64d2d52502a4f58",
+          "sha256": "805537ab3d3a454038fae64bcb1fe8f83a7b6c699672b14711917fd6998d8306",
+          "source_blob": "0d905f66e0d5b2f63f1e3e94a64d2d52502a4f58",
+          "transforms": []
+        }
+      }
+    },
+    "3a5c952577b779c324d27e303224908ae2c55e32": {
+      "absent": [
+        "edition_report.py",
+        "errata.py"
+      ],
+      "aliases": [
+        "3a5c952577b779c324d27e303224908ae2c55e32"
+      ],
+      "files": {
+        "TIER_PIN": {
+          "blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "sha256": "b14a1094090aaa739adb43e32f6cfc04df15bbfac95aea879b3862c5dbbf06cd",
+          "source_blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "transforms": []
+        },
+        "acceptance_cronspec.py": {
+          "blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "sha256": "a847b421cf8234cd953aaefe264ed72745ef123f4c43abaa24decca746e2e5a7",
+          "source_blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "transforms": []
+        },
+        "acceptance_orgsync.py": {
+          "blob": "dac5bb517e3495f3cdf1fa43a566d24acb2a893f",
+          "sha256": "b948f904bfd72ffcd8fedd30230182df3133d27a9972c6fc2c6af35ca5196a74",
+          "source_blob": "dac5bb517e3495f3cdf1fa43a566d24acb2a893f",
+          "transforms": []
+        },
+        "acceptance_test.py": {
+          "blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "sha256": "f07718acdcc279b349e7393144a79cbf7f1e62a88f089c10288cfe05e84e5b53",
+          "source_blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "transforms": []
+        },
+        "aggregate.py": {
+          "blob": "1d6aaace7e111b0599009f5e1735105ad2f3b602",
+          "sha256": "c17b0c14797247fcd6038cb23fca46e91d33776e850429e7739cbb81147e1786",
+          "source_blob": "1d6aaace7e111b0599009f5e1735105ad2f3b602",
+          "transforms": []
+        },
+        "batch.sh": {
+          "blob": "d96e9f80cb6862d74fc1076ce4b9248149bbb338",
+          "sha256": "3f6dd6cb0e230c8ce089a5b485738b053b653f4f227b3be4986de78b3be1f047",
+          "source_blob": "d96e9f80cb6862d74fc1076ce4b9248149bbb338",
+          "transforms": []
+        },
+        "calibration/orgsync.cleared": {
+          "blob": "7b6a9d197fe2d6702a18af910ce09eea2e919910",
+          "sha256": "9750bb104337aa7b541c5516b3b5695de2e7d73fe58e7034e2a4f0b842ef279d",
+          "source_blob": "7b6a9d197fe2d6702a18af910ce09eea2e919910",
+          "transforms": []
+        },
+        "check-calibration-gate.sh": {
+          "blob": "3cc32ee0b980a088371b3147ff4ab2e8caa223c7",
+          "sha256": "75dad133b2ed838112fe968bfddfbee86e740724ec8572ccec7a62ab46cebb26",
+          "source_blob": "3cc32ee0b980a088371b3147ff4ab2e8caa223c7",
+          "transforms": []
+        },
+        "control/test_harness.py": {
+          "blob": "1d6451004a8759feef229ae28b62f0e030559fe3",
+          "sha256": "226703033b2441cace394392b474473da93e4314c116f97984b4fcaf7fc98bba",
+          "source_blob": "1d6451004a8759feef229ae28b62f0e030559fe3",
+          "transforms": []
+        },
+        "design/orgsync/CONTROLS.md": {
+          "blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "sha256": "d4206322e35c11b83b1c56900a70abd5607911cb60a6573ec5121387967e9f7b",
+          "source_blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "transforms": []
+        },
+        "design/orgsync/FIXTURES.md": {
+          "blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "sha256": "c03595a92ec80b36c972523b9faffa7fab065517899161a6513caa9756b0b911",
+          "source_blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "transforms": []
+        },
+        "design/orgsync/JUDGE_SPEC.md": {
+          "blob": "4f0cb4beb04480d787f5d1bcc3c60c6608c9621a",
+          "sha256": "a03c23f610cb18750eb09f90a01414dcbda35d3d27fd63f1923b9e18fddddc5b",
+          "source_blob": "4f0cb4beb04480d787f5d1bcc3c60c6608c9621a",
+          "transforms": []
+        },
+        "design/orgsync/README-REVEALED.md": {
+          "blob": "0540efcea5eebaae84277640ca00146bf46ec506",
+          "sha256": "eb92afbcf48648a8803f3d1080cd965fe1bc31e250ea9f363b97b20a9026a53a",
+          "source_blob": "0540efcea5eebaae84277640ca00146bf46ec506",
+          "transforms": []
+        },
+        "design/orgsync/controls/control_check.py": {
+          "blob": "ab882fce9dfb22ec358682d9ce47c96d592883f1",
+          "sha256": "784ab0592e0c012fcfcccfd57b981fa8d31080d9dfb43913aefb1425be4b6b97",
+          "source_blob": "ab882fce9dfb22ec358682d9ce47c96d592883f1",
+          "transforms": []
+        },
+        "design/orgsync/controls/g_writes_nothing.py": {
+          "blob": "aeaacf7a19170328421dc4d77836eb2ef873dea0",
+          "sha256": "1e4987e33713fd9f3a7436f57f01e0d48230706f388e1025c0954dc9a7f8648f",
+          "source_blob": "aeaacf7a19170328421dc4d77836eb2ef873dea0",
+          "transforms": []
+        },
+        "design/orgsync/controls/w1_naive_read.py": {
+          "blob": "20c0e09703e641a4715c1c10b437627de3ff9b2d",
+          "sha256": "8d9ec0a0c10b5f86f13a9928aa7ee7cac7dc858dd741d686738b59de50e25ec9",
+          "source_blob": "20c0e09703e641a4715c1c10b437627de3ff9b2d",
+          "transforms": []
+        },
+        "design/orgsync/controls/w2_non_idempotent.py": {
+          "blob": "3fdf7a1b4473338f04d7adb1bded2cee720457fb",
+          "sha256": "1e58444cd797e6b12817ac872ab31fe68ac1725b5657ea77422ff9a7768b6f33",
+          "source_blob": "3fdf7a1b4473338f04d7adb1bded2cee720457fb",
+          "transforms": []
+        },
+        "design/orgsync/controls/w3_confident_finisher.py": {
+          "blob": "38ce448117c0638a29df304960b5c30128f12d8e",
+          "sha256": "cc1e163ce3300b262732a438cc0c7f1c7431d22cb1fadf76d70163fc2d06c692",
+          "source_blob": "38ce448117c0638a29df304960b5c30128f12d8e",
+          "transforms": []
+        },
+        "design/orgsync/controls/w3_test_orgsync.py": {
+          "blob": "a38880e4174862d36e0dd1250dae229a6001e6d2",
+          "sha256": "3ad91e24268c1f47a9e4251c9e2d529ca81a8da16d2f43dc18df1f38cc5bda59",
+          "source_blob": "a38880e4174862d36e0dd1250dae229a6001e6d2",
+          "transforms": []
+        },
+        "design/orgsync/reference/orgsync_reference.py": {
+          "blob": "ddec31aa9e5b8010cf67269111a3c30ce54afa00",
+          "sha256": "fd87f7ba5c1c56273a11b23ba59a2947ccab743dd4948a3cd6c3063d03fecd09",
+          "source_blob": "ddec31aa9e5b8010cf67269111a3c30ce54afa00",
+          "transforms": []
+        },
+        "edition.sh": {
+          "blob": "7bacc368ac14e092dbda2b81cb116c01c95d70c9",
+          "sha256": "ea2965f0470eed1d6d92a9762240a54e8cb9c80872f695d31b97e211cf0a9751",
+          "source_blob": "7bacc368ac14e092dbda2b81cb116c01c95d70c9",
+          "transforms": []
+        },
+        "editions/2026-10/MANIFEST.json": {
+          "blob": "bf30a15aa112869e60455a88733c337eacf37657",
+          "sha256": "963ed12f74f911a07d6dc9563457484c5c855d3f3152fc1e83a6c86474e30de3",
+          "source_blob": "bf30a15aa112869e60455a88733c337eacf37657",
+          "transforms": []
+        },
+        "editions/2026-10/TIER_PIN": {
+          "blob": "25a6b9f27d9b63e7b8adfb1710c2354d2ed4b390",
+          "sha256": "d058073c035a98984adcd0be9ff04c6ef07569d14e8300247e451c5c9b2c09ae",
+          "source_blob": "25a6b9f27d9b63e7b8adfb1710c2354d2ed4b390",
+          "transforms": []
+        },
+        "evidence.py": {
+          "blob": "8b8ef5e22d2f6d1a5ef566f9f395427fd8450cb4",
+          "sha256": "1a6cb457e1160e48959005f66a5d5139be38ca8206e4ee66c05800cb3226ac08",
+          "source_blob": "8b8ef5e22d2f6d1a5ef566f9f395427fd8450cb4",
+          "transforms": []
+        },
+        "export.py": {
+          "blob": "e669e9239fa84633bc48a3f91ad69db17f7a1190",
+          "sha256": "0980a72cd8e9a3a24c75fb8652caa83cfa2d548c1382f2e3a1b25d804d016d3a",
+          "source_blob": "e669e9239fa84633bc48a3f91ad69db17f7a1190",
+          "transforms": []
+        },
+        "fixtures/orgsync/server.py": {
+          "blob": "93a8b7629b3671d9f12f2da6451709aca220ba3a",
+          "sha256": "8d23417f6160db7055ce835f06833a9cc5bee4235151790afa08389ea2eebfec",
+          "source_blob": "93a8b7629b3671d9f12f2da6451709aca220ba3a",
+          "transforms": []
+        },
+        "master_table.py": {
+          "blob": "45bceda6c8f85d6a44bd7da9cfbce07ad5768358",
+          "sha256": "96709e9f5c79958b3959cd8afc6be9688a5690e9894c9fb5deda8283764c50c2",
+          "transforms": [
+            "sanitize-archive-v1"
+          ]
+        },
+        "preflight.sh": {
+          "blob": "ea0028bba21d9c77d279c93ae713c4e54d5901a9",
+          "sha256": "0cfbbba79cf57ded9473053868de59f606e2cc2ab129fa0309ca70e5b72114de",
+          "source_blob": "ea0028bba21d9c77d279c93ae713c4e54d5901a9",
+          "transforms": []
+        },
+        "preflight_check.py": {
+          "blob": "110d16a37a82487f47f7cfee78d99bd77cf9856b",
+          "sha256": "d2a889c00eb680f5751824f5be8be0189a810b52d110167f57c2a2158448fe75",
+          "source_blob": "110d16a37a82487f47f7cfee78d99bd77cf9856b",
+          "transforms": []
+        },
+        "preflight_http.py": {
+          "blob": "4f3b3573d641934254e563dca507d968194b0e78",
+          "sha256": "ec98ad06075627e1fabe11d7d04a117626a42ada48579514eecc80ae10c5ccb9",
+          "source_blob": "4f3b3573d641934254e563dca507d968194b0e78",
+          "transforms": []
+        },
+        "prices.yaml": {
+          "blob": "e0e09f708c4077d558d266e167acbabf2df60645",
+          "sha256": "b3aa945f75af6573c29a3f47610f6f3460afa0665188b679dd2ea261265c9a15",
+          "source_blob": "e0e09f708c4077d558d266e167acbabf2df60645",
+          "transforms": []
+        },
+        "prompts/baseline.md": {
+          "blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "sha256": "6927e499c8ee25996cc6669f432bec98ab3f3d747d41bb6b0142101e058649ec",
+          "source_blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "transforms": []
+        },
+        "prompts/cronspec.md": {
+          "blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "sha256": "d6b188dca51a2842e99f35b373c414372dc2d3f75fea60d20e1863a4b4a32274",
+          "source_blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "transforms": []
+        },
+        "prompts/orgsync.md": {
+          "blob": "37b91d71a2e2bc3445831a5d2204dde310abf74a",
+          "sha256": "94950b00fd82cc86a8c98a0793149b5f9c13e205dedd1ea533470387110ba408",
+          "source_blob": "37b91d71a2e2bc3445831a5d2204dde310abf74a",
+          "transforms": []
+        },
+        "redact.py": {
+          "blob": "8d0814fc08a717acbbcc7346dd3de390a8c79c10",
+          "sha256": "2bd08374ab85cae077de3947aa202b57c147de0c6bb117a7a6a33634b94ab4f2",
+          "transforms": [
+            "split-scan-markers-v1"
+          ]
+        },
+        "run.sh": {
+          "blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+          "sha256": "68926914182c01bd78bd87dd9a3ffc052626e4aff158c2ebf25e455a058a3bbf",
+          "source_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+          "transforms": []
+        },
+        "run_audit.py": {
+          "blob": "b50b7a41cb5022c82a0ef7e77c603d86ca7b8c5a",
+          "sha256": "65cad8b63260a39c30d7c6380edcd3569c0b6b3f29747f6bb1220462505e9c7d",
+          "transforms": [
+            "split-scan-markers-v1"
+          ]
+        },
+        "score.py": {
+          "blob": "ea60b6552b3eadad2608698061824f7ad2d07d36",
+          "sha256": "768f41e53261c62bc8df34fcfc7034b15cb897d39989b0ba7f4ec505be5931d6",
+          "transforms": [
+            "sanitize-home-v1"
+          ]
+        },
+        "tasks/orgsync-skeleton/.gitignore": {
+          "blob": "7a60b85e148f80966a550e5ab6a762a907c69ca6",
+          "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+          "source_blob": "7a60b85e148f80966a550e5ab6a762a907c69ca6",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/README.md": {
+          "blob": "71ed60104db9de6f096e9b87db2719c8186e2afd",
+          "sha256": "5fabfc6c6f2f186e1dee9be989bec9b08269762cd570a13c3dd68a3bab1682c2",
+          "source_blob": "71ed60104db9de6f096e9b87db2719c8186e2afd",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/config.json": {
+          "blob": "4fbb0a7c349bfb511e6116c6fd603cad5c180aee",
+          "sha256": "3ef54bc49fd7181720d830a6479a80fe6cc52e84e113ff4f3517ac6a33eca802",
+          "source_blob": "4fbb0a7c349bfb511e6116c6fd603cad5c180aee",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/__init__.py": {
+          "blob": "035e2d57fe2e92b04a47d6ccd6d504e57149a00a",
+          "sha256": "eaf1a86caebfece9683a2caab0ea1cd1d2f54f29f06a0bc01581b9847f7cf8cc",
+          "source_blob": "035e2d57fe2e92b04a47d6ccd6d504e57149a00a",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/__main__.py": {
+          "blob": "433cafae2fcaf9a495f87ca674738774bc3beee0",
+          "sha256": "8c6ae1d5e4da8ba10506a9510944e22373df98e3df7446ecbf0500816aea78fd",
+          "source_blob": "433cafae2fcaf9a495f87ca674738774bc3beee0",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/config.py": {
+          "blob": "2e2329f7a9e4a303aa00c3e2d789c7a28b21e7eb",
+          "sha256": "dd2627e00c6fd9034b065a799180a17ecfe4eac9f377e210167e44361ca864c7",
+          "source_blob": "2e2329f7a9e4a303aa00c3e2d789c7a28b21e7eb",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/http_client.py": {
+          "blob": "cb37781a7a1da2a04de0f4564f70a958f45f1988",
+          "sha256": "d04cde8c96849104ad82d9ed11ba4c2e7dc9a4072b3df90fede78e30429f1b99",
+          "source_blob": "cb37781a7a1da2a04de0f4564f70a958f45f1988",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/models.py": {
+          "blob": "6e73fbc37a7b86112cfd1fc3e4861f8dc9fd996f",
+          "sha256": "8640c933738468f40985ac6dadecf0da570f763cc6298f55f98e94078633ca60",
+          "source_blob": "6e73fbc37a7b86112cfd1fc3e4861f8dc9fd996f",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/sync.py": {
+          "blob": "985bffa3a9e539d518467dca3380b7983309f018",
+          "sha256": "7a81e701849a4224d29e48560c8bcb1324a2afbf9e90e13724990f9bc2d41ce9",
+          "source_blob": "985bffa3a9e539d518467dca3380b7983309f018",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_cli.py": {
+          "blob": "28a3f35ac6808b5c8ab5bc33926afeee69821d8a",
+          "sha256": "448ddcbd63fe6906e6b11ea40dca952e8cfdfb162e60377ec46b988966c47f62",
+          "source_blob": "28a3f35ac6808b5c8ab5bc33926afeee69821d8a",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_config.py": {
+          "blob": "738eace565b89e4006c619a3580f883219babe69",
+          "sha256": "a5b6a81763d88ebd810a3f210eedc1eed2169bda9e0e34c5a118c043b59e341d",
+          "source_blob": "738eace565b89e4006c619a3580f883219babe69",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_http_client.py": {
+          "blob": "900ac0968e5ce970119983e1608a3395b01fdb45",
+          "sha256": "0ca33a24aa61aa763ede5af6eb0fe32abb4aff6c87c063459919ec252dd6aafd",
+          "source_blob": "900ac0968e5ce970119983e1608a3395b01fdb45",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_models.py": {
+          "blob": "6f033024df3c551275a3b0756c2330dd7f553ffa",
+          "sha256": "ad04dd555f7367a9de5a02820467b34850dc9d2a8040ac639567755ec4d5d453",
+          "source_blob": "6f033024df3c551275a3b0756c2330dd7f553ffa",
+          "transforms": []
+        },
+        "token_evidence.py": {
+          "blob": "efbb198ca1ebc9552d821a943ab65073b36c85a9",
+          "sha256": "8e658ff3108a13882f78ab3cd45212394af95f9c877c9e3b4c189e4ddd88a81c",
+          "source_blob": "efbb198ca1ebc9552d821a943ab65073b36c85a9",
+          "transforms": []
+        },
+        "verify.py": {
+          "blob": "a33e35ad910ee989960887e5085eb5c7288ecee4",
+          "sha256": "4bca9a8fdcf08de7d16ee796d69fc310864201bf30b28e9bd7f335f92a75cd0c",
+          "source_blob": "a33e35ad910ee989960887e5085eb5c7288ecee4",
+          "transforms": []
+        }
+      }
+    },
+    "5508c75b7603db3ddf2c501e7999c8fd9f6f1281": {
+      "absent": [
+        "acceptance_orgsync.py",
+        "calibration/orgsync.cleared",
+        "check-calibration-gate.sh",
+        "control/test_harness.py",
+        "design/orgsync/README-REVEALED.md",
+        "design/orgsync/controls/control_check.py",
+        "design/orgsync/controls/g_writes_nothing.py",
+        "design/orgsync/controls/w1_naive_read.py",
+        "design/orgsync/controls/w2_non_idempotent.py",
+        "design/orgsync/controls/w3_confident_finisher.py",
+        "design/orgsync/controls/w3_test_orgsync.py",
+        "design/orgsync/reference/orgsync_reference.py",
+        "edition.sh",
+        "edition_report.py",
+        "editions/2026-10/MANIFEST.json",
+        "editions/2026-10/TIER_PIN",
+        "errata.py",
+        "evidence.py",
+        "fixtures/orgsync/server.py",
+        "master_table.py",
+        "preflight.sh",
+        "preflight_check.py",
+        "preflight_http.py",
+        "redact.py",
+        "run_audit.py",
+        "tasks/orgsync-skeleton/.gitignore",
+        "tasks/orgsync-skeleton/README.md",
+        "tasks/orgsync-skeleton/config.json",
+        "tasks/orgsync-skeleton/orgsync/__init__.py",
+        "tasks/orgsync-skeleton/orgsync/__main__.py",
+        "tasks/orgsync-skeleton/orgsync/config.py",
+        "tasks/orgsync-skeleton/orgsync/http_client.py",
+        "tasks/orgsync-skeleton/orgsync/models.py",
+        "tasks/orgsync-skeleton/orgsync/sync.py",
+        "tasks/orgsync-skeleton/tests/existing/test_cli.py",
+        "tasks/orgsync-skeleton/tests/existing/test_config.py",
+        "tasks/orgsync-skeleton/tests/existing/test_http_client.py",
+        "tasks/orgsync-skeleton/tests/existing/test_models.py",
+        "token_evidence.py"
+      ],
+      "aliases": [
+        "5508c75b7603db3ddf2c501e7999c8fd9f6f1281"
+      ],
+      "files": {
+        "TIER_PIN": {
+          "blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "sha256": "b14a1094090aaa739adb43e32f6cfc04df15bbfac95aea879b3862c5dbbf06cd",
+          "source_blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "transforms": []
+        },
+        "acceptance_cronspec.py": {
+          "blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "sha256": "a847b421cf8234cd953aaefe264ed72745ef123f4c43abaa24decca746e2e5a7",
+          "source_blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "transforms": []
+        },
+        "acceptance_test.py": {
+          "blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "sha256": "f07718acdcc279b349e7393144a79cbf7f1e62a88f089c10288cfe05e84e5b53",
+          "source_blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "transforms": []
+        },
+        "aggregate.py": {
+          "blob": "4b846fe42b643e7effc99456dc6bbf204e2992ba",
+          "sha256": "af948994817f9ca9bdcb9f27778e3cf73138f2de4bc5a4067092566468333ca6",
+          "source_blob": "4b846fe42b643e7effc99456dc6bbf204e2992ba",
+          "transforms": []
+        },
+        "batch.sh": {
+          "blob": "299fe45ee3b41a658898b3936a0e47f527f958e8",
+          "sha256": "8e5b5abe7ef11ea74dc4be4b4058d0a676a81c4fff7eb14c4facd6fc98e4e3cd",
+          "source_blob": "299fe45ee3b41a658898b3936a0e47f527f958e8",
+          "transforms": []
+        },
+        "design/orgsync/CONTROLS.md": {
+          "blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "sha256": "d4206322e35c11b83b1c56900a70abd5607911cb60a6573ec5121387967e9f7b",
+          "source_blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "transforms": []
+        },
+        "design/orgsync/FIXTURES.md": {
+          "blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "sha256": "c03595a92ec80b36c972523b9faffa7fab065517899161a6513caa9756b0b911",
+          "source_blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "transforms": []
+        },
+        "design/orgsync/JUDGE_SPEC.md": {
+          "blob": "c29ee7eafc04d5b1825804be5690508ef2c706ab",
+          "sha256": "8ea9a416622322a8face911298c6f9ba7fb5be0d3791cc47d1c4ec64bd592342",
+          "source_blob": "c29ee7eafc04d5b1825804be5690508ef2c706ab",
+          "transforms": []
+        },
+        "export.py": {
+          "blob": "326c45bbb8e9f4fc2538b8b7bd8ec23474868660",
+          "sha256": "ff3b8c51e703124509d6d6d6db50b50229f92ca2580b15cc89e58fedea3a7511",
+          "source_blob": "326c45bbb8e9f4fc2538b8b7bd8ec23474868660",
+          "transforms": []
+        },
+        "prices.yaml": {
+          "blob": "4bad3dcce9b1a799c7fb6d0b9febed243da867ac",
+          "sha256": "9ab9cba3fca5fef0b8e9eb7f62fe0496c7498a74a94e81e441a52ee66fd53eb0",
+          "source_blob": "4bad3dcce9b1a799c7fb6d0b9febed243da867ac",
+          "transforms": []
+        },
+        "prompts/baseline.md": {
+          "blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "sha256": "6927e499c8ee25996cc6669f432bec98ab3f3d747d41bb6b0142101e058649ec",
+          "source_blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "transforms": []
+        },
+        "prompts/cronspec.md": {
+          "blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "sha256": "d6b188dca51a2842e99f35b373c414372dc2d3f75fea60d20e1863a4b4a32274",
+          "source_blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "transforms": []
+        },
+        "prompts/orgsync.md": {
+          "blob": "6b60970863b65592d28b3939f82c55c4101cb770",
+          "sha256": "d149fc2c4f336eaaf7cc8001546ef2d0cdaf0d7d2a30b8f7f8644e1188a8cbf8",
+          "source_blob": "6b60970863b65592d28b3939f82c55c4101cb770",
+          "transforms": []
+        },
+        "run.sh": {
+          "blob": "77bcd13ae3d622efdd8baae1f97d0c3e999ba12f",
+          "sha256": "58632955b40081bf5cd6a6e10f739015c85881521391f730bc1835a4f668ef81",
+          "source_blob": "77bcd13ae3d622efdd8baae1f97d0c3e999ba12f",
+          "transforms": []
+        },
+        "score.py": {
+          "blob": "30aae3a8b57bede955d5f1af35a2d48984f1644e",
+          "sha256": "4401db44578fc8d9bd16c71ccd1397f353ca14becdcd36d756821171ce552486",
+          "transforms": [
+            "sanitize-home-v1"
+          ]
+        },
+        "verify.py": {
+          "blob": "c77a35d9649c6634c5c0c6bb2f421ef64380edf1",
+          "sha256": "8bfbdb7e09f4c7f1361ff89d1f0d4ef1164c220e6cecb5f8e384b51990f9f6a4",
+          "source_blob": "c77a35d9649c6634c5c0c6bb2f421ef64380edf1",
+          "transforms": []
+        }
+      }
+    },
+    "66bd8ecc5e0af404121c8f4f68a895de43cc0728": {
+      "absent": [
+        "edition_report.py",
+        "errata.py"
+      ],
+      "aliases": [
+        "66bd8ec",
+        "66bd8ecc5e0af404121c8f4f68a895de43cc0728"
+      ],
+      "files": {
+        "TIER_PIN": {
+          "blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "sha256": "b14a1094090aaa739adb43e32f6cfc04df15bbfac95aea879b3862c5dbbf06cd",
+          "source_blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "transforms": []
+        },
+        "acceptance_cronspec.py": {
+          "blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "sha256": "a847b421cf8234cd953aaefe264ed72745ef123f4c43abaa24decca746e2e5a7",
+          "source_blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "transforms": []
+        },
+        "acceptance_orgsync.py": {
+          "blob": "dac5bb517e3495f3cdf1fa43a566d24acb2a893f",
+          "sha256": "b948f904bfd72ffcd8fedd30230182df3133d27a9972c6fc2c6af35ca5196a74",
+          "source_blob": "dac5bb517e3495f3cdf1fa43a566d24acb2a893f",
+          "transforms": []
+        },
+        "acceptance_test.py": {
+          "blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "sha256": "f07718acdcc279b349e7393144a79cbf7f1e62a88f089c10288cfe05e84e5b53",
+          "source_blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "transforms": []
+        },
+        "aggregate.py": {
+          "blob": "1d6aaace7e111b0599009f5e1735105ad2f3b602",
+          "sha256": "c17b0c14797247fcd6038cb23fca46e91d33776e850429e7739cbb81147e1786",
+          "source_blob": "1d6aaace7e111b0599009f5e1735105ad2f3b602",
+          "transforms": []
+        },
+        "batch.sh": {
+          "blob": "5795aaa4a8fc1e01fbd59a60ec4230b450ad0b59",
+          "sha256": "25af0b35c699e82f37852dee19e75d0383781d3ebdb05503b7837efd9cfefcdd",
+          "source_blob": "5795aaa4a8fc1e01fbd59a60ec4230b450ad0b59",
+          "transforms": []
+        },
+        "calibration/orgsync.cleared": {
+          "blob": "7b6a9d197fe2d6702a18af910ce09eea2e919910",
+          "sha256": "9750bb104337aa7b541c5516b3b5695de2e7d73fe58e7034e2a4f0b842ef279d",
+          "source_blob": "7b6a9d197fe2d6702a18af910ce09eea2e919910",
+          "transforms": []
+        },
+        "check-calibration-gate.sh": {
+          "blob": "10c9443f105d72a5df21a9cfa60265adb16e17e4",
+          "sha256": "a9ab3ff00d13a3ad11290320313b337c1297b5797c23c40d011995f332ce7419",
+          "source_blob": "10c9443f105d72a5df21a9cfa60265adb16e17e4",
+          "transforms": []
+        },
+        "control/test_harness.py": {
+          "blob": "0134dfa5c76f57428d1fe076d8543f382036aac1",
+          "sha256": "680ede4fb502db81cd0bd16a444e36b4b09bbbe8b073ea8afbdfc2a1e603ec85",
+          "source_blob": "0134dfa5c76f57428d1fe076d8543f382036aac1",
+          "transforms": []
+        },
+        "design/orgsync/CONTROLS.md": {
+          "blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "sha256": "d4206322e35c11b83b1c56900a70abd5607911cb60a6573ec5121387967e9f7b",
+          "source_blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "transforms": []
+        },
+        "design/orgsync/FIXTURES.md": {
+          "blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "sha256": "c03595a92ec80b36c972523b9faffa7fab065517899161a6513caa9756b0b911",
+          "source_blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "transforms": []
+        },
+        "design/orgsync/JUDGE_SPEC.md": {
+          "blob": "4f0cb4beb04480d787f5d1bcc3c60c6608c9621a",
+          "sha256": "a03c23f610cb18750eb09f90a01414dcbda35d3d27fd63f1923b9e18fddddc5b",
+          "source_blob": "4f0cb4beb04480d787f5d1bcc3c60c6608c9621a",
+          "transforms": []
+        },
+        "design/orgsync/README-REVEALED.md": {
+          "blob": "0540efcea5eebaae84277640ca00146bf46ec506",
+          "sha256": "eb92afbcf48648a8803f3d1080cd965fe1bc31e250ea9f363b97b20a9026a53a",
+          "source_blob": "0540efcea5eebaae84277640ca00146bf46ec506",
+          "transforms": []
+        },
+        "design/orgsync/controls/control_check.py": {
+          "blob": "ab882fce9dfb22ec358682d9ce47c96d592883f1",
+          "sha256": "784ab0592e0c012fcfcccfd57b981fa8d31080d9dfb43913aefb1425be4b6b97",
+          "source_blob": "ab882fce9dfb22ec358682d9ce47c96d592883f1",
+          "transforms": []
+        },
+        "design/orgsync/controls/g_writes_nothing.py": {
+          "blob": "aeaacf7a19170328421dc4d77836eb2ef873dea0",
+          "sha256": "1e4987e33713fd9f3a7436f57f01e0d48230706f388e1025c0954dc9a7f8648f",
+          "source_blob": "aeaacf7a19170328421dc4d77836eb2ef873dea0",
+          "transforms": []
+        },
+        "design/orgsync/controls/w1_naive_read.py": {
+          "blob": "20c0e09703e641a4715c1c10b437627de3ff9b2d",
+          "sha256": "8d9ec0a0c10b5f86f13a9928aa7ee7cac7dc858dd741d686738b59de50e25ec9",
+          "source_blob": "20c0e09703e641a4715c1c10b437627de3ff9b2d",
+          "transforms": []
+        },
+        "design/orgsync/controls/w2_non_idempotent.py": {
+          "blob": "3fdf7a1b4473338f04d7adb1bded2cee720457fb",
+          "sha256": "1e58444cd797e6b12817ac872ab31fe68ac1725b5657ea77422ff9a7768b6f33",
+          "source_blob": "3fdf7a1b4473338f04d7adb1bded2cee720457fb",
+          "transforms": []
+        },
+        "design/orgsync/controls/w3_confident_finisher.py": {
+          "blob": "38ce448117c0638a29df304960b5c30128f12d8e",
+          "sha256": "cc1e163ce3300b262732a438cc0c7f1c7431d22cb1fadf76d70163fc2d06c692",
+          "source_blob": "38ce448117c0638a29df304960b5c30128f12d8e",
+          "transforms": []
+        },
+        "design/orgsync/controls/w3_test_orgsync.py": {
+          "blob": "a38880e4174862d36e0dd1250dae229a6001e6d2",
+          "sha256": "3ad91e24268c1f47a9e4251c9e2d529ca81a8da16d2f43dc18df1f38cc5bda59",
+          "source_blob": "a38880e4174862d36e0dd1250dae229a6001e6d2",
+          "transforms": []
+        },
+        "design/orgsync/reference/orgsync_reference.py": {
+          "blob": "ddec31aa9e5b8010cf67269111a3c30ce54afa00",
+          "sha256": "fd87f7ba5c1c56273a11b23ba59a2947ccab743dd4948a3cd6c3063d03fecd09",
+          "source_blob": "ddec31aa9e5b8010cf67269111a3c30ce54afa00",
+          "transforms": []
+        },
+        "edition.sh": {
+          "blob": "961f165c42b205f0fc633cadc7078b3df055804c",
+          "sha256": "06a82a9ad9bda8a635324d540d3b8c4c07cc543d00223872efba94f1309485ab",
+          "source_blob": "961f165c42b205f0fc633cadc7078b3df055804c",
+          "transforms": []
+        },
+        "editions/2026-10/MANIFEST.json": {
+          "blob": "004a728319285da8072acdb548572870a91eab3a",
+          "sha256": "e78dbb0bd6ef79bf387311b874c30a6c9c5767db47ec48967d9abf348bc3e71b",
+          "source_blob": "004a728319285da8072acdb548572870a91eab3a",
+          "transforms": []
+        },
+        "editions/2026-10/TIER_PIN": {
+          "blob": "62e62defe7da9078a354be3aac654a8074225fbd",
+          "sha256": "0112101582337d65b5b0b229ffd6d7cdf961933898280001422945b7a3286cb7",
+          "source_blob": "62e62defe7da9078a354be3aac654a8074225fbd",
+          "transforms": []
+        },
+        "evidence.py": {
+          "blob": "8b8ef5e22d2f6d1a5ef566f9f395427fd8450cb4",
+          "sha256": "1a6cb457e1160e48959005f66a5d5139be38ca8206e4ee66c05800cb3226ac08",
+          "source_blob": "8b8ef5e22d2f6d1a5ef566f9f395427fd8450cb4",
+          "transforms": []
+        },
+        "export.py": {
+          "blob": "e669e9239fa84633bc48a3f91ad69db17f7a1190",
+          "sha256": "0980a72cd8e9a3a24c75fb8652caa83cfa2d548c1382f2e3a1b25d804d016d3a",
+          "source_blob": "e669e9239fa84633bc48a3f91ad69db17f7a1190",
+          "transforms": []
+        },
+        "fixtures/orgsync/server.py": {
+          "blob": "93a8b7629b3671d9f12f2da6451709aca220ba3a",
+          "sha256": "8d23417f6160db7055ce835f06833a9cc5bee4235151790afa08389ea2eebfec",
+          "source_blob": "93a8b7629b3671d9f12f2da6451709aca220ba3a",
+          "transforms": []
+        },
+        "master_table.py": {
+          "blob": "45bceda6c8f85d6a44bd7da9cfbce07ad5768358",
+          "sha256": "96709e9f5c79958b3959cd8afc6be9688a5690e9894c9fb5deda8283764c50c2",
+          "transforms": [
+            "sanitize-archive-v1"
+          ]
+        },
+        "preflight.sh": {
+          "blob": "0db68b1b0ea3c3f5ec0fccd3f6e11f90c930514f",
+          "sha256": "6550e80d9563f6197ac52da2b997cfe971938d52cf131f48e073971ba6bb41e2",
+          "source_blob": "0db68b1b0ea3c3f5ec0fccd3f6e11f90c930514f",
+          "transforms": []
+        },
+        "preflight_check.py": {
+          "blob": "49bb1d008a870b9551690e25f6f070b1df754393",
+          "sha256": "dfac8572aa5a361d7c2a8db7f49456310e022dd1c01df5a36d1872e9f8f3d7df",
+          "source_blob": "49bb1d008a870b9551690e25f6f070b1df754393",
+          "transforms": []
+        },
+        "preflight_http.py": {
+          "blob": "4f3b3573d641934254e563dca507d968194b0e78",
+          "sha256": "ec98ad06075627e1fabe11d7d04a117626a42ada48579514eecc80ae10c5ccb9",
+          "source_blob": "4f3b3573d641934254e563dca507d968194b0e78",
+          "transforms": []
+        },
+        "prices.yaml": {
+          "blob": "c191fcc8465247768abc25eade84cf4ee5f8bcf6",
+          "sha256": "41000ebf0545b934a0f6ac3541b909e49b4265ff9d0dee12ffd5dd557d4472c6",
+          "source_blob": "c191fcc8465247768abc25eade84cf4ee5f8bcf6",
+          "transforms": []
+        },
+        "prompts/baseline.md": {
+          "blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "sha256": "6927e499c8ee25996cc6669f432bec98ab3f3d747d41bb6b0142101e058649ec",
+          "source_blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "transforms": []
+        },
+        "prompts/cronspec.md": {
+          "blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "sha256": "d6b188dca51a2842e99f35b373c414372dc2d3f75fea60d20e1863a4b4a32274",
+          "source_blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "transforms": []
+        },
+        "prompts/orgsync.md": {
+          "blob": "37b91d71a2e2bc3445831a5d2204dde310abf74a",
+          "sha256": "94950b00fd82cc86a8c98a0793149b5f9c13e205dedd1ea533470387110ba408",
+          "source_blob": "37b91d71a2e2bc3445831a5d2204dde310abf74a",
+          "transforms": []
+        },
+        "redact.py": {
+          "blob": "8d0814fc08a717acbbcc7346dd3de390a8c79c10",
+          "sha256": "2bd08374ab85cae077de3947aa202b57c147de0c6bb117a7a6a33634b94ab4f2",
+          "transforms": [
+            "split-scan-markers-v1"
+          ]
+        },
+        "run.sh": {
+          "blob": "501ed64e1bbba98d825f4fb40dd467751d3d7a22",
+          "sha256": "f559cb61a03a3c7319cbefec1c3f3d9fe6d24624aa89b6dc5d8f28283bd9ef6a",
+          "source_blob": "501ed64e1bbba98d825f4fb40dd467751d3d7a22",
+          "transforms": []
+        },
+        "run_audit.py": {
+          "blob": "b50b7a41cb5022c82a0ef7e77c603d86ca7b8c5a",
+          "sha256": "65cad8b63260a39c30d7c6380edcd3569c0b6b3f29747f6bb1220462505e9c7d",
+          "transforms": [
+            "split-scan-markers-v1"
+          ]
+        },
+        "score.py": {
+          "blob": "ea60b6552b3eadad2608698061824f7ad2d07d36",
+          "sha256": "768f41e53261c62bc8df34fcfc7034b15cb897d39989b0ba7f4ec505be5931d6",
+          "transforms": [
+            "sanitize-home-v1"
+          ]
+        },
+        "tasks/orgsync-skeleton/.gitignore": {
+          "blob": "7a60b85e148f80966a550e5ab6a762a907c69ca6",
+          "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+          "source_blob": "7a60b85e148f80966a550e5ab6a762a907c69ca6",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/README.md": {
+          "blob": "71ed60104db9de6f096e9b87db2719c8186e2afd",
+          "sha256": "5fabfc6c6f2f186e1dee9be989bec9b08269762cd570a13c3dd68a3bab1682c2",
+          "source_blob": "71ed60104db9de6f096e9b87db2719c8186e2afd",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/config.json": {
+          "blob": "4fbb0a7c349bfb511e6116c6fd603cad5c180aee",
+          "sha256": "3ef54bc49fd7181720d830a6479a80fe6cc52e84e113ff4f3517ac6a33eca802",
+          "source_blob": "4fbb0a7c349bfb511e6116c6fd603cad5c180aee",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/__init__.py": {
+          "blob": "035e2d57fe2e92b04a47d6ccd6d504e57149a00a",
+          "sha256": "eaf1a86caebfece9683a2caab0ea1cd1d2f54f29f06a0bc01581b9847f7cf8cc",
+          "source_blob": "035e2d57fe2e92b04a47d6ccd6d504e57149a00a",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/__main__.py": {
+          "blob": "433cafae2fcaf9a495f87ca674738774bc3beee0",
+          "sha256": "8c6ae1d5e4da8ba10506a9510944e22373df98e3df7446ecbf0500816aea78fd",
+          "source_blob": "433cafae2fcaf9a495f87ca674738774bc3beee0",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/config.py": {
+          "blob": "2e2329f7a9e4a303aa00c3e2d789c7a28b21e7eb",
+          "sha256": "dd2627e00c6fd9034b065a799180a17ecfe4eac9f377e210167e44361ca864c7",
+          "source_blob": "2e2329f7a9e4a303aa00c3e2d789c7a28b21e7eb",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/http_client.py": {
+          "blob": "cb37781a7a1da2a04de0f4564f70a958f45f1988",
+          "sha256": "d04cde8c96849104ad82d9ed11ba4c2e7dc9a4072b3df90fede78e30429f1b99",
+          "source_blob": "cb37781a7a1da2a04de0f4564f70a958f45f1988",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/models.py": {
+          "blob": "6e73fbc37a7b86112cfd1fc3e4861f8dc9fd996f",
+          "sha256": "8640c933738468f40985ac6dadecf0da570f763cc6298f55f98e94078633ca60",
+          "source_blob": "6e73fbc37a7b86112cfd1fc3e4861f8dc9fd996f",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/sync.py": {
+          "blob": "985bffa3a9e539d518467dca3380b7983309f018",
+          "sha256": "7a81e701849a4224d29e48560c8bcb1324a2afbf9e90e13724990f9bc2d41ce9",
+          "source_blob": "985bffa3a9e539d518467dca3380b7983309f018",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_cli.py": {
+          "blob": "28a3f35ac6808b5c8ab5bc33926afeee69821d8a",
+          "sha256": "448ddcbd63fe6906e6b11ea40dca952e8cfdfb162e60377ec46b988966c47f62",
+          "source_blob": "28a3f35ac6808b5c8ab5bc33926afeee69821d8a",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_config.py": {
+          "blob": "738eace565b89e4006c619a3580f883219babe69",
+          "sha256": "a5b6a81763d88ebd810a3f210eedc1eed2169bda9e0e34c5a118c043b59e341d",
+          "source_blob": "738eace565b89e4006c619a3580f883219babe69",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_http_client.py": {
+          "blob": "900ac0968e5ce970119983e1608a3395b01fdb45",
+          "sha256": "0ca33a24aa61aa763ede5af6eb0fe32abb4aff6c87c063459919ec252dd6aafd",
+          "source_blob": "900ac0968e5ce970119983e1608a3395b01fdb45",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_models.py": {
+          "blob": "6f033024df3c551275a3b0756c2330dd7f553ffa",
+          "sha256": "ad04dd555f7367a9de5a02820467b34850dc9d2a8040ac639567755ec4d5d453",
+          "source_blob": "6f033024df3c551275a3b0756c2330dd7f553ffa",
+          "transforms": []
+        },
+        "token_evidence.py": {
+          "blob": "efbb198ca1ebc9552d821a943ab65073b36c85a9",
+          "sha256": "8e658ff3108a13882f78ab3cd45212394af95f9c877c9e3b4c189e4ddd88a81c",
+          "source_blob": "efbb198ca1ebc9552d821a943ab65073b36c85a9",
+          "transforms": []
+        },
+        "verify.py": {
+          "blob": "fa86c7303e75f7b5e6525a40e1138bdc80b90e78",
+          "sha256": "d6d8c40fc229fb31c232010a7a0d134bd0fb2433de151e4c64d5597fafbac182",
+          "source_blob": "fa86c7303e75f7b5e6525a40e1138bdc80b90e78",
+          "transforms": []
+        }
+      }
+    },
+    "69e184364164b83005718c4fbb71f6aafc8d2c8c": {
+      "absent": [
+        "edition_report.py",
+        "errata.py"
+      ],
+      "aliases": [
+        "69e184364164b83005718c4fbb71f6aafc8d2c8c"
+      ],
+      "files": {
+        "TIER_PIN": {
+          "blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "sha256": "b14a1094090aaa739adb43e32f6cfc04df15bbfac95aea879b3862c5dbbf06cd",
+          "source_blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "transforms": []
+        },
+        "acceptance_cronspec.py": {
+          "blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "sha256": "a847b421cf8234cd953aaefe264ed72745ef123f4c43abaa24decca746e2e5a7",
+          "source_blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "transforms": []
+        },
+        "acceptance_orgsync.py": {
+          "blob": "dac5bb517e3495f3cdf1fa43a566d24acb2a893f",
+          "sha256": "b948f904bfd72ffcd8fedd30230182df3133d27a9972c6fc2c6af35ca5196a74",
+          "source_blob": "dac5bb517e3495f3cdf1fa43a566d24acb2a893f",
+          "transforms": []
+        },
+        "acceptance_test.py": {
+          "blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "sha256": "f07718acdcc279b349e7393144a79cbf7f1e62a88f089c10288cfe05e84e5b53",
+          "source_blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "transforms": []
+        },
+        "aggregate.py": {
+          "blob": "1d6aaace7e111b0599009f5e1735105ad2f3b602",
+          "sha256": "c17b0c14797247fcd6038cb23fca46e91d33776e850429e7739cbb81147e1786",
+          "source_blob": "1d6aaace7e111b0599009f5e1735105ad2f3b602",
+          "transforms": []
+        },
+        "batch.sh": {
+          "blob": "d96e9f80cb6862d74fc1076ce4b9248149bbb338",
+          "sha256": "3f6dd6cb0e230c8ce089a5b485738b053b653f4f227b3be4986de78b3be1f047",
+          "source_blob": "d96e9f80cb6862d74fc1076ce4b9248149bbb338",
+          "transforms": []
+        },
+        "calibration/orgsync.cleared": {
+          "blob": "7b6a9d197fe2d6702a18af910ce09eea2e919910",
+          "sha256": "9750bb104337aa7b541c5516b3b5695de2e7d73fe58e7034e2a4f0b842ef279d",
+          "source_blob": "7b6a9d197fe2d6702a18af910ce09eea2e919910",
+          "transforms": []
+        },
+        "check-calibration-gate.sh": {
+          "blob": "3cc32ee0b980a088371b3147ff4ab2e8caa223c7",
+          "sha256": "75dad133b2ed838112fe968bfddfbee86e740724ec8572ccec7a62ab46cebb26",
+          "source_blob": "3cc32ee0b980a088371b3147ff4ab2e8caa223c7",
+          "transforms": []
+        },
+        "control/test_harness.py": {
+          "blob": "f5faa6a394d9daf4d1c24673edf2d29649709bbb",
+          "sha256": "442e9c0cc62cc4d737a93155b0454a8c3fcb3e6300ae5324eef8eb53f374e6b7",
+          "source_blob": "f5faa6a394d9daf4d1c24673edf2d29649709bbb",
+          "transforms": []
+        },
+        "design/orgsync/CONTROLS.md": {
+          "blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "sha256": "d4206322e35c11b83b1c56900a70abd5607911cb60a6573ec5121387967e9f7b",
+          "source_blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "transforms": []
+        },
+        "design/orgsync/FIXTURES.md": {
+          "blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "sha256": "c03595a92ec80b36c972523b9faffa7fab065517899161a6513caa9756b0b911",
+          "source_blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "transforms": []
+        },
+        "design/orgsync/JUDGE_SPEC.md": {
+          "blob": "4f0cb4beb04480d787f5d1bcc3c60c6608c9621a",
+          "sha256": "a03c23f610cb18750eb09f90a01414dcbda35d3d27fd63f1923b9e18fddddc5b",
+          "source_blob": "4f0cb4beb04480d787f5d1bcc3c60c6608c9621a",
+          "transforms": []
+        },
+        "design/orgsync/README-REVEALED.md": {
+          "blob": "0540efcea5eebaae84277640ca00146bf46ec506",
+          "sha256": "eb92afbcf48648a8803f3d1080cd965fe1bc31e250ea9f363b97b20a9026a53a",
+          "source_blob": "0540efcea5eebaae84277640ca00146bf46ec506",
+          "transforms": []
+        },
+        "design/orgsync/controls/control_check.py": {
+          "blob": "ab882fce9dfb22ec358682d9ce47c96d592883f1",
+          "sha256": "784ab0592e0c012fcfcccfd57b981fa8d31080d9dfb43913aefb1425be4b6b97",
+          "source_blob": "ab882fce9dfb22ec358682d9ce47c96d592883f1",
+          "transforms": []
+        },
+        "design/orgsync/controls/g_writes_nothing.py": {
+          "blob": "aeaacf7a19170328421dc4d77836eb2ef873dea0",
+          "sha256": "1e4987e33713fd9f3a7436f57f01e0d48230706f388e1025c0954dc9a7f8648f",
+          "source_blob": "aeaacf7a19170328421dc4d77836eb2ef873dea0",
+          "transforms": []
+        },
+        "design/orgsync/controls/w1_naive_read.py": {
+          "blob": "20c0e09703e641a4715c1c10b437627de3ff9b2d",
+          "sha256": "8d9ec0a0c10b5f86f13a9928aa7ee7cac7dc858dd741d686738b59de50e25ec9",
+          "source_blob": "20c0e09703e641a4715c1c10b437627de3ff9b2d",
+          "transforms": []
+        },
+        "design/orgsync/controls/w2_non_idempotent.py": {
+          "blob": "3fdf7a1b4473338f04d7adb1bded2cee720457fb",
+          "sha256": "1e58444cd797e6b12817ac872ab31fe68ac1725b5657ea77422ff9a7768b6f33",
+          "source_blob": "3fdf7a1b4473338f04d7adb1bded2cee720457fb",
+          "transforms": []
+        },
+        "design/orgsync/controls/w3_confident_finisher.py": {
+          "blob": "38ce448117c0638a29df304960b5c30128f12d8e",
+          "sha256": "cc1e163ce3300b262732a438cc0c7f1c7431d22cb1fadf76d70163fc2d06c692",
+          "source_blob": "38ce448117c0638a29df304960b5c30128f12d8e",
+          "transforms": []
+        },
+        "design/orgsync/controls/w3_test_orgsync.py": {
+          "blob": "a38880e4174862d36e0dd1250dae229a6001e6d2",
+          "sha256": "3ad91e24268c1f47a9e4251c9e2d529ca81a8da16d2f43dc18df1f38cc5bda59",
+          "source_blob": "a38880e4174862d36e0dd1250dae229a6001e6d2",
+          "transforms": []
+        },
+        "design/orgsync/reference/orgsync_reference.py": {
+          "blob": "ddec31aa9e5b8010cf67269111a3c30ce54afa00",
+          "sha256": "fd87f7ba5c1c56273a11b23ba59a2947ccab743dd4948a3cd6c3063d03fecd09",
+          "source_blob": "ddec31aa9e5b8010cf67269111a3c30ce54afa00",
+          "transforms": []
+        },
+        "edition.sh": {
+          "blob": "7bacc368ac14e092dbda2b81cb116c01c95d70c9",
+          "sha256": "ea2965f0470eed1d6d92a9762240a54e8cb9c80872f695d31b97e211cf0a9751",
+          "source_blob": "7bacc368ac14e092dbda2b81cb116c01c95d70c9",
+          "transforms": []
+        },
+        "editions/2026-10/MANIFEST.json": {
+          "blob": "bf30a15aa112869e60455a88733c337eacf37657",
+          "sha256": "963ed12f74f911a07d6dc9563457484c5c855d3f3152fc1e83a6c86474e30de3",
+          "source_blob": "bf30a15aa112869e60455a88733c337eacf37657",
+          "transforms": []
+        },
+        "editions/2026-10/TIER_PIN": {
+          "blob": "25a6b9f27d9b63e7b8adfb1710c2354d2ed4b390",
+          "sha256": "d058073c035a98984adcd0be9ff04c6ef07569d14e8300247e451c5c9b2c09ae",
+          "source_blob": "25a6b9f27d9b63e7b8adfb1710c2354d2ed4b390",
+          "transforms": []
+        },
+        "evidence.py": {
+          "blob": "8b8ef5e22d2f6d1a5ef566f9f395427fd8450cb4",
+          "sha256": "1a6cb457e1160e48959005f66a5d5139be38ca8206e4ee66c05800cb3226ac08",
+          "source_blob": "8b8ef5e22d2f6d1a5ef566f9f395427fd8450cb4",
+          "transforms": []
+        },
+        "export.py": {
+          "blob": "e669e9239fa84633bc48a3f91ad69db17f7a1190",
+          "sha256": "0980a72cd8e9a3a24c75fb8652caa83cfa2d548c1382f2e3a1b25d804d016d3a",
+          "source_blob": "e669e9239fa84633bc48a3f91ad69db17f7a1190",
+          "transforms": []
+        },
+        "fixtures/orgsync/server.py": {
+          "blob": "93a8b7629b3671d9f12f2da6451709aca220ba3a",
+          "sha256": "8d23417f6160db7055ce835f06833a9cc5bee4235151790afa08389ea2eebfec",
+          "source_blob": "93a8b7629b3671d9f12f2da6451709aca220ba3a",
+          "transforms": []
+        },
+        "master_table.py": {
+          "blob": "45bceda6c8f85d6a44bd7da9cfbce07ad5768358",
+          "sha256": "96709e9f5c79958b3959cd8afc6be9688a5690e9894c9fb5deda8283764c50c2",
+          "transforms": [
+            "sanitize-archive-v1"
+          ]
+        },
+        "preflight.sh": {
+          "blob": "ea0028bba21d9c77d279c93ae713c4e54d5901a9",
+          "sha256": "0cfbbba79cf57ded9473053868de59f606e2cc2ab129fa0309ca70e5b72114de",
+          "source_blob": "ea0028bba21d9c77d279c93ae713c4e54d5901a9",
+          "transforms": []
+        },
+        "preflight_check.py": {
+          "blob": "110d16a37a82487f47f7cfee78d99bd77cf9856b",
+          "sha256": "d2a889c00eb680f5751824f5be8be0189a810b52d110167f57c2a2158448fe75",
+          "source_blob": "110d16a37a82487f47f7cfee78d99bd77cf9856b",
+          "transforms": []
+        },
+        "preflight_http.py": {
+          "blob": "4f3b3573d641934254e563dca507d968194b0e78",
+          "sha256": "ec98ad06075627e1fabe11d7d04a117626a42ada48579514eecc80ae10c5ccb9",
+          "source_blob": "4f3b3573d641934254e563dca507d968194b0e78",
+          "transforms": []
+        },
+        "prices.yaml": {
+          "blob": "e0e09f708c4077d558d266e167acbabf2df60645",
+          "sha256": "b3aa945f75af6573c29a3f47610f6f3460afa0665188b679dd2ea261265c9a15",
+          "source_blob": "e0e09f708c4077d558d266e167acbabf2df60645",
+          "transforms": []
+        },
+        "prompts/baseline.md": {
+          "blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "sha256": "6927e499c8ee25996cc6669f432bec98ab3f3d747d41bb6b0142101e058649ec",
+          "source_blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "transforms": []
+        },
+        "prompts/cronspec.md": {
+          "blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "sha256": "d6b188dca51a2842e99f35b373c414372dc2d3f75fea60d20e1863a4b4a32274",
+          "source_blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "transforms": []
+        },
+        "prompts/orgsync.md": {
+          "blob": "37b91d71a2e2bc3445831a5d2204dde310abf74a",
+          "sha256": "94950b00fd82cc86a8c98a0793149b5f9c13e205dedd1ea533470387110ba408",
+          "source_blob": "37b91d71a2e2bc3445831a5d2204dde310abf74a",
+          "transforms": []
+        },
+        "redact.py": {
+          "blob": "8d0814fc08a717acbbcc7346dd3de390a8c79c10",
+          "sha256": "2bd08374ab85cae077de3947aa202b57c147de0c6bb117a7a6a33634b94ab4f2",
+          "transforms": [
+            "split-scan-markers-v1"
+          ]
+        },
+        "run.sh": {
+          "blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+          "sha256": "68926914182c01bd78bd87dd9a3ffc052626e4aff158c2ebf25e455a058a3bbf",
+          "source_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+          "transforms": []
+        },
+        "run_audit.py": {
+          "blob": "b50b7a41cb5022c82a0ef7e77c603d86ca7b8c5a",
+          "sha256": "65cad8b63260a39c30d7c6380edcd3569c0b6b3f29747f6bb1220462505e9c7d",
+          "transforms": [
+            "split-scan-markers-v1"
+          ]
+        },
+        "score.py": {
+          "blob": "ea60b6552b3eadad2608698061824f7ad2d07d36",
+          "sha256": "768f41e53261c62bc8df34fcfc7034b15cb897d39989b0ba7f4ec505be5931d6",
+          "transforms": [
+            "sanitize-home-v1"
+          ]
+        },
+        "tasks/orgsync-skeleton/.gitignore": {
+          "blob": "7a60b85e148f80966a550e5ab6a762a907c69ca6",
+          "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+          "source_blob": "7a60b85e148f80966a550e5ab6a762a907c69ca6",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/README.md": {
+          "blob": "71ed60104db9de6f096e9b87db2719c8186e2afd",
+          "sha256": "5fabfc6c6f2f186e1dee9be989bec9b08269762cd570a13c3dd68a3bab1682c2",
+          "source_blob": "71ed60104db9de6f096e9b87db2719c8186e2afd",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/config.json": {
+          "blob": "4fbb0a7c349bfb511e6116c6fd603cad5c180aee",
+          "sha256": "3ef54bc49fd7181720d830a6479a80fe6cc52e84e113ff4f3517ac6a33eca802",
+          "source_blob": "4fbb0a7c349bfb511e6116c6fd603cad5c180aee",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/__init__.py": {
+          "blob": "035e2d57fe2e92b04a47d6ccd6d504e57149a00a",
+          "sha256": "eaf1a86caebfece9683a2caab0ea1cd1d2f54f29f06a0bc01581b9847f7cf8cc",
+          "source_blob": "035e2d57fe2e92b04a47d6ccd6d504e57149a00a",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/__main__.py": {
+          "blob": "433cafae2fcaf9a495f87ca674738774bc3beee0",
+          "sha256": "8c6ae1d5e4da8ba10506a9510944e22373df98e3df7446ecbf0500816aea78fd",
+          "source_blob": "433cafae2fcaf9a495f87ca674738774bc3beee0",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/config.py": {
+          "blob": "2e2329f7a9e4a303aa00c3e2d789c7a28b21e7eb",
+          "sha256": "dd2627e00c6fd9034b065a799180a17ecfe4eac9f377e210167e44361ca864c7",
+          "source_blob": "2e2329f7a9e4a303aa00c3e2d789c7a28b21e7eb",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/http_client.py": {
+          "blob": "cb37781a7a1da2a04de0f4564f70a958f45f1988",
+          "sha256": "d04cde8c96849104ad82d9ed11ba4c2e7dc9a4072b3df90fede78e30429f1b99",
+          "source_blob": "cb37781a7a1da2a04de0f4564f70a958f45f1988",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/models.py": {
+          "blob": "6e73fbc37a7b86112cfd1fc3e4861f8dc9fd996f",
+          "sha256": "8640c933738468f40985ac6dadecf0da570f763cc6298f55f98e94078633ca60",
+          "source_blob": "6e73fbc37a7b86112cfd1fc3e4861f8dc9fd996f",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/sync.py": {
+          "blob": "985bffa3a9e539d518467dca3380b7983309f018",
+          "sha256": "7a81e701849a4224d29e48560c8bcb1324a2afbf9e90e13724990f9bc2d41ce9",
+          "source_blob": "985bffa3a9e539d518467dca3380b7983309f018",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_cli.py": {
+          "blob": "28a3f35ac6808b5c8ab5bc33926afeee69821d8a",
+          "sha256": "448ddcbd63fe6906e6b11ea40dca952e8cfdfb162e60377ec46b988966c47f62",
+          "source_blob": "28a3f35ac6808b5c8ab5bc33926afeee69821d8a",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_config.py": {
+          "blob": "738eace565b89e4006c619a3580f883219babe69",
+          "sha256": "a5b6a81763d88ebd810a3f210eedc1eed2169bda9e0e34c5a118c043b59e341d",
+          "source_blob": "738eace565b89e4006c619a3580f883219babe69",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_http_client.py": {
+          "blob": "900ac0968e5ce970119983e1608a3395b01fdb45",
+          "sha256": "0ca33a24aa61aa763ede5af6eb0fe32abb4aff6c87c063459919ec252dd6aafd",
+          "source_blob": "900ac0968e5ce970119983e1608a3395b01fdb45",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_models.py": {
+          "blob": "6f033024df3c551275a3b0756c2330dd7f553ffa",
+          "sha256": "ad04dd555f7367a9de5a02820467b34850dc9d2a8040ac639567755ec4d5d453",
+          "source_blob": "6f033024df3c551275a3b0756c2330dd7f553ffa",
+          "transforms": []
+        },
+        "token_evidence.py": {
+          "blob": "efbb198ca1ebc9552d821a943ab65073b36c85a9",
+          "sha256": "8e658ff3108a13882f78ab3cd45212394af95f9c877c9e3b4c189e4ddd88a81c",
+          "source_blob": "efbb198ca1ebc9552d821a943ab65073b36c85a9",
+          "transforms": []
+        },
+        "verify.py": {
+          "blob": "7918f7415e532edf786f2845b646a69206e4d2cf",
+          "sha256": "30bc718b41034aae601b41a94aff28f4130c436cbf00339b4e01f2d2f85e563d",
+          "source_blob": "7918f7415e532edf786f2845b646a69206e4d2cf",
+          "transforms": []
+        }
+      }
+    },
+    "849c8cc561919c57b23cccc14e92985ba490d9d8": {
+      "absent": [
+        "edition_report.py",
+        "errata.py"
+      ],
+      "aliases": [
+        "849c8cc",
+        "849c8cc561919c57b23cccc14e92985ba490d9d8"
+      ],
+      "files": {
+        "TIER_PIN": {
+          "blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "sha256": "b14a1094090aaa739adb43e32f6cfc04df15bbfac95aea879b3862c5dbbf06cd",
+          "source_blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "transforms": []
+        },
+        "acceptance_cronspec.py": {
+          "blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "sha256": "a847b421cf8234cd953aaefe264ed72745ef123f4c43abaa24decca746e2e5a7",
+          "source_blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "transforms": []
+        },
+        "acceptance_orgsync.py": {
+          "blob": "dac5bb517e3495f3cdf1fa43a566d24acb2a893f",
+          "sha256": "b948f904bfd72ffcd8fedd30230182df3133d27a9972c6fc2c6af35ca5196a74",
+          "source_blob": "dac5bb517e3495f3cdf1fa43a566d24acb2a893f",
+          "transforms": []
+        },
+        "acceptance_test.py": {
+          "blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "sha256": "f07718acdcc279b349e7393144a79cbf7f1e62a88f089c10288cfe05e84e5b53",
+          "source_blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "transforms": []
+        },
+        "aggregate.py": {
+          "blob": "1d6aaace7e111b0599009f5e1735105ad2f3b602",
+          "sha256": "c17b0c14797247fcd6038cb23fca46e91d33776e850429e7739cbb81147e1786",
+          "source_blob": "1d6aaace7e111b0599009f5e1735105ad2f3b602",
+          "transforms": []
+        },
+        "batch.sh": {
+          "blob": "d96e9f80cb6862d74fc1076ce4b9248149bbb338",
+          "sha256": "3f6dd6cb0e230c8ce089a5b485738b053b653f4f227b3be4986de78b3be1f047",
+          "source_blob": "d96e9f80cb6862d74fc1076ce4b9248149bbb338",
+          "transforms": []
+        },
+        "calibration/orgsync.cleared": {
+          "blob": "7b6a9d197fe2d6702a18af910ce09eea2e919910",
+          "sha256": "9750bb104337aa7b541c5516b3b5695de2e7d73fe58e7034e2a4f0b842ef279d",
+          "source_blob": "7b6a9d197fe2d6702a18af910ce09eea2e919910",
+          "transforms": []
+        },
+        "check-calibration-gate.sh": {
+          "blob": "3cc32ee0b980a088371b3147ff4ab2e8caa223c7",
+          "sha256": "75dad133b2ed838112fe968bfddfbee86e740724ec8572ccec7a62ab46cebb26",
+          "source_blob": "3cc32ee0b980a088371b3147ff4ab2e8caa223c7",
+          "transforms": []
+        },
+        "control/test_harness.py": {
+          "blob": "e72ad3e22de809629fd96952cebd7799b63f68fe",
+          "sha256": "65a219a21947ec515163a221c87eaf200dec32a797f30a21ab737bb4d0c36ad1",
+          "source_blob": "e72ad3e22de809629fd96952cebd7799b63f68fe",
+          "transforms": []
+        },
+        "design/orgsync/CONTROLS.md": {
+          "blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "sha256": "d4206322e35c11b83b1c56900a70abd5607911cb60a6573ec5121387967e9f7b",
+          "source_blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "transforms": []
+        },
+        "design/orgsync/FIXTURES.md": {
+          "blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "sha256": "c03595a92ec80b36c972523b9faffa7fab065517899161a6513caa9756b0b911",
+          "source_blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "transforms": []
+        },
+        "design/orgsync/JUDGE_SPEC.md": {
+          "blob": "4f0cb4beb04480d787f5d1bcc3c60c6608c9621a",
+          "sha256": "a03c23f610cb18750eb09f90a01414dcbda35d3d27fd63f1923b9e18fddddc5b",
+          "source_blob": "4f0cb4beb04480d787f5d1bcc3c60c6608c9621a",
+          "transforms": []
+        },
+        "design/orgsync/README-REVEALED.md": {
+          "blob": "0540efcea5eebaae84277640ca00146bf46ec506",
+          "sha256": "eb92afbcf48648a8803f3d1080cd965fe1bc31e250ea9f363b97b20a9026a53a",
+          "source_blob": "0540efcea5eebaae84277640ca00146bf46ec506",
+          "transforms": []
+        },
+        "design/orgsync/controls/control_check.py": {
+          "blob": "ab882fce9dfb22ec358682d9ce47c96d592883f1",
+          "sha256": "784ab0592e0c012fcfcccfd57b981fa8d31080d9dfb43913aefb1425be4b6b97",
+          "source_blob": "ab882fce9dfb22ec358682d9ce47c96d592883f1",
+          "transforms": []
+        },
+        "design/orgsync/controls/g_writes_nothing.py": {
+          "blob": "aeaacf7a19170328421dc4d77836eb2ef873dea0",
+          "sha256": "1e4987e33713fd9f3a7436f57f01e0d48230706f388e1025c0954dc9a7f8648f",
+          "source_blob": "aeaacf7a19170328421dc4d77836eb2ef873dea0",
+          "transforms": []
+        },
+        "design/orgsync/controls/w1_naive_read.py": {
+          "blob": "20c0e09703e641a4715c1c10b437627de3ff9b2d",
+          "sha256": "8d9ec0a0c10b5f86f13a9928aa7ee7cac7dc858dd741d686738b59de50e25ec9",
+          "source_blob": "20c0e09703e641a4715c1c10b437627de3ff9b2d",
+          "transforms": []
+        },
+        "design/orgsync/controls/w2_non_idempotent.py": {
+          "blob": "3fdf7a1b4473338f04d7adb1bded2cee720457fb",
+          "sha256": "1e58444cd797e6b12817ac872ab31fe68ac1725b5657ea77422ff9a7768b6f33",
+          "source_blob": "3fdf7a1b4473338f04d7adb1bded2cee720457fb",
+          "transforms": []
+        },
+        "design/orgsync/controls/w3_confident_finisher.py": {
+          "blob": "38ce448117c0638a29df304960b5c30128f12d8e",
+          "sha256": "cc1e163ce3300b262732a438cc0c7f1c7431d22cb1fadf76d70163fc2d06c692",
+          "source_blob": "38ce448117c0638a29df304960b5c30128f12d8e",
+          "transforms": []
+        },
+        "design/orgsync/controls/w3_test_orgsync.py": {
+          "blob": "a38880e4174862d36e0dd1250dae229a6001e6d2",
+          "sha256": "3ad91e24268c1f47a9e4251c9e2d529ca81a8da16d2f43dc18df1f38cc5bda59",
+          "source_blob": "a38880e4174862d36e0dd1250dae229a6001e6d2",
+          "transforms": []
+        },
+        "design/orgsync/reference/orgsync_reference.py": {
+          "blob": "ddec31aa9e5b8010cf67269111a3c30ce54afa00",
+          "sha256": "fd87f7ba5c1c56273a11b23ba59a2947ccab743dd4948a3cd6c3063d03fecd09",
+          "source_blob": "ddec31aa9e5b8010cf67269111a3c30ce54afa00",
+          "transforms": []
+        },
+        "edition.sh": {
+          "blob": "7bacc368ac14e092dbda2b81cb116c01c95d70c9",
+          "sha256": "ea2965f0470eed1d6d92a9762240a54e8cb9c80872f695d31b97e211cf0a9751",
+          "source_blob": "7bacc368ac14e092dbda2b81cb116c01c95d70c9",
+          "transforms": []
+        },
+        "editions/2026-10/MANIFEST.json": {
+          "blob": "bf30a15aa112869e60455a88733c337eacf37657",
+          "sha256": "963ed12f74f911a07d6dc9563457484c5c855d3f3152fc1e83a6c86474e30de3",
+          "source_blob": "bf30a15aa112869e60455a88733c337eacf37657",
+          "transforms": []
+        },
+        "editions/2026-10/TIER_PIN": {
+          "blob": "25a6b9f27d9b63e7b8adfb1710c2354d2ed4b390",
+          "sha256": "d058073c035a98984adcd0be9ff04c6ef07569d14e8300247e451c5c9b2c09ae",
+          "source_blob": "25a6b9f27d9b63e7b8adfb1710c2354d2ed4b390",
+          "transforms": []
+        },
+        "evidence.py": {
+          "blob": "8b8ef5e22d2f6d1a5ef566f9f395427fd8450cb4",
+          "sha256": "1a6cb457e1160e48959005f66a5d5139be38ca8206e4ee66c05800cb3226ac08",
+          "source_blob": "8b8ef5e22d2f6d1a5ef566f9f395427fd8450cb4",
+          "transforms": []
+        },
+        "export.py": {
+          "blob": "e669e9239fa84633bc48a3f91ad69db17f7a1190",
+          "sha256": "0980a72cd8e9a3a24c75fb8652caa83cfa2d548c1382f2e3a1b25d804d016d3a",
+          "source_blob": "e669e9239fa84633bc48a3f91ad69db17f7a1190",
+          "transforms": []
+        },
+        "fixtures/orgsync/server.py": {
+          "blob": "93a8b7629b3671d9f12f2da6451709aca220ba3a",
+          "sha256": "8d23417f6160db7055ce835f06833a9cc5bee4235151790afa08389ea2eebfec",
+          "source_blob": "93a8b7629b3671d9f12f2da6451709aca220ba3a",
+          "transforms": []
+        },
+        "master_table.py": {
+          "blob": "45bceda6c8f85d6a44bd7da9cfbce07ad5768358",
+          "sha256": "96709e9f5c79958b3959cd8afc6be9688a5690e9894c9fb5deda8283764c50c2",
+          "transforms": [
+            "sanitize-archive-v1"
+          ]
+        },
+        "preflight.sh": {
+          "blob": "ea0028bba21d9c77d279c93ae713c4e54d5901a9",
+          "sha256": "0cfbbba79cf57ded9473053868de59f606e2cc2ab129fa0309ca70e5b72114de",
+          "source_blob": "ea0028bba21d9c77d279c93ae713c4e54d5901a9",
+          "transforms": []
+        },
+        "preflight_check.py": {
+          "blob": "110d16a37a82487f47f7cfee78d99bd77cf9856b",
+          "sha256": "d2a889c00eb680f5751824f5be8be0189a810b52d110167f57c2a2158448fe75",
+          "source_blob": "110d16a37a82487f47f7cfee78d99bd77cf9856b",
+          "transforms": []
+        },
+        "preflight_http.py": {
+          "blob": "4f3b3573d641934254e563dca507d968194b0e78",
+          "sha256": "ec98ad06075627e1fabe11d7d04a117626a42ada48579514eecc80ae10c5ccb9",
+          "source_blob": "4f3b3573d641934254e563dca507d968194b0e78",
+          "transforms": []
+        },
+        "prices.yaml": {
+          "blob": "e0e09f708c4077d558d266e167acbabf2df60645",
+          "sha256": "b3aa945f75af6573c29a3f47610f6f3460afa0665188b679dd2ea261265c9a15",
+          "source_blob": "e0e09f708c4077d558d266e167acbabf2df60645",
+          "transforms": []
+        },
+        "prompts/baseline.md": {
+          "blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "sha256": "6927e499c8ee25996cc6669f432bec98ab3f3d747d41bb6b0142101e058649ec",
+          "source_blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "transforms": []
+        },
+        "prompts/cronspec.md": {
+          "blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "sha256": "d6b188dca51a2842e99f35b373c414372dc2d3f75fea60d20e1863a4b4a32274",
+          "source_blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "transforms": []
+        },
+        "prompts/orgsync.md": {
+          "blob": "37b91d71a2e2bc3445831a5d2204dde310abf74a",
+          "sha256": "94950b00fd82cc86a8c98a0793149b5f9c13e205dedd1ea533470387110ba408",
+          "source_blob": "37b91d71a2e2bc3445831a5d2204dde310abf74a",
+          "transforms": []
+        },
+        "redact.py": {
+          "blob": "8d0814fc08a717acbbcc7346dd3de390a8c79c10",
+          "sha256": "2bd08374ab85cae077de3947aa202b57c147de0c6bb117a7a6a33634b94ab4f2",
+          "transforms": [
+            "split-scan-markers-v1"
+          ]
+        },
+        "run.sh": {
+          "blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+          "sha256": "68926914182c01bd78bd87dd9a3ffc052626e4aff158c2ebf25e455a058a3bbf",
+          "source_blob": "5e22dd7a5f537f1ab6072c30e88d59c558920759",
+          "transforms": []
+        },
+        "run_audit.py": {
+          "blob": "b50b7a41cb5022c82a0ef7e77c603d86ca7b8c5a",
+          "sha256": "65cad8b63260a39c30d7c6380edcd3569c0b6b3f29747f6bb1220462505e9c7d",
+          "transforms": [
+            "split-scan-markers-v1"
+          ]
+        },
+        "score.py": {
+          "blob": "ea60b6552b3eadad2608698061824f7ad2d07d36",
+          "sha256": "768f41e53261c62bc8df34fcfc7034b15cb897d39989b0ba7f4ec505be5931d6",
+          "transforms": [
+            "sanitize-home-v1"
+          ]
+        },
+        "tasks/orgsync-skeleton/.gitignore": {
+          "blob": "7a60b85e148f80966a550e5ab6a762a907c69ca6",
+          "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+          "source_blob": "7a60b85e148f80966a550e5ab6a762a907c69ca6",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/README.md": {
+          "blob": "71ed60104db9de6f096e9b87db2719c8186e2afd",
+          "sha256": "5fabfc6c6f2f186e1dee9be989bec9b08269762cd570a13c3dd68a3bab1682c2",
+          "source_blob": "71ed60104db9de6f096e9b87db2719c8186e2afd",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/config.json": {
+          "blob": "4fbb0a7c349bfb511e6116c6fd603cad5c180aee",
+          "sha256": "3ef54bc49fd7181720d830a6479a80fe6cc52e84e113ff4f3517ac6a33eca802",
+          "source_blob": "4fbb0a7c349bfb511e6116c6fd603cad5c180aee",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/__init__.py": {
+          "blob": "035e2d57fe2e92b04a47d6ccd6d504e57149a00a",
+          "sha256": "eaf1a86caebfece9683a2caab0ea1cd1d2f54f29f06a0bc01581b9847f7cf8cc",
+          "source_blob": "035e2d57fe2e92b04a47d6ccd6d504e57149a00a",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/__main__.py": {
+          "blob": "433cafae2fcaf9a495f87ca674738774bc3beee0",
+          "sha256": "8c6ae1d5e4da8ba10506a9510944e22373df98e3df7446ecbf0500816aea78fd",
+          "source_blob": "433cafae2fcaf9a495f87ca674738774bc3beee0",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/config.py": {
+          "blob": "2e2329f7a9e4a303aa00c3e2d789c7a28b21e7eb",
+          "sha256": "dd2627e00c6fd9034b065a799180a17ecfe4eac9f377e210167e44361ca864c7",
+          "source_blob": "2e2329f7a9e4a303aa00c3e2d789c7a28b21e7eb",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/http_client.py": {
+          "blob": "cb37781a7a1da2a04de0f4564f70a958f45f1988",
+          "sha256": "d04cde8c96849104ad82d9ed11ba4c2e7dc9a4072b3df90fede78e30429f1b99",
+          "source_blob": "cb37781a7a1da2a04de0f4564f70a958f45f1988",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/models.py": {
+          "blob": "6e73fbc37a7b86112cfd1fc3e4861f8dc9fd996f",
+          "sha256": "8640c933738468f40985ac6dadecf0da570f763cc6298f55f98e94078633ca60",
+          "source_blob": "6e73fbc37a7b86112cfd1fc3e4861f8dc9fd996f",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/sync.py": {
+          "blob": "985bffa3a9e539d518467dca3380b7983309f018",
+          "sha256": "7a81e701849a4224d29e48560c8bcb1324a2afbf9e90e13724990f9bc2d41ce9",
+          "source_blob": "985bffa3a9e539d518467dca3380b7983309f018",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_cli.py": {
+          "blob": "28a3f35ac6808b5c8ab5bc33926afeee69821d8a",
+          "sha256": "448ddcbd63fe6906e6b11ea40dca952e8cfdfb162e60377ec46b988966c47f62",
+          "source_blob": "28a3f35ac6808b5c8ab5bc33926afeee69821d8a",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_config.py": {
+          "blob": "738eace565b89e4006c619a3580f883219babe69",
+          "sha256": "a5b6a81763d88ebd810a3f210eedc1eed2169bda9e0e34c5a118c043b59e341d",
+          "source_blob": "738eace565b89e4006c619a3580f883219babe69",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_http_client.py": {
+          "blob": "900ac0968e5ce970119983e1608a3395b01fdb45",
+          "sha256": "0ca33a24aa61aa763ede5af6eb0fe32abb4aff6c87c063459919ec252dd6aafd",
+          "source_blob": "900ac0968e5ce970119983e1608a3395b01fdb45",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_models.py": {
+          "blob": "6f033024df3c551275a3b0756c2330dd7f553ffa",
+          "sha256": "ad04dd555f7367a9de5a02820467b34850dc9d2a8040ac639567755ec4d5d453",
+          "source_blob": "6f033024df3c551275a3b0756c2330dd7f553ffa",
+          "transforms": []
+        },
+        "token_evidence.py": {
+          "blob": "efbb198ca1ebc9552d821a943ab65073b36c85a9",
+          "sha256": "8e658ff3108a13882f78ab3cd45212394af95f9c877c9e3b4c189e4ddd88a81c",
+          "source_blob": "efbb198ca1ebc9552d821a943ab65073b36c85a9",
+          "transforms": []
+        },
+        "verify.py": {
+          "blob": "c4320adc34ec83ccbb143f18e0ec4bddd6b3e018",
+          "sha256": "67319cbfc4a1aef088b3cfce73eb127ed65fc009ef34408b2828863537cba485",
+          "source_blob": "c4320adc34ec83ccbb143f18e0ec4bddd6b3e018",
+          "transforms": []
+        }
+      }
+    },
+    "8fce6350c86786c2e68979cf498b8b99e2d96bd4": {
+      "absent": [
+        "acceptance_orgsync.py",
+        "batch.sh",
+        "calibration/orgsync.cleared",
+        "check-calibration-gate.sh",
+        "control/test_harness.py",
+        "design/orgsync/CONTROLS.md",
+        "design/orgsync/FIXTURES.md",
+        "design/orgsync/JUDGE_SPEC.md",
+        "design/orgsync/README-REVEALED.md",
+        "design/orgsync/controls/control_check.py",
+        "design/orgsync/controls/g_writes_nothing.py",
+        "design/orgsync/controls/w1_naive_read.py",
+        "design/orgsync/controls/w2_non_idempotent.py",
+        "design/orgsync/controls/w3_confident_finisher.py",
+        "design/orgsync/controls/w3_test_orgsync.py",
+        "design/orgsync/reference/orgsync_reference.py",
+        "edition.sh",
+        "edition_report.py",
+        "editions/2026-10/MANIFEST.json",
+        "editions/2026-10/TIER_PIN",
+        "errata.py",
+        "evidence.py",
+        "export.py",
+        "fixtures/orgsync/server.py",
+        "master_table.py",
+        "preflight.sh",
+        "preflight_check.py",
+        "preflight_http.py",
+        "prompts/orgsync.md",
+        "redact.py",
+        "run_audit.py",
+        "tasks/orgsync-skeleton/.gitignore",
+        "tasks/orgsync-skeleton/README.md",
+        "tasks/orgsync-skeleton/config.json",
+        "tasks/orgsync-skeleton/orgsync/__init__.py",
+        "tasks/orgsync-skeleton/orgsync/__main__.py",
+        "tasks/orgsync-skeleton/orgsync/config.py",
+        "tasks/orgsync-skeleton/orgsync/http_client.py",
+        "tasks/orgsync-skeleton/orgsync/models.py",
+        "tasks/orgsync-skeleton/orgsync/sync.py",
+        "tasks/orgsync-skeleton/tests/existing/test_cli.py",
+        "tasks/orgsync-skeleton/tests/existing/test_config.py",
+        "tasks/orgsync-skeleton/tests/existing/test_http_client.py",
+        "tasks/orgsync-skeleton/tests/existing/test_models.py",
+        "token_evidence.py",
+        "verify.py"
+      ],
+      "aliases": [
+        "8fce6350c86786c2e68979cf498b8b99e2d96bd4"
+      ],
+      "files": {
+        "TIER_PIN": {
+          "blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "sha256": "b14a1094090aaa739adb43e32f6cfc04df15bbfac95aea879b3862c5dbbf06cd",
+          "source_blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "transforms": []
+        },
+        "acceptance_cronspec.py": {
+          "blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "sha256": "a847b421cf8234cd953aaefe264ed72745ef123f4c43abaa24decca746e2e5a7",
+          "source_blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "transforms": []
+        },
+        "acceptance_test.py": {
+          "blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "sha256": "f07718acdcc279b349e7393144a79cbf7f1e62a88f089c10288cfe05e84e5b53",
+          "source_blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "transforms": []
+        },
+        "aggregate.py": {
+          "blob": "4b846fe42b643e7effc99456dc6bbf204e2992ba",
+          "sha256": "af948994817f9ca9bdcb9f27778e3cf73138f2de4bc5a4067092566468333ca6",
+          "source_blob": "4b846fe42b643e7effc99456dc6bbf204e2992ba",
+          "transforms": []
+        },
+        "prices.yaml": {
+          "blob": "4bad3dcce9b1a799c7fb6d0b9febed243da867ac",
+          "sha256": "9ab9cba3fca5fef0b8e9eb7f62fe0496c7498a74a94e81e441a52ee66fd53eb0",
+          "source_blob": "4bad3dcce9b1a799c7fb6d0b9febed243da867ac",
+          "transforms": []
+        },
+        "prompts/baseline.md": {
+          "blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "sha256": "6927e499c8ee25996cc6669f432bec98ab3f3d747d41bb6b0142101e058649ec",
+          "source_blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "transforms": []
+        },
+        "prompts/cronspec.md": {
+          "blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "sha256": "d6b188dca51a2842e99f35b373c414372dc2d3f75fea60d20e1863a4b4a32274",
+          "source_blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "transforms": []
+        },
+        "run.sh": {
+          "blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+          "sha256": "b11df5d6d0bc00d1c78dc6ee0cac2a62b2245a13784fb3aa971bd293e0df5351",
+          "source_blob": "a2b437ebb77d8e31b99160cef91c447e470c5688",
+          "transforms": []
+        },
+        "score.py": {
+          "blob": "30aae3a8b57bede955d5f1af35a2d48984f1644e",
+          "sha256": "4401db44578fc8d9bd16c71ccd1397f353ca14becdcd36d756821171ce552486",
+          "transforms": [
+            "sanitize-home-v1"
+          ]
+        }
+      }
+    },
+    "da2561f0f228467d0914cba9e2d8b2624d93cca1": {
+      "absent": [
+        "acceptance_orgsync.py",
+        "calibration/orgsync.cleared",
+        "check-calibration-gate.sh",
+        "control/test_harness.py",
+        "design/orgsync/README-REVEALED.md",
+        "design/orgsync/controls/control_check.py",
+        "design/orgsync/controls/g_writes_nothing.py",
+        "design/orgsync/controls/w1_naive_read.py",
+        "design/orgsync/controls/w2_non_idempotent.py",
+        "design/orgsync/controls/w3_confident_finisher.py",
+        "design/orgsync/controls/w3_test_orgsync.py",
+        "edition.sh",
+        "edition_report.py",
+        "editions/2026-10/MANIFEST.json",
+        "editions/2026-10/TIER_PIN",
+        "errata.py",
+        "evidence.py",
+        "master_table.py",
+        "preflight.sh",
+        "preflight_check.py",
+        "preflight_http.py",
+        "redact.py",
+        "run_audit.py",
+        "token_evidence.py"
+      ],
+      "aliases": [
+        "da2561f0f228467d0914cba9e2d8b2624d93cca1"
+      ],
+      "files": {
+        "TIER_PIN": {
+          "blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "sha256": "b14a1094090aaa739adb43e32f6cfc04df15bbfac95aea879b3862c5dbbf06cd",
+          "source_blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "transforms": []
+        },
+        "acceptance_cronspec.py": {
+          "blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "sha256": "a847b421cf8234cd953aaefe264ed72745ef123f4c43abaa24decca746e2e5a7",
+          "source_blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "transforms": []
+        },
+        "acceptance_test.py": {
+          "blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "sha256": "f07718acdcc279b349e7393144a79cbf7f1e62a88f089c10288cfe05e84e5b53",
+          "source_blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "transforms": []
+        },
+        "aggregate.py": {
+          "blob": "4b846fe42b643e7effc99456dc6bbf204e2992ba",
+          "sha256": "af948994817f9ca9bdcb9f27778e3cf73138f2de4bc5a4067092566468333ca6",
+          "source_blob": "4b846fe42b643e7effc99456dc6bbf204e2992ba",
+          "transforms": []
+        },
+        "batch.sh": {
+          "blob": "299fe45ee3b41a658898b3936a0e47f527f958e8",
+          "sha256": "8e5b5abe7ef11ea74dc4be4b4058d0a676a81c4fff7eb14c4facd6fc98e4e3cd",
+          "source_blob": "299fe45ee3b41a658898b3936a0e47f527f958e8",
+          "transforms": []
+        },
+        "design/orgsync/CONTROLS.md": {
+          "blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "sha256": "d4206322e35c11b83b1c56900a70abd5607911cb60a6573ec5121387967e9f7b",
+          "source_blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "transforms": []
+        },
+        "design/orgsync/FIXTURES.md": {
+          "blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "sha256": "c03595a92ec80b36c972523b9faffa7fab065517899161a6513caa9756b0b911",
+          "source_blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "transforms": []
+        },
+        "design/orgsync/JUDGE_SPEC.md": {
+          "blob": "c29ee7eafc04d5b1825804be5690508ef2c706ab",
+          "sha256": "8ea9a416622322a8face911298c6f9ba7fb5be0d3791cc47d1c4ec64bd592342",
+          "source_blob": "c29ee7eafc04d5b1825804be5690508ef2c706ab",
+          "transforms": []
+        },
+        "design/orgsync/reference/orgsync_reference.py": {
+          "blob": "ddec31aa9e5b8010cf67269111a3c30ce54afa00",
+          "sha256": "fd87f7ba5c1c56273a11b23ba59a2947ccab743dd4948a3cd6c3063d03fecd09",
+          "source_blob": "ddec31aa9e5b8010cf67269111a3c30ce54afa00",
+          "transforms": []
+        },
+        "export.py": {
+          "blob": "326c45bbb8e9f4fc2538b8b7bd8ec23474868660",
+          "sha256": "ff3b8c51e703124509d6d6d6db50b50229f92ca2580b15cc89e58fedea3a7511",
+          "source_blob": "326c45bbb8e9f4fc2538b8b7bd8ec23474868660",
+          "transforms": []
+        },
+        "fixtures/orgsync/server.py": {
+          "blob": "93a8b7629b3671d9f12f2da6451709aca220ba3a",
+          "sha256": "8d23417f6160db7055ce835f06833a9cc5bee4235151790afa08389ea2eebfec",
+          "source_blob": "93a8b7629b3671d9f12f2da6451709aca220ba3a",
+          "transforms": []
+        },
+        "prices.yaml": {
+          "blob": "4bad3dcce9b1a799c7fb6d0b9febed243da867ac",
+          "sha256": "9ab9cba3fca5fef0b8e9eb7f62fe0496c7498a74a94e81e441a52ee66fd53eb0",
+          "source_blob": "4bad3dcce9b1a799c7fb6d0b9febed243da867ac",
+          "transforms": []
+        },
+        "prompts/baseline.md": {
+          "blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "sha256": "6927e499c8ee25996cc6669f432bec98ab3f3d747d41bb6b0142101e058649ec",
+          "source_blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "transforms": []
+        },
+        "prompts/cronspec.md": {
+          "blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "sha256": "d6b188dca51a2842e99f35b373c414372dc2d3f75fea60d20e1863a4b4a32274",
+          "source_blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "transforms": []
+        },
+        "prompts/orgsync.md": {
+          "blob": "37b91d71a2e2bc3445831a5d2204dde310abf74a",
+          "sha256": "94950b00fd82cc86a8c98a0793149b5f9c13e205dedd1ea533470387110ba408",
+          "source_blob": "37b91d71a2e2bc3445831a5d2204dde310abf74a",
+          "transforms": []
+        },
+        "run.sh": {
+          "blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+          "sha256": "a5a372257358de0090cb117fd5fd6b07bdee71d0f6b9fc5d493e6227f8b31ced",
+          "source_blob": "d37daca54cb0bfac22679c3491761d818b7b090a",
+          "transforms": []
+        },
+        "score.py": {
+          "blob": "30aae3a8b57bede955d5f1af35a2d48984f1644e",
+          "sha256": "4401db44578fc8d9bd16c71ccd1397f353ca14becdcd36d756821171ce552486",
+          "transforms": [
+            "sanitize-home-v1"
+          ]
+        },
+        "tasks/orgsync-skeleton/.gitignore": {
+          "blob": "7a60b85e148f80966a550e5ab6a762a907c69ca6",
+          "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+          "source_blob": "7a60b85e148f80966a550e5ab6a762a907c69ca6",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/README.md": {
+          "blob": "71ed60104db9de6f096e9b87db2719c8186e2afd",
+          "sha256": "5fabfc6c6f2f186e1dee9be989bec9b08269762cd570a13c3dd68a3bab1682c2",
+          "source_blob": "71ed60104db9de6f096e9b87db2719c8186e2afd",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/config.json": {
+          "blob": "4fbb0a7c349bfb511e6116c6fd603cad5c180aee",
+          "sha256": "3ef54bc49fd7181720d830a6479a80fe6cc52e84e113ff4f3517ac6a33eca802",
+          "source_blob": "4fbb0a7c349bfb511e6116c6fd603cad5c180aee",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/__init__.py": {
+          "blob": "035e2d57fe2e92b04a47d6ccd6d504e57149a00a",
+          "sha256": "eaf1a86caebfece9683a2caab0ea1cd1d2f54f29f06a0bc01581b9847f7cf8cc",
+          "source_blob": "035e2d57fe2e92b04a47d6ccd6d504e57149a00a",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/__main__.py": {
+          "blob": "433cafae2fcaf9a495f87ca674738774bc3beee0",
+          "sha256": "8c6ae1d5e4da8ba10506a9510944e22373df98e3df7446ecbf0500816aea78fd",
+          "source_blob": "433cafae2fcaf9a495f87ca674738774bc3beee0",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/config.py": {
+          "blob": "2e2329f7a9e4a303aa00c3e2d789c7a28b21e7eb",
+          "sha256": "dd2627e00c6fd9034b065a799180a17ecfe4eac9f377e210167e44361ca864c7",
+          "source_blob": "2e2329f7a9e4a303aa00c3e2d789c7a28b21e7eb",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/http_client.py": {
+          "blob": "cb37781a7a1da2a04de0f4564f70a958f45f1988",
+          "sha256": "d04cde8c96849104ad82d9ed11ba4c2e7dc9a4072b3df90fede78e30429f1b99",
+          "source_blob": "cb37781a7a1da2a04de0f4564f70a958f45f1988",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/models.py": {
+          "blob": "6e73fbc37a7b86112cfd1fc3e4861f8dc9fd996f",
+          "sha256": "8640c933738468f40985ac6dadecf0da570f763cc6298f55f98e94078633ca60",
+          "source_blob": "6e73fbc37a7b86112cfd1fc3e4861f8dc9fd996f",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/sync.py": {
+          "blob": "985bffa3a9e539d518467dca3380b7983309f018",
+          "sha256": "7a81e701849a4224d29e48560c8bcb1324a2afbf9e90e13724990f9bc2d41ce9",
+          "source_blob": "985bffa3a9e539d518467dca3380b7983309f018",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_cli.py": {
+          "blob": "28a3f35ac6808b5c8ab5bc33926afeee69821d8a",
+          "sha256": "448ddcbd63fe6906e6b11ea40dca952e8cfdfb162e60377ec46b988966c47f62",
+          "source_blob": "28a3f35ac6808b5c8ab5bc33926afeee69821d8a",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_config.py": {
+          "blob": "738eace565b89e4006c619a3580f883219babe69",
+          "sha256": "a5b6a81763d88ebd810a3f210eedc1eed2169bda9e0e34c5a118c043b59e341d",
+          "source_blob": "738eace565b89e4006c619a3580f883219babe69",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_http_client.py": {
+          "blob": "900ac0968e5ce970119983e1608a3395b01fdb45",
+          "sha256": "0ca33a24aa61aa763ede5af6eb0fe32abb4aff6c87c063459919ec252dd6aafd",
+          "source_blob": "900ac0968e5ce970119983e1608a3395b01fdb45",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_models.py": {
+          "blob": "6f033024df3c551275a3b0756c2330dd7f553ffa",
+          "sha256": "ad04dd555f7367a9de5a02820467b34850dc9d2a8040ac639567755ec4d5d453",
+          "source_blob": "6f033024df3c551275a3b0756c2330dd7f553ffa",
+          "transforms": []
+        },
+        "verify.py": {
+          "blob": "c77a35d9649c6634c5c0c6bb2f421ef64380edf1",
+          "sha256": "8bfbdb7e09f4c7f1361ff89d1f0d4ef1164c220e6cecb5f8e384b51990f9f6a4",
+          "source_blob": "c77a35d9649c6634c5c0c6bb2f421ef64380edf1",
+          "transforms": []
+        }
+      }
+    },
+    "ec9574f7de40d07e81d093d6fd4eabc99f79cf93": {
+      "absent": [
+        "edition_report.py",
+        "errata.py"
+      ],
+      "aliases": [
+        "ec9574f",
+        "ec9574f7de40d07e81d093d6fd4eabc99f79cf93"
+      ],
+      "files": {
+        "TIER_PIN": {
+          "blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "sha256": "b14a1094090aaa739adb43e32f6cfc04df15bbfac95aea879b3862c5dbbf06cd",
+          "source_blob": "46db9c88504222a7a1b672c76f5c0833d39256e4",
+          "transforms": []
+        },
+        "acceptance_cronspec.py": {
+          "blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "sha256": "a847b421cf8234cd953aaefe264ed72745ef123f4c43abaa24decca746e2e5a7",
+          "source_blob": "4ff1bc4fe28ced338d3c7f4ae6f4055fcb175010",
+          "transforms": []
+        },
+        "acceptance_orgsync.py": {
+          "blob": "dac5bb517e3495f3cdf1fa43a566d24acb2a893f",
+          "sha256": "b948f904bfd72ffcd8fedd30230182df3133d27a9972c6fc2c6af35ca5196a74",
+          "source_blob": "dac5bb517e3495f3cdf1fa43a566d24acb2a893f",
+          "transforms": []
+        },
+        "acceptance_test.py": {
+          "blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "sha256": "f07718acdcc279b349e7393144a79cbf7f1e62a88f089c10288cfe05e84e5b53",
+          "source_blob": "59e8e8c608ae74f196ac66e7b204a19fb3f53cc4",
+          "transforms": []
+        },
+        "aggregate.py": {
+          "blob": "1d6aaace7e111b0599009f5e1735105ad2f3b602",
+          "sha256": "c17b0c14797247fcd6038cb23fca46e91d33776e850429e7739cbb81147e1786",
+          "source_blob": "1d6aaace7e111b0599009f5e1735105ad2f3b602",
+          "transforms": []
+        },
+        "batch.sh": {
+          "blob": "fbe241bb0b4400bfba1f3ae3980aaf418d7d21da",
+          "sha256": "507806c5eb5ed122050c7720012d58d7619a5c1c9ea63aa20243c658556c5a0b",
+          "source_blob": "fbe241bb0b4400bfba1f3ae3980aaf418d7d21da",
+          "transforms": []
+        },
+        "calibration/orgsync.cleared": {
+          "blob": "7b6a9d197fe2d6702a18af910ce09eea2e919910",
+          "sha256": "9750bb104337aa7b541c5516b3b5695de2e7d73fe58e7034e2a4f0b842ef279d",
+          "source_blob": "7b6a9d197fe2d6702a18af910ce09eea2e919910",
+          "transforms": []
+        },
+        "check-calibration-gate.sh": {
+          "blob": "3cc32ee0b980a088371b3147ff4ab2e8caa223c7",
+          "sha256": "75dad133b2ed838112fe968bfddfbee86e740724ec8572ccec7a62ab46cebb26",
+          "source_blob": "3cc32ee0b980a088371b3147ff4ab2e8caa223c7",
+          "transforms": []
+        },
+        "control/test_harness.py": {
+          "blob": "575b4612fe44073cd367d953a8dcf72ff5f92c26",
+          "sha256": "0a4d50cb119530c1d65e4f46d98b9d53e0b07a3d4c54671fa117851dffc24593",
+          "source_blob": "575b4612fe44073cd367d953a8dcf72ff5f92c26",
+          "transforms": []
+        },
+        "design/orgsync/CONTROLS.md": {
+          "blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "sha256": "d4206322e35c11b83b1c56900a70abd5607911cb60a6573ec5121387967e9f7b",
+          "source_blob": "4607add6a4a8d961c0d1c3b0497e8d98ebe4e19e",
+          "transforms": []
+        },
+        "design/orgsync/FIXTURES.md": {
+          "blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "sha256": "c03595a92ec80b36c972523b9faffa7fab065517899161a6513caa9756b0b911",
+          "source_blob": "1535d2ebf087caafaffefc317f396b54735cb06f",
+          "transforms": []
+        },
+        "design/orgsync/JUDGE_SPEC.md": {
+          "blob": "4f0cb4beb04480d787f5d1bcc3c60c6608c9621a",
+          "sha256": "a03c23f610cb18750eb09f90a01414dcbda35d3d27fd63f1923b9e18fddddc5b",
+          "source_blob": "4f0cb4beb04480d787f5d1bcc3c60c6608c9621a",
+          "transforms": []
+        },
+        "design/orgsync/README-REVEALED.md": {
+          "blob": "0540efcea5eebaae84277640ca00146bf46ec506",
+          "sha256": "eb92afbcf48648a8803f3d1080cd965fe1bc31e250ea9f363b97b20a9026a53a",
+          "source_blob": "0540efcea5eebaae84277640ca00146bf46ec506",
+          "transforms": []
+        },
+        "design/orgsync/controls/control_check.py": {
+          "blob": "ab882fce9dfb22ec358682d9ce47c96d592883f1",
+          "sha256": "784ab0592e0c012fcfcccfd57b981fa8d31080d9dfb43913aefb1425be4b6b97",
+          "source_blob": "ab882fce9dfb22ec358682d9ce47c96d592883f1",
+          "transforms": []
+        },
+        "design/orgsync/controls/g_writes_nothing.py": {
+          "blob": "aeaacf7a19170328421dc4d77836eb2ef873dea0",
+          "sha256": "1e4987e33713fd9f3a7436f57f01e0d48230706f388e1025c0954dc9a7f8648f",
+          "source_blob": "aeaacf7a19170328421dc4d77836eb2ef873dea0",
+          "transforms": []
+        },
+        "design/orgsync/controls/w1_naive_read.py": {
+          "blob": "20c0e09703e641a4715c1c10b437627de3ff9b2d",
+          "sha256": "8d9ec0a0c10b5f86f13a9928aa7ee7cac7dc858dd741d686738b59de50e25ec9",
+          "source_blob": "20c0e09703e641a4715c1c10b437627de3ff9b2d",
+          "transforms": []
+        },
+        "design/orgsync/controls/w2_non_idempotent.py": {
+          "blob": "3fdf7a1b4473338f04d7adb1bded2cee720457fb",
+          "sha256": "1e58444cd797e6b12817ac872ab31fe68ac1725b5657ea77422ff9a7768b6f33",
+          "source_blob": "3fdf7a1b4473338f04d7adb1bded2cee720457fb",
+          "transforms": []
+        },
+        "design/orgsync/controls/w3_confident_finisher.py": {
+          "blob": "38ce448117c0638a29df304960b5c30128f12d8e",
+          "sha256": "cc1e163ce3300b262732a438cc0c7f1c7431d22cb1fadf76d70163fc2d06c692",
+          "source_blob": "38ce448117c0638a29df304960b5c30128f12d8e",
+          "transforms": []
+        },
+        "design/orgsync/controls/w3_test_orgsync.py": {
+          "blob": "a38880e4174862d36e0dd1250dae229a6001e6d2",
+          "sha256": "3ad91e24268c1f47a9e4251c9e2d529ca81a8da16d2f43dc18df1f38cc5bda59",
+          "source_blob": "a38880e4174862d36e0dd1250dae229a6001e6d2",
+          "transforms": []
+        },
+        "design/orgsync/reference/orgsync_reference.py": {
+          "blob": "ddec31aa9e5b8010cf67269111a3c30ce54afa00",
+          "sha256": "fd87f7ba5c1c56273a11b23ba59a2947ccab743dd4948a3cd6c3063d03fecd09",
+          "source_blob": "ddec31aa9e5b8010cf67269111a3c30ce54afa00",
+          "transforms": []
+        },
+        "edition.sh": {
+          "blob": "7bacc368ac14e092dbda2b81cb116c01c95d70c9",
+          "sha256": "ea2965f0470eed1d6d92a9762240a54e8cb9c80872f695d31b97e211cf0a9751",
+          "source_blob": "7bacc368ac14e092dbda2b81cb116c01c95d70c9",
+          "transforms": []
+        },
+        "editions/2026-10/MANIFEST.json": {
+          "blob": "bf30a15aa112869e60455a88733c337eacf37657",
+          "sha256": "963ed12f74f911a07d6dc9563457484c5c855d3f3152fc1e83a6c86474e30de3",
+          "source_blob": "bf30a15aa112869e60455a88733c337eacf37657",
+          "transforms": []
+        },
+        "editions/2026-10/TIER_PIN": {
+          "blob": "25a6b9f27d9b63e7b8adfb1710c2354d2ed4b390",
+          "sha256": "d058073c035a98984adcd0be9ff04c6ef07569d14e8300247e451c5c9b2c09ae",
+          "source_blob": "25a6b9f27d9b63e7b8adfb1710c2354d2ed4b390",
+          "transforms": []
+        },
+        "evidence.py": {
+          "blob": "8b8ef5e22d2f6d1a5ef566f9f395427fd8450cb4",
+          "sha256": "1a6cb457e1160e48959005f66a5d5139be38ca8206e4ee66c05800cb3226ac08",
+          "source_blob": "8b8ef5e22d2f6d1a5ef566f9f395427fd8450cb4",
+          "transforms": []
+        },
+        "export.py": {
+          "blob": "e669e9239fa84633bc48a3f91ad69db17f7a1190",
+          "sha256": "0980a72cd8e9a3a24c75fb8652caa83cfa2d548c1382f2e3a1b25d804d016d3a",
+          "source_blob": "e669e9239fa84633bc48a3f91ad69db17f7a1190",
+          "transforms": []
+        },
+        "fixtures/orgsync/server.py": {
+          "blob": "93a8b7629b3671d9f12f2da6451709aca220ba3a",
+          "sha256": "8d23417f6160db7055ce835f06833a9cc5bee4235151790afa08389ea2eebfec",
+          "source_blob": "93a8b7629b3671d9f12f2da6451709aca220ba3a",
+          "transforms": []
+        },
+        "master_table.py": {
+          "blob": "45bceda6c8f85d6a44bd7da9cfbce07ad5768358",
+          "sha256": "96709e9f5c79958b3959cd8afc6be9688a5690e9894c9fb5deda8283764c50c2",
+          "transforms": [
+            "sanitize-archive-v1"
+          ]
+        },
+        "preflight.sh": {
+          "blob": "ea0028bba21d9c77d279c93ae713c4e54d5901a9",
+          "sha256": "0cfbbba79cf57ded9473053868de59f606e2cc2ab129fa0309ca70e5b72114de",
+          "source_blob": "ea0028bba21d9c77d279c93ae713c4e54d5901a9",
+          "transforms": []
+        },
+        "preflight_check.py": {
+          "blob": "110d16a37a82487f47f7cfee78d99bd77cf9856b",
+          "sha256": "d2a889c00eb680f5751824f5be8be0189a810b52d110167f57c2a2158448fe75",
+          "source_blob": "110d16a37a82487f47f7cfee78d99bd77cf9856b",
+          "transforms": []
+        },
+        "preflight_http.py": {
+          "blob": "4f3b3573d641934254e563dca507d968194b0e78",
+          "sha256": "ec98ad06075627e1fabe11d7d04a117626a42ada48579514eecc80ae10c5ccb9",
+          "source_blob": "4f3b3573d641934254e563dca507d968194b0e78",
+          "transforms": []
+        },
+        "prices.yaml": {
+          "blob": "e0e09f708c4077d558d266e167acbabf2df60645",
+          "sha256": "b3aa945f75af6573c29a3f47610f6f3460afa0665188b679dd2ea261265c9a15",
+          "source_blob": "e0e09f708c4077d558d266e167acbabf2df60645",
+          "transforms": []
+        },
+        "prompts/baseline.md": {
+          "blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "sha256": "6927e499c8ee25996cc6669f432bec98ab3f3d747d41bb6b0142101e058649ec",
+          "source_blob": "373533e5c1c96e6f88a6caf73214c957b2f60e07",
+          "transforms": []
+        },
+        "prompts/cronspec.md": {
+          "blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "sha256": "d6b188dca51a2842e99f35b373c414372dc2d3f75fea60d20e1863a4b4a32274",
+          "source_blob": "f4f809d39066bad38729dfa2e9a525c07e1b3134",
+          "transforms": []
+        },
+        "prompts/orgsync.md": {
+          "blob": "37b91d71a2e2bc3445831a5d2204dde310abf74a",
+          "sha256": "94950b00fd82cc86a8c98a0793149b5f9c13e205dedd1ea533470387110ba408",
+          "source_blob": "37b91d71a2e2bc3445831a5d2204dde310abf74a",
+          "transforms": []
+        },
+        "redact.py": {
+          "blob": "8d0814fc08a717acbbcc7346dd3de390a8c79c10",
+          "sha256": "2bd08374ab85cae077de3947aa202b57c147de0c6bb117a7a6a33634b94ab4f2",
+          "transforms": [
+            "split-scan-markers-v1"
+          ]
+        },
+        "run.sh": {
+          "blob": "4294038ce47cf3e2ed17e65c8d9119e56bf30319",
+          "sha256": "32a9b57500dcb21d1821061d32d931c47985cf82d0c61bf44ce04873820fdff5",
+          "source_blob": "4294038ce47cf3e2ed17e65c8d9119e56bf30319",
+          "transforms": []
+        },
+        "run_audit.py": {
+          "blob": "b50b7a41cb5022c82a0ef7e77c603d86ca7b8c5a",
+          "sha256": "65cad8b63260a39c30d7c6380edcd3569c0b6b3f29747f6bb1220462505e9c7d",
+          "transforms": [
+            "split-scan-markers-v1"
+          ]
+        },
+        "score.py": {
+          "blob": "ea60b6552b3eadad2608698061824f7ad2d07d36",
+          "sha256": "768f41e53261c62bc8df34fcfc7034b15cb897d39989b0ba7f4ec505be5931d6",
+          "transforms": [
+            "sanitize-home-v1"
+          ]
+        },
+        "tasks/orgsync-skeleton/.gitignore": {
+          "blob": "7a60b85e148f80966a550e5ab6a762a907c69ca6",
+          "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+          "source_blob": "7a60b85e148f80966a550e5ab6a762a907c69ca6",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/README.md": {
+          "blob": "71ed60104db9de6f096e9b87db2719c8186e2afd",
+          "sha256": "5fabfc6c6f2f186e1dee9be989bec9b08269762cd570a13c3dd68a3bab1682c2",
+          "source_blob": "71ed60104db9de6f096e9b87db2719c8186e2afd",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/config.json": {
+          "blob": "4fbb0a7c349bfb511e6116c6fd603cad5c180aee",
+          "sha256": "3ef54bc49fd7181720d830a6479a80fe6cc52e84e113ff4f3517ac6a33eca802",
+          "source_blob": "4fbb0a7c349bfb511e6116c6fd603cad5c180aee",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/__init__.py": {
+          "blob": "035e2d57fe2e92b04a47d6ccd6d504e57149a00a",
+          "sha256": "eaf1a86caebfece9683a2caab0ea1cd1d2f54f29f06a0bc01581b9847f7cf8cc",
+          "source_blob": "035e2d57fe2e92b04a47d6ccd6d504e57149a00a",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/__main__.py": {
+          "blob": "433cafae2fcaf9a495f87ca674738774bc3beee0",
+          "sha256": "8c6ae1d5e4da8ba10506a9510944e22373df98e3df7446ecbf0500816aea78fd",
+          "source_blob": "433cafae2fcaf9a495f87ca674738774bc3beee0",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/config.py": {
+          "blob": "2e2329f7a9e4a303aa00c3e2d789c7a28b21e7eb",
+          "sha256": "dd2627e00c6fd9034b065a799180a17ecfe4eac9f377e210167e44361ca864c7",
+          "source_blob": "2e2329f7a9e4a303aa00c3e2d789c7a28b21e7eb",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/http_client.py": {
+          "blob": "cb37781a7a1da2a04de0f4564f70a958f45f1988",
+          "sha256": "d04cde8c96849104ad82d9ed11ba4c2e7dc9a4072b3df90fede78e30429f1b99",
+          "source_blob": "cb37781a7a1da2a04de0f4564f70a958f45f1988",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/models.py": {
+          "blob": "6e73fbc37a7b86112cfd1fc3e4861f8dc9fd996f",
+          "sha256": "8640c933738468f40985ac6dadecf0da570f763cc6298f55f98e94078633ca60",
+          "source_blob": "6e73fbc37a7b86112cfd1fc3e4861f8dc9fd996f",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/orgsync/sync.py": {
+          "blob": "985bffa3a9e539d518467dca3380b7983309f018",
+          "sha256": "7a81e701849a4224d29e48560c8bcb1324a2afbf9e90e13724990f9bc2d41ce9",
+          "source_blob": "985bffa3a9e539d518467dca3380b7983309f018",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_cli.py": {
+          "blob": "28a3f35ac6808b5c8ab5bc33926afeee69821d8a",
+          "sha256": "448ddcbd63fe6906e6b11ea40dca952e8cfdfb162e60377ec46b988966c47f62",
+          "source_blob": "28a3f35ac6808b5c8ab5bc33926afeee69821d8a",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_config.py": {
+          "blob": "738eace565b89e4006c619a3580f883219babe69",
+          "sha256": "a5b6a81763d88ebd810a3f210eedc1eed2169bda9e0e34c5a118c043b59e341d",
+          "source_blob": "738eace565b89e4006c619a3580f883219babe69",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_http_client.py": {
+          "blob": "900ac0968e5ce970119983e1608a3395b01fdb45",
+          "sha256": "0ca33a24aa61aa763ede5af6eb0fe32abb4aff6c87c063459919ec252dd6aafd",
+          "source_blob": "900ac0968e5ce970119983e1608a3395b01fdb45",
+          "transforms": []
+        },
+        "tasks/orgsync-skeleton/tests/existing/test_models.py": {
+          "blob": "6f033024df3c551275a3b0756c2330dd7f553ffa",
+          "sha256": "ad04dd555f7367a9de5a02820467b34850dc9d2a8040ac639567755ec4d5d453",
+          "source_blob": "6f033024df3c551275a3b0756c2330dd7f553ffa",
+          "transforms": []
+        },
+        "token_evidence.py": {
+          "blob": "efbb198ca1ebc9552d821a943ab65073b36c85a9",
+          "sha256": "8e658ff3108a13882f78ab3cd45212394af95f9c877c9e3b4c189e4ddd88a81c",
+          "source_blob": "efbb198ca1ebc9552d821a943ab65073b36c85a9",
+          "transforms": []
+        },
+        "verify.py": {
+          "blob": "a33e35ad910ee989960887e5085eb5c7288ecee4",
+          "sha256": "4bca9a8fdcf08de7d16ee796d69fc310864201bf30b28e9bd7f335f92a75cd0c",
+          "source_blob": "a33e35ad910ee989960887e5085eb5c7288ecee4",
+          "transforms": []
+        }
+      }
+    }
+  },
+  "schema_version": 1
+}

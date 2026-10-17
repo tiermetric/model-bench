@@ -1,0 +1,36 @@
+{
+  "tool": "codex",
+  "label": "gpt-5.6-terra",
+  "model_key": "gpt-5.6-terra",
+  "model_ids_seen": [
+    "gpt-5.6-terra"
+  ],
+  "log": "[home]/.codex/sessions/2026/07/22/rollout-2026-07-22T16-59-28-019f8ba0-5475-7ce0-8636-f126bc46f545.jsonl",
+  "own_tests": "PASS",
+  "acceptance": "PASS",
+  "edge_failures": "0f+0e",
+  "tokens": {
+    "api_calls": null,
+    "model_ids": [
+      "gpt-5.6-terra"
+    ],
+    "input_uncached": 11751,
+    "cache_read": 102912,
+    "cache_write": 0,
+    "cache_w5m": 0,
+    "cache_w1h": 0,
+    "output": 4891,
+    "reasoning": 957,
+    "input_total": 114663
+  },
+  "cache_read_pct": 89.75,
+  "cost_list_usd": 0.12847,
+  "cache_read_mult_used": 0.1,
+  "wall_seconds": 96,
+  "priced": true,
+  "web_tools_mode": "void",
+  "web_tool_count": 0,
+  "web_tool_names": [],
+  "prices_yaml": "[home]/gitrepos/tier/internal/store/prices.yaml",
+  "prices_yaml_version": 8
+}

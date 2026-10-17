@@ -1,0 +1,33 @@
+{
+  "tool": "claude-code",
+  "label": "fable",
+  "model_key": "claude-fable-5",
+  "model_ids_seen": [
+    "claude-fable-5"
+  ],
+  "log": "[home]/.claude/projects/[home]/c8f3f987-998a-4be8-a283-979c9dd8a328.jsonl",
+  "own_tests": "PASS",
+  "acceptance": "PASS",
+  "edge_failures": "0f+0e",
+  "tokens": {
+    "api_calls": 3,
+    "model_ids": [
+      "claude-fable-5"
+    ],
+    "input_uncached": 6,
+    "cache_read": 78129,
+    "cache_write": 19776,
+    "cache_w5m": 0,
+    "cache_w1h": 19776,
+    "output": 4328,
+    "reasoning": null,
+    "input_total": 97911
+  },
+  "cache_read_pct": 79.8,
+  "cost_list_usd": 0.690109,
+  "cache_read_mult_used": 0.1,
+  "wall_seconds": 45,
+  "priced": true,
+  "prices_yaml": "[home]/gitrepos/tier/internal/store/prices.yaml",
+  "prices_yaml_version": 7
+}

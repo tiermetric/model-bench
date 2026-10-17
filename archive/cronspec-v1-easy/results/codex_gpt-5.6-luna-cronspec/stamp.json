@@ -1,0 +1,11 @@
+{
+  "date_utc": "2026-07-22T21:02:29Z",
+  "tier_version": "commit-d3e4107-dirty",
+  "prices_yaml_sha256": "9ab9cba3fca5fef0b8e9eb7f62fe0496c7498a74a94e81e441a52ee66fd53eb0",
+  "prompt": "cronspec",
+  "prompt_file_sha256": "5217f9a5d14a5e781eb41500d0d6ee27748a7c677c63b6d1ac2097f2c371f1d4",
+  "tool": "codex",
+  "tool_version": "codex-cli 0.145.0",
+  "model_flag": "gpt-5.6-luna",
+  "machine": "Darwin 25.5.0 arm64 / Apple M5 Max"
+}

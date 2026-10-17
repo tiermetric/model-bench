@@ -1,0 +1,36 @@
+{
+  "tool": "claude-code",
+  "label": "sonnet",
+  "model_key": "claude-sonnet-5",
+  "model_ids_seen": [
+    "claude-sonnet-5"
+  ],
+  "log": "[home]/.claude/projects/[home]/e708cb90-c050-4ee4-b55d-fdd6298fbe3a.jsonl",
+  "own_tests": "PASS",
+  "acceptance": "PASS",
+  "edge_failures": "0f+0e",
+  "tokens": {
+    "api_calls": 10,
+    "model_ids": [
+      "claude-sonnet-5"
+    ],
+    "input_uncached": 20,
+    "cache_read": 655797,
+    "cache_write": 56218,
+    "cache_w5m": 0,
+    "cache_w1h": 56218,
+    "output": 30061,
+    "reasoning": null,
+    "input_total": 712035
+  },
+  "cache_read_pct": 92.1,
+  "cost_list_usd": 0.985022,
+  "cache_read_mult_used": 0.1,
+  "wall_seconds": 274,
+  "priced": true,
+  "web_tools_mode": "void",
+  "web_tool_count": 0,
+  "web_tool_names": [],
+  "prices_yaml": "[home]/gitrepos/tier/internal/store/prices.yaml",
+  "prices_yaml_version": 8
+}

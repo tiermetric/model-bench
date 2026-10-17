@@ -1,0 +1,36 @@
+{
+  "tool": "codex",
+  "label": "gpt-5.6-luna",
+  "model_key": "gpt-5.6-luna",
+  "model_ids_seen": [
+    "gpt-5.6-luna"
+  ],
+  "log": "[home]/.codex/sessions/2026/07/22/rollout-2026-07-22T17-35-49-019f8bc1-9e3b-7b33-8a7b-9aabd2f588c9.jsonl",
+  "own_tests": "PASS",
+  "acceptance": "PASS",
+  "edge_failures": "0f+0e",
+  "tokens": {
+    "api_calls": null,
+    "model_ids": [
+      "gpt-5.6-luna"
+    ],
+    "input_uncached": 29483,
+    "cache_read": 255744,
+    "cache_write": 0,
+    "cache_w5m": 0,
+    "cache_w1h": 0,
+    "output": 7564,
+    "reasoning": 2133,
+    "input_total": 285227
+  },
+  "cache_read_pct": 89.66,
+  "cost_list_usd": 0.100441,
+  "cache_read_mult_used": 0.1,
+  "wall_seconds": 157,
+  "priced": true,
+  "web_tools_mode": "void",
+  "web_tool_count": 0,
+  "web_tool_names": [],
+  "prices_yaml": "[home]/gitrepos/tier/internal/store/prices.yaml",
+  "prices_yaml_version": 8
+}

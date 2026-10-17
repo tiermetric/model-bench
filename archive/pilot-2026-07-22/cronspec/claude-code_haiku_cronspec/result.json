@@ -1,0 +1,36 @@
+{
+  "tool": "claude-code",
+  "label": "haiku",
+  "model_key": "claude-haiku-4-5",
+  "model_ids_seen": [
+    "claude-haiku-4-5-20251001"
+  ],
+  "log": "[home]/.claude/projects/[home]/c0b50fe0-233b-49be-86a4-40acfc44205c.jsonl",
+  "own_tests": "PASS",
+  "acceptance": "PASS",
+  "edge_failures": "0f+0e",
+  "tokens": {
+    "api_calls": 27,
+    "model_ids": [
+      "claude-haiku-4-5-20251001"
+    ],
+    "input_uncached": 153,
+    "cache_read": 1360678,
+    "cache_write": 54505,
+    "cache_w5m": 0,
+    "cache_w1h": 54505,
+    "output": 43886,
+    "reasoning": null,
+    "input_total": 1415336
+  },
+  "cache_read_pct": 96.14,
+  "cost_list_usd": 0.464661,
+  "cache_read_mult_used": 0.1,
+  "wall_seconds": 418,
+  "priced": true,
+  "web_tools_mode": "void",
+  "web_tool_count": 0,
+  "web_tool_names": [],
+  "prices_yaml": "[home]/gitrepos/tier/internal/store/prices.yaml",
+  "prices_yaml_version": 8
+}

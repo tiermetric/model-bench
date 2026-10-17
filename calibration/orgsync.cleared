@@ -1,0 +1,22 @@
+# orgsync earned the expensive models by defeating a floor detector.
+#
+# claude-haiku-4-5, N=3, 2026-07-22: FAIL / FAIL / FAIL
+#   rep1 $0.5271 · rep2 $0.5634 · rep3 $0.4651
+#   all three on the identical assertion A9.file_summary (run-invariance),
+#   all three with the model's OWN tests passing.
+#
+# Validity independently checked before the result was accepted: a blind reader
+# given only the task text produced the reference reading and judged the spec
+# decisive; an independent assessment found haiku's own test file quotes rule 7
+# and stops at the comma, dropping the clause that decides the case.
+# A reasoning error, not an ambiguous prompt. No prompt change.
+#
+# --- CORRECTION appended 2026-07-23 (original text above retained verbatim) ---
+# "stops at the comma" is inaccurate. Prompt rule 7 contains NO comma:
+#   "Running `sync` again with the services unchanged must issue no write
+#    requests and must leave the three output files with the same content."
+# haiku's test comment stops at the conjunction "and", dropping
+# "and must leave the three output files with the same content".
+# The SUBSTANCE of the assessment is unaffected and stands: it quoted the rule
+# and dropped the clause that decides the case. Only the punctuation claim was
+# wrong. Publications must say "stopped one clause short", never "at the comma".

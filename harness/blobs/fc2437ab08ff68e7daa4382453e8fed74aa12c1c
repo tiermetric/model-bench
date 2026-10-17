@@ -1,0 +1,123 @@
+#!/usr/bin/env python3
+"""Offline policy and session attribution/effort receipts; never calls a model."""
+import json
+import os
+from pathlib import Path
+import re
+import sys
+
+EFFORT_KEYS = {'effort', 'reasoning_effort', 'reasoningEffort', 'effortLevel', 'effort_level', 'model_reasoning_effort'}
+
+
+def check_environment():
+    # Values are never printed: operator settings may contain secrets.
+    bad = sorted(k for k, v in os.environ.items() if v and
+                 (re.search(r'EFFORT|REASONING|VARIANT|MAX_THINKING_TOKENS', k, re.I)))
+    for key in os.environ:
+        if not (key.startswith(('CLAUDE_', 'ANTHROPIC_', 'CODEX_', 'OPENCODE_', 'MUSE_', 'TBH_')) and any(s in key for s in ('CONFIG', 'SETTINGS', 'BODY', 'OPTIONS'))): continue
+        if re.search(r'effort|reasoning|variant', os.environ.get(key, ''), re.I):
+            bad.append(key)
+    if bad:
+        raise ValueError('inherited effort environment/config refused: ' + ', '.join(bad))
+    # Managed config cannot be neutralised by a clean user home.
+    managed = ('/etc/codex/config.toml', '/etc/codex/managed_config.toml',
+               '/Library/Application Support/Codex/managed-config.toml',
+               '/Library/Managed Preferences/com.openai.codex.plist',
+               f'/Library/Managed Preferences/{os.environ.get("USER", "")}/com.openai.codex.plist',
+               '/Library/Application Support/ClaudeCode/managed-settings.json',
+               '/etc/claude-code/managed-settings.json',
+               '/Library/Application Support/opencode/opencode.json',
+               '/Library/Application Support/opencode/opencode.jsonc',
+               '/etc/opencode/opencode.json', '/etc/opencode/opencode.jsonc',
+               '/Library/Managed Preferences/ai.opencode.managed.plist',
+               f'/Library/Managed Preferences/{os.environ.get("USER", "")}/ai.opencode.managed.plist')
+    if any(Path(p).exists() for p in managed):
+        raise ValueError('managed tool config present; clean shipped defaults cannot be assured')
+
+
+def codex_logs(root, marker, cwd):
+    matches = []
+    for p in sorted(Path(root).rglob('rollout-*.jsonl')):
+        if p.stat().st_mtime <= Path(marker).stat().st_mtime:
+            continue
+        for line in p.read_text().splitlines():
+            try: o = json.loads(line)
+            except json.JSONDecodeError: continue
+            if o.get('type') == 'session_meta':
+                if o.get('payload', {}).get('cwd') == cwd:
+                    matches.append(str(p))
+                break
+    return matches
+
+
+def claude_subagents(project):
+    return any(p.is_dir() for p in Path(project).rglob('subagents'))
+
+
+def effort_receipt(path, tool):
+    """Read structured metadata/request fields, never prompt/tool text or a default table."""
+    checked = {'claude-code': 'session JSONL metadata/request output_config.effort',
+               'codex': 'rollout session_meta/turn_context effort and request reasoning.effort',
+               'opencode': 'native message metadata/request reasoningEffort/variant',
+               'muse': 'native session metadata/model request reasoning_effort'}[tool]
+    found = []
+    sources = set()
+    def walk(o, trail):
+        if not isinstance(o, dict): return
+        for k, v in o.items():
+            if k in ('effort_source', 'reasoning_effort_source') and isinstance(v, str): sources.add(v)
+            # Never interpret arbitrary user text, arguments, or tool output as settings.
+            if k in ('content', 'text', 'arguments', 'input', 'output', 'result'): continue
+            if k in EFFORT_KEYS and isinstance(v, str):
+                found.append((v, '.'.join(trail + [k])))
+            elif k == 'variant' and tool == 'opencode' and isinstance(v, str):
+                found.append((v, '.'.join(trail + [k])))
+            elif isinstance(v, dict): walk(v, trail + [k])
+    if Path(path).is_file():
+        for line in Path(path).read_text().splitlines():
+            try: o = json.loads(line)
+            except json.JSONDecodeError: continue
+            # Native tool parts are tool input/output, not request metadata.
+            if o.get('type') == 'opencode_part': continue
+            if tool == 'codex' and o.get('type') not in ('turn_context', 'session_meta', 'request'): continue
+            if tool == 'muse':
+                p = o.get('payload', {})
+                if p.get('kind') not in ('metadata', 'run', 'approval'): continue
+                e = p.get('event', {})
+                if any(k in e for k in ('tool', 'tool_name', 'name')): continue
+            walk(o, [o.get('type') or o.get('payload', {}).get('kind', 'record')])
+    vals = sorted({v for v, _ in found})
+    return {'effort': vals[0] if len(vals) == 1 else (vals or 'not observable'),
+            'effort_source': (sorted(sources)[0] if len(sources) == 1 else sorted(sources)) if sources else ('cli-default' if vals else 'not observable'),
+            'effort_source_checked': checked,
+            'effort_evidence_fields': sorted({p for _, p in found})}
+
+
+def sandbox_denials(path):
+    """Require an explicit denial marker, not a mere description of sandbox posture."""
+    hits = set()
+    if not Path(path).is_file(): return []
+    pattern = re.compile(r'sandbox(?:ed)?[^\n]{0,100}(?:denied|denial|blocked|violation)|(?:denied|blocked)[^\n]{0,100}(?:by|due to|because of)[^\n]{0,30}sandbox|SandboxDenied|SandboxViolation', re.I)
+    def walk(o):
+        if isinstance(o, dict):
+            for k, v in o.items():
+                if k in ('arguments', 'input', 'prompt', 'instructions', 'base_' + 'instructions'): continue
+                if k in ('type', 'kind', 'error', 'message', 'output', 'text', 'stderr', 'status', 'code') and isinstance(v, str):
+                    if pattern.search(v): hits.add('sandbox denial recorded')
+                elif isinstance(v, (dict, list)): walk(v)
+        elif isinstance(o, list):
+            for v in o: walk(v)
+    for line in Path(path).read_text().splitlines():
+        try: walk(json.loads(line))
+        except json.JSONDecodeError: continue
+    return sorted(hits)
+
+
+if __name__ == '__main__':
+    try:
+        if sys.argv[1] == 'environment': check_environment()
+        elif sys.argv[1] == 'codex-logs': print('\n'.join(codex_logs(*sys.argv[2:])))
+        elif sys.argv[1] == 'claude-subagents':
+            if claude_subagents(sys.argv[2]): raise ValueError('Claude subagents/ directory exists; spend capture refused')
+    except ValueError as e:
+        raise SystemExit('FATAL: ' + str(e))

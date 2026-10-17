@@ -1,0 +1,33 @@
+{
+  "tool": "claude-code",
+  "label": "opus",
+  "model_key": "claude-opus-4-8",
+  "model_ids_seen": [
+    "claude-opus-4-8"
+  ],
+  "log": "[home]/.claude/projects/[home]/602403bd-ccb0-4081-99b8-b462023f17f1.jsonl",
+  "own_tests": "PASS",
+  "acceptance": "PASS",
+  "edge_failures": "0f+0e",
+  "tokens": {
+    "api_calls": 4,
+    "model_ids": [
+      "claude-opus-4-8"
+    ],
+    "input_uncached": 8,
+    "cache_read": 105520,
+    "cache_write": 18208,
+    "cache_w5m": 0,
+    "cache_w1h": 18208,
+    "output": 4374,
+    "reasoning": null,
+    "input_total": 123736
+  },
+  "cache_read_pct": 85.28,
+  "cost_list_usd": 0.34423,
+  "cache_read_mult_used": 0.1,
+  "wall_seconds": 51,
+  "priced": true,
+  "prices_yaml": "[home]/gitrepos/tier/internal/store/prices.yaml",
+  "prices_yaml_version": 7
+}
